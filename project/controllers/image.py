@@ -20,4 +20,7 @@ def image_view(url, ext=None):
     if ext and ('.' + ext is not results["ext"]):
         abort(404, 'File not found.')
     else:
-        return static_file(results["shorturl"] + results["ext"], root='/var/www/sgfcup/img/p')
+        config.db.execute(
+            'UPDATE `files` SET hits=hits+1 WHERE `id`=%s', [results["id"]])
+        return static_file(results["shorturl"] + results["ext"],
+                           root=config.Settings["directories"]["files"])
