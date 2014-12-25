@@ -28,7 +28,7 @@ def api_upload_file():
     password = form["password"]
 
     directory = config.Settings["directories"]["files"]
-    random_name = id_generator(random.SystemRandom().randint(4,7))
+    random_name = id_generator(random.SystemRandom().randint(4, 7))
     is_public = (not key and not password)
     is_authed = False
 
@@ -45,21 +45,23 @@ def api_upload_file():
                     'SELECT * FROM `accounts` WHERE `key`=%s', [key])
 
                 if user:
-                    if user["password"] == password:
-                        is_authed = True
+                    is_authed = (user["password"] == password)
+                    user_id = user["id"]
                 else:
-                    config.db.execute(
-                        'INSERT INTO `accounts` (`key`, `password`) VALUES (%s, %s)', [key, password])
+                    new_account = config.db.insert(
+                        'accounts', {'key': key, 'password': password})
+                    user_id = new_account.lastrowid
+                    is_authed = True
             else:
                 is_authed = True
 
             if not is_authed:
-                errors += 'Incorrect Key or password.'
+                errors += 'Incorrect Key or password. '
             else:
                 if not is_public:
                     SESSION["key"] = key
                     SESSION["password"] = password
-                    SESSION["id"] = user["id"]
+                    SESSION["id"] = user_id
 
                 filename = form["file"].filename
                 name, ext = os.path.splitext(filename)
@@ -78,10 +80,11 @@ def api_upload_file():
                 else:
                     form["file"].save(directory + random_name + ext)
 
-            if not errors:
-                userid = 1 if is_public else SESSION["id"]
-                config.db.execute(
-                    'INSERT INTO `files` (userid, shorturl, ext, original) VALUES (%s, %s, %s, %s)', (userid, random_name, ext, filename))
+                user_id = 1 if is_public else SESSION["id"]
+
+                config.db.insert(
+                    'files', {'userid': user_id, 'shorturl': random_name, 'ext': ext, 'original': filename})
+
                 if config.Settings["ssl"]:
                     config.Settings['directories']['url'] = 'https://' + \
                         request.environ.get('HTTP_HOST')
@@ -101,7 +104,7 @@ def api_upload_file():
                 response.content_type = 'text/html; charset=utf-8'
                 return json.dumps({
                     "success": True,
-                    "error": False if not errors else errors,
+                    "error": False,
                     "url": '/' + random_name,
                     "key": 'anon' if is_public else key,
                     "base": config.Settings["directories"]["url"]

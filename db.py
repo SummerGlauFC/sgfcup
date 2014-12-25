@@ -82,6 +82,18 @@ class DB(object):
         else:
             return None
 
+    def insert(self, table, columns_pair):
+        ''' build and execute an insert operation, as such:
+            insert('table_name', {'column1': 'value', 'column2': 'value2'}) '''
+
+        columns = ', '.join(['`{0}`'.format(key) for key in columns_pair])
+        values = ', '.join(['%s' for _ in range(len(columns_pair))])
+
+        query = 'INSERT INTO `{table}` ({columns}) VALUES ({values})'.format(
+            table=table, columns=columns, values=values)
+
+        return self.execute(query, [value for value in columns_pair.values()])
+
 
 class DBConnectionFailed(Exception):
 
