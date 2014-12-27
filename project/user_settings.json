@@ -1,0 +1,25 @@
+{
+    "ext": {
+        "name": "URL format",
+        "type": "radio",
+        "options": [
+            "Short URL",
+            "Full URL"
+        ],
+        "default": 0
+    },
+    "block": {
+        "name": "Block unathorized entry",
+        "type": "radio",
+        "options": [
+            "Allow anyone to view your gallery",
+            "Require password to view your gallery"
+        ],
+        "default": 0
+    },
+    "gallery_password": {
+        "name": "Gallery password",
+        "type": "text",
+        "default": ""
+    }
+}
