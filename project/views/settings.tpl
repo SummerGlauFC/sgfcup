@@ -1,8 +1,8 @@
 <!-- settings.tpl -->
-
+<form action="" method="POST">
 {% for key, value in settings.iteritems() %}
 <ul>
-    {{ key }}:
+    {{ value.name }}:
     {% if value.type == "radio" %}
         {%- for option in value.options %}
             <li>
@@ -13,8 +13,10 @@
         {% endfor -%}
     {% else %}
         <li>
-            <input type="text" name="{{ key }}" value="{{ value.value }}" />
+            <input type="{{ value.type }}" name="{{ key }}" value="{{ value.value }}" />
         </li>
     {% endif %}
 </ul>
 {% endfor %}
+<input type="submit" value="Update Settings" />
+</form>

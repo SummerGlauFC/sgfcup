@@ -9,3 +9,11 @@ def settings_view():
 
     settings = config.user_settings.get_all_values(SESSION.get("id", 0))
     return template("settings.tpl", settings=settings)
+
+
+@app.route('/settings', method='POST')
+def settings_process():
+    SESSION = request.environ.get("beaker.session")
+
+    new_forms = functions.strs_to_ints(request.forms)
+    config.user_settings.multiple_set(SESSION["id"], new_forms)

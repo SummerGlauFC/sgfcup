@@ -1,6 +1,7 @@
 import json
 from jsonmerge import merge
 from db import DB
+from pprint import pprint
 
 
 class JSONSettings(object):
@@ -18,45 +19,45 @@ class JSONSettings(object):
 
         self.db = db_instance
 
-    def do(self, user_id, new_json):
+    def do(self, user_id, new_json, current_config=None):
         ''' handles the insertion of user info into the database '''
 
-        current_config = self.db.execute(
-            "SELECT * FROM `settings` WHERE userid = %s", [user_id])
+        if not current_config:
+            current_config = self.db.fetchone(
+                "SELECT * FROM `settings` WHERE userid = %s", [user_id])
 
         if current_config:
-            merged_json = merge(current_config["json"], new_json)
+            if current_config["json"] != "0":
+                merged_json = json.dumps(merge(
+                    json.loads(current_config["json"]), json.loads(new_json)), separators=(',', ':'))
 
-            self.db.execute(
-                "UPDATE `settings` SET `json`=%s WHERE `userid`=%s", [merged_json, user_id])
+                self.db.execute(
+                    "UPDATE `settings` SET `json`=%s WHERE `userid`=%s", (merged_json, user_id))
         else:
-            self.db.insert("settings", {"json": new_json, "userid": user_id})
+            self.db.insert("settings", {"userid": user_id, "json": new_json})
 
-    def changeValues(self, key, value):
+    def changeValues(self, values):
         ''' returns a dict which contains the users new value for an option '''
 
         temporary_json = {}
-
-        if key in self.json_file:
-            temporary_json[key] = {}
-            if "options" in self.json_file[key]:
-                if value not in range(len(self.json_file[key]["options"])):
-                    return False
-            temporary_json[key]["value"] = value
-            return temporary_json
-        else:
-            return False
+        for key, value in values.iteritems():
+            if key in self.json_file:
+                temporary_json[key] = {}
+                if "options" in self.json_file[key]:
+                    if value not in range(len(self.json_file[key]["options"])):
+                        return False
+                temporary_json[key]["value"] = value
+        return temporary_json
 
     def _get(self, user_id):
         ''' returns a users config, including defaults. '''
 
-        current_config = self.db.execute(
+        current_config = self.db.fetchone(
             "SELECT * FROM `settings` WHERE userid = %s", [user_id])
 
-        print dir(current_config), current_config.rowcount
-
-        if current_config.rowcount != -1:
-            merged_json = merge(self.json_file, current_config["json"])
+        if current_config:
+            merged_json = merge(
+                self.json_file, json.loads(current_config["json"]))
             return merged_json
         else:
             return self.json_file
@@ -75,7 +76,16 @@ class JSONSettings(object):
     def set(self, user_id, key, value):
         ''' sets a value for a config key. '''
 
-        self.do(user_id, self.changeValues(key, value))
+        self.do(user_id, self.changeValues({key: value}))
+
+    def multiple_set(self, user_id, items):
+        ''' sets multiple values at once (avoids multiple sql selects) '''
+
+        current_config = self.db.fetchone(
+            "SELECT * FROM `settings` WHERE userid = %s", [user_id])
+
+        self.do(user_id, json.dumps(self.changeValues(items)),
+                current_config)
 
     def get_all_values(self, user_id):
         jsoned = self._get(user_id)

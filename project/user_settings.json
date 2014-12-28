@@ -9,7 +9,7 @@
         "default": 0
     },
     "block": {
-        "name": "Block unathorized entry",
+        "name": "Access options",
         "type": "radio",
         "options": [
             "Allow anyone to view your gallery",

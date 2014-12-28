@@ -89,18 +89,6 @@ def api_upload_file():
                     config.Settings['directories']['url'] = 'https://' + \
                         request.environ.get('HTTP_HOST')
 
-                # if not is_public:
-                #     settings = config.db.fetchone(
-                #         'SELECT * FROM `settings` WHERE `userid`=%s', [SESSION["id"]])
-
-                #     if settings:
-                #         user_settings = json.loads(settings["json"])
-                #         if 'ext' in user_settings:
-                #             use_extensions = user_settings["ext"]
-
-                #         if use_extensions:
-                #             random_name += ext
-
                 if not is_public:
                     use_extensions = config.user_settings.get(
                         SESSION["id"], "ext")
