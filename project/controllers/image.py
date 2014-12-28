@@ -17,10 +17,13 @@ def image_view(url, ext=None):
     results = config.db.fetchone(
         'SELECT * FROM `files` WHERE `shorturl` = %s', [url])
 
-    if ext and ('.' + ext is not results["ext"]):
-        abort(404, 'File not found.')
+    if results:
+        if ext and ('.' + ext is not results["ext"]):
+            abort(404, 'File not found.')
+        else:
+            config.db.execute(
+                'UPDATE `files` SET hits=hits+1 WHERE `id`=%s', [results["id"]])
+            return static_file(results["shorturl"] + results["ext"],
+                               root=config.Settings["directories"]["files"])
     else:
-        config.db.execute(
-            'UPDATE `files` SET hits=hits+1 WHERE `id`=%s', [results["id"]])
-        return static_file(results["shorturl"] + results["ext"],
-                           root=config.Settings["directories"]["files"])
+        abort(404, 'File not found.')
