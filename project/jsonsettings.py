@@ -29,7 +29,7 @@ class JSONSettings(object):
         if current_config:
             if current_config["json"] != "0":
                 merged_json = json.dumps(merge(
-                    json.loads(current_config["json"]), json.loads(new_json)), separators=(',', ':'))
+                    json.loads(current_config["json"]), json.loads(new_json)))
 
                 self.db.execute(
                     "UPDATE `settings` SET `json`=%s WHERE `userid`=%s", (merged_json, user_id))
@@ -73,13 +73,13 @@ class JSONSettings(object):
         else:
             return user_json[key]["default"]
 
-    def set(self, user_id, key, value):
-        ''' sets a value for a config key. '''
-
-        self.do(user_id, self.changeValues({key: value}))
-
-    def multiple_set(self, user_id, items):
-        ''' sets multiple values at once (avoids multiple sql selects) '''
+    def set(self, user_id, items):
+        ''' sets multiple values at once (avoids multiple sql selects)
+            expects to be called as such:
+                set(user_id, items)
+            where user_id is the id of a user from the `accounts` table
+            and items is a dictionary of key: value
+                like: {"ext": 0, "gallery_password": "test"} '''
 
         current_config = self.db.fetchone(
             "SELECT * FROM `settings` WHERE userid = %s", [user_id])
