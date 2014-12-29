@@ -16,4 +16,4 @@ def settings_process():
     SESSION = request.environ.get("beaker.session")
 
     new_forms = functions.strs_to_ints(request.forms)
-    config.user_settings.multiple_set(SESSION["id"], new_forms)
+    config.user_settings.set(SESSION["id"], new_forms)

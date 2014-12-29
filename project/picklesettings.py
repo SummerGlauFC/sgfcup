@@ -2,9 +2,9 @@ import json
 from jsonmerge import merge
 from db import DB
 from pprint import pprint
+import cPickle as pickle
 
-
-class JSONSettings(object):
+class PickleSettings(object):
 
     ''' A class to handle the use of JSON for user settings. '''
 
@@ -28,13 +28,15 @@ class JSONSettings(object):
 
         if current_config:
             if current_config["json"] != "0":
-                merged_json = json.dumps(merge(
-                    json.loads(current_config["json"]), json.loads(new_json)))
+                #merged_json = json.dumps(merge(
+                #    json.loads(current_config["json"]), json.loads(new_json)))
+
+                merged_json = merge(pickle.loads(current_config["json"]), new_json)
 
                 self.db.execute(
-                    "UPDATE `settings` SET `json`=%s WHERE `userid`=%s", (merged_json, user_id))
+                    "UPDATE `settings` SET `json`=%s WHERE `userid`=%s", (pickle.dumps(merged_json, -1), user_id))
         else:
-            self.db.insert("settings", {"userid": user_id, "json": new_json})
+            self.db.insert("settings", {"userid": user_id, "json": pickle.dumps(new_json, -1)})
 
     def changeValues(self, values):
         ''' returns a dict which contains the users new value for an option '''
@@ -57,7 +59,7 @@ class JSONSettings(object):
 
         if current_config:
             merged_json = merge(
-                self.json_file, json.loads(current_config["json"]))
+                self.json_file, pickle.loads(current_config["json"]))
             return merged_json
         else:
             return self.json_file
@@ -84,7 +86,7 @@ class JSONSettings(object):
         current_config = self.db.fetchone(
             "SELECT * FROM `settings` WHERE userid = %s", [user_id])
 
-        self.do(user_id, json.dumps(self.changeValues(items)),
+        self.do(user_id, self.changeValues(items),
                 current_config)
 
     def get_all_values(self, user_id):
