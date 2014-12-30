@@ -540,21 +540,21 @@
         background: #FFFFFF;
     }
 
-    body.gallery #pages {
+    body.gallery .pages {
         font-weight: 400 !important;
     }
 
-    body.gallery #pages.bottom {
-        margin-top: 0;
+    body.gallery .pages.bottom {
+        border-top: 1px solid rgba(0, 0, 0, 0.3);
     }
 
-    body.gallery #debug.top {
+    body.gallery .debug.top {
         font-size: 16px;
         font-weight: 400;
         border-bottom: 1px solid rgba(0, 0, 0, 0.3);
     }
 
-    body.gallery #debug {
+    body.gallery .debug {
         margin: 0;
         font-size: 9pt;
         border-top: 1px solid rgba(0, 0, 0, 0.3);
@@ -710,12 +710,12 @@
     body.gallery.gc .info.details span {
         color: #000;
     }
-    body.gallery h2#pages { padding: 15px; }
-    body.gallery h2#pages a { background: none repeat scroll 0 0 #CCCCCC;
+    body.gallery h2.pages { padding: 15px; }
+    body.gallery h2.pages a { background: none repeat scroll 0 0 #CCCCCC;
     border: 1px dashed #AAAAAA;
     display: inline-block;
     font-size: 16px !important;
     margin: 1px 1px 4px;
     padding: 5px;
     width: 20px; }
-    body.gallery h2#pages a:last-child {padding: 5px;}
+    body.gallery h2.pages a:last-child {padding: 5px;}

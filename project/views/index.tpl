@@ -1064,6 +1064,7 @@
                         console.log("error:");
                         console.log(file);
                         console.log(response);
+                        $('.dz-error-message', file.previewTemplate).css("opacity", 1);
                         myDropzone.processQueue();
                     });
                 }

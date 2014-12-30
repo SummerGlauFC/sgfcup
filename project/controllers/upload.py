@@ -57,6 +57,12 @@ def api_upload_file():
 
             if not is_authed:
                 errors += 'Incorrect Key or password. '
+
+                response.status = 500
+                return {
+                    "success": False,
+                    "error": errors
+                }
             else:
                 if not is_public:
                     SESSION["key"] = key
@@ -101,7 +107,6 @@ def api_upload_file():
                     "key": 'anon' if is_public else key,
                     "base": config.Settings["directories"]["url"]
                 })
-
         else:
             return {
                 "success": False,
