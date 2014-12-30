@@ -1,14 +1,37 @@
 # -*- coding: utf-8 -*-
 from project import app, config
 from bottle import template, request, static_file, abort
+import os
+from PIL import Image, ImageOps
 
-# This file is responsible for the serving of images, and also thumbnails
 
+@app.route('/api/thumb/<url>')
+@app.route('/api/thumb/<url>.<ext>')
+def api_thumb(url, ext=None):
+    if 'thumb_' + url + '.jpg' in os.listdir(config.Settings['directories']['thumbs']):
+        return static_file('thumb_' + url + '.jpg',
+                           root=config.Settings['directories']['thumbs'])
+    else:
+        results = config.db.fetchone(
+            'SELECT * FROM `files` WHERE `shorturl` = %s', [url])
 
-@app.route('/api/thumb/<url>', method='GET')
-def api_thumb(url):
-    # thumbnail code here
-    return 'Not implemented.'
+        if results:
+            if ext and ('.' + ext is not results["ext"]):
+                abort(404, 'File not found.')
+            else:
+                size = 200, 200
+                base = Image.open(
+                    config.Settings['directories']['files'] + results["shorturl"] + results["ext"])
+                image_info = base.info
+                if base.mode not in ("L", "RGBA"):
+                    base = base.convert("RGBA")
+                base = ImageOps.fit(base, size, Image.ANTIALIAS)
+                base.save(config.Settings['directories']['thumbs']
+                          + 'thumb_' + url + '.jpg', **image_info)
+                return static_file('thumb_' + url + '.jpg',
+                                   root=config.Settings['directories']['thumbs'])
+        else:
+            abort(404, 'File not found.')
 
 
 @app.route('/<url>')
