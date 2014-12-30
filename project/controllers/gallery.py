@@ -52,8 +52,7 @@ def gallery_view(user_key):
                 else:
                     new_query[key] = value
 
-            return path + (
-                '?' + urllib.urlencode(new_query) if request.query_string else '')
+            return path + '?' + urllib.urlencode(new_query)
 
         page = int(request.query.get('page', defaults['page']))
         case = int(request.query.get('case', defaults['case']))
