@@ -92,7 +92,7 @@ class PickleSettings(object):
     def get_all_values(self, user_id):
         jsoned = self._get(user_id)
         for key in jsoned:
-            if "value" not in jsoned[key]:
+            if "value" not in jsoned[key] and "default" in jsoned[key]:
                 jsoned[key]["value"] = jsoned[key]["default"]
 
         return jsoned

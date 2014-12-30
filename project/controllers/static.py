@@ -15,6 +15,18 @@ def index():
         return {"key": functions.id_generator(15), "password": functions.id_generator(15)}
 
 
+@app.route('/keys')
+def keys():
+    SESSION = request.environ.get('beaker.session')
+
+    return template(
+        'general',
+        title='Keys',
+        message='Key: ' + SESSION.get('key', 'Not set.') +
+        '<br />Password: ' + SESSION.get('password', 'Not set.'),
+    )
+
+
 @app.route('/:file#(favicon.ico)#')
 def favicon(file):
     return static_file(file, root='project/static/misc')

@@ -3,8 +3,8 @@
         "name": "URL format",
         "type": "radio",
         "options": [
-            "Short URL",
-            "Full URL"
+            "Short URL (e.g. https://sgfc.co/filename)",
+            "Full URL (e.g. https://sgfc.co/filename.png)"
         ],
         "default": 0
     },
@@ -18,8 +18,18 @@
         "default": 0
     },
     "gallery_password": {
-        "name": "Gallery password",
+        "name": "Viewing password",
         "type": "text",
-        "default": ""
+        "default": "",
+        "notes": "This is only needed if \"Require password to view your gallery\" is set.<br />This password is for logging into the gallery, and does not change your key password."
+    },
+    "groups": {
+        "Image link settings": [
+            "ext"
+        ],
+        "Gallery settings": [
+            "block",
+            "gallery_password"
+        ]
     }
 }
