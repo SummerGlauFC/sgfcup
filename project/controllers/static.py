@@ -15,6 +15,17 @@ def index():
         return {"key": functions.id_generator(15), "password": functions.id_generator(15)}
 
 
+@app.get('/paste')
+@view('pastebin.tpl')
+def paste_home():
+    SESSION = request.environ.get('beaker.session')
+
+    if SESSION.get('id'):
+        return {"key": SESSION.get('key'), "password": SESSION.get('password')}
+    else:
+        return {"key": functions.id_generator(15), "password": functions.id_generator(15)}
+
+
 @app.route('/keys')
 def keys():
     SESSION = request.environ.get('beaker.session')

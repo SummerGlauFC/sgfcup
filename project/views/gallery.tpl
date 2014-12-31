@@ -125,16 +125,26 @@
                                         {% elif file.type == types.image %}
                                             <a target="_blank" title="{{ file.original|e }}" href="/{{ write_ext(file) }}" style="height: 200px; position: absolute; width: 200px;">
                                                 <img width="100%" height="100%" src="data:image/gif;base64,R0lGODlhAQABAID/AMDAwAAAACH5BAEAAAAALAAAAAABAAEAAAICRAEAOw==" style="opacity: 0">
+                                        {% elif file.type == types.paste %}
+                                            <a title="{{ file.name }}" href="/paste/{{ file.url }}" style="height: 200px; position: absolute; width: 200px;">
+                                                <span class="paste">
+                                                    {{ file.content|truncate(1000, True) }}
+                                                </span>
+                                                <img width="100%" height="100%" src="data:image/gif;base64,R0lGODlhAQABAID/AMDAwAAAACH5BAEAAAAALAAAAAABAAEAAAICRAEAOw==" style="opacity: 0;position: relative;top: -203px;">
                                         {% endif %}
                                             </a>
                                             <span class="info">
                                                 <input type="checkbox" name="delete_this" value="{{ file.url }}" class="checkbawks" />
-                                                {% if file.type == types.file %}File:{% endif %}
-                                                <a title="{{ file.url }}" href="/{{ write_ext(file) }}">{{ hl(file.original) }}</a>
+                                                {% if file.type == types.file %}File:{% elif file.type == types.paste %}Paste:{%  endif %}
+                                                {% if file.type != types.paste %}
+                                                    <a title="{{ file.url }}" href="/{{ write_ext(file) }}">{{ hl(file.original) }}</a>
+                                                {% else %}
+                                                    <a title="{{ file.url }}" href="/paste/{{ file.url }}">{{ hl(file.name) }} {% if file.name != file.url %}({{ file.url }}){% endif %}</a>
+                                                {% endif %}
                                                 <br />
                                             </span>
                                             <span class="info details">
-                                                <span style="color:rgba(0, 0, 0, 0.5);">Size:</span> {{ file.size }} ({{ file.resolution[0] }}x{{ file.resolution[1] }})
+                                                <span style="color:rgba(0, 0, 0, 0.5);">Size:</span> {% if file.type == types.image %}{{ file.size }} ({{ file.resolution[0] }}x{{ file.resolution[1] }}){% elif file.type == types.paste %}{{ file.size }} lines{% else %}{{ file.size }}{% endif %}
                                                 <br />
                                                 <span style="color:rgba(0, 0, 0, 0.5);">Uploaded:</span> {{ file.time.timestamp }}
                                                 <br />

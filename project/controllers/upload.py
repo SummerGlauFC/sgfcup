@@ -12,13 +12,13 @@ import json
 # TODO: add paste handling
 
 
-@app.route('/api/upload/file', method='POST')
-def api_upload_file():
+@app.route('/api/upload/<upload_type>', method='POST')
+def api_upload_file(upload_type='file'):
     SESSION = request.environ.get('beaker.session')
 
     form = {
-        "key": request.forms.get('key', default=False),
-        "password": request.forms.get('password', default=False),
+        "key": request.forms.get('key', False),
+        "password": request.forms.get('password', False),
         "file": request.files.get('files')
     }
 
@@ -38,8 +38,10 @@ def api_upload_file():
         key = id_generator(15)
         password = id_generator(15)
 
+    response.content_type = 'application/json; charset=utf-8'
+
     if re.match("^[a-zA-Z0-9_-]+$", key):
-        if form["file"]:
+        if form["file"] or upload_type is not "file":
             if not is_public:
                 user = config.db.fetchone(
                     'SELECT * FROM `accounts` WHERE `key`=%s', [key])
@@ -69,41 +71,69 @@ def api_upload_file():
                     SESSION["password"] = password
                     SESSION["id"] = user_id
 
-                filename = form["file"].filename
-                name, ext = os.path.splitext(filename)
+                if upload_type == 'file':
+                    filename = form["file"].filename
+                    name, ext = os.path.splitext(filename)
 
-                if '.' not in filename:
-                    name = random_name
+                    if '.' not in filename:
+                        name = random_name
 
-                if ext == '':
-                    buff = form["file"].file.read()
-                    ext = guess_extension(magic.from_buffer(buff, mime=True))
+                    if ext == '':
+                        buff = form["file"].file.read()
+                        ext = guess_extension(
+                            magic.from_buffer(buff, mime=True))
 
-                filename = name + ext
-                if name == random_name:
-                    with open(directory + name + ext, 'w') as fout:
-                        fout.write(buff)
+                    filename = name + ext
+                    if name == random_name:
+                        with open(directory + name + ext, 'w') as fout:
+                            fout.write(buff)
+                    else:
+                        form["file"].save(directory + random_name + ext)
+
+                    user_id = 1 if is_public else SESSION["id"]
+
+                    config.db.insert(
+                        'files', {'userid': user_id, 'shorturl': random_name,
+                                  'ext': ext, 'original': filename})
+
+                    if config.Settings["ssl"]:
+                        config.Settings['directories']['url'] = 'https://' + \
+                            request.environ.get('HTTP_HOST')
+
+                    if not is_public:
+                        use_extensions = config.user_settings.get(
+                            SESSION["id"], "ext")
+                elif upload_type == 'paste':
+                    paste_body = request.forms.get('paste_body')
+                    paste_lang = request.forms.get('lang', 'text')
+                    paste_name = request.forms.get('paste_name', random_name)
+
+                    if paste_body:
+                        if len(paste_body) > 65000:
+                            return {
+                                "success": False,
+                                "error": "Your paste exceeds the maximum character length of 65000"
+                            }
+
+                        paste_id = config.db.insert(
+                            'pastes', {'userid': user_id, 'shorturl': random_name,
+                                       'name': paste_name, 'lang': paste_lang,
+                                       'content': paste_body}).lastrowid
+
+                        config.db.insert(
+                            'files', {'userid': user_id,
+                                      'shorturl': random_name,
+                                      'ext': 'paste', 'original': paste_id})
                 else:
-                    form["file"].save(directory + random_name + ext)
+                    return {
+                        "success": False,
+                        "error": "This upload type does not exist or is not implemented as of yet."
+                    }
 
-                user_id = 1 if is_public else SESSION["id"]
-
-                config.db.insert(
-                    'files', {'userid': user_id, 'shorturl': random_name, 'ext': ext, 'original': filename})
-
-                if config.Settings["ssl"]:
-                    config.Settings['directories']['url'] = 'https://' + \
-                        request.environ.get('HTTP_HOST')
-
-                if not is_public:
-                    use_extensions = config.user_settings.get(
-                        SESSION["id"], "ext")
-
-                response.content_type = 'text/html; charset=utf-8'
                 return json.dumps({
                     "success": True,
                     "error": False,
-                    "url": '/' + random_name,
+                    "url": '/' + ('' if upload_type == 'file' else upload_type + '/') + random_name,
                     "key": 'anon' if is_public else key,
                     "base": config.Settings["directories"]["url"]
                 })

@@ -5,9 +5,16 @@ import config
 from math import ceil
 import markupsafe
 import re
+import pygments
+from pygments.util import ClassNotFound
+from pygments.lexers import get_lexer_by_name, get_lexer_for_filename, \
+    get_lexer_for_mimetype, PhpLexer, TextLexer, get_all_lexers, \
+    guess_lexer, guess_lexer_for_filename
+from pygments.styles import get_all_styles
+from pygments.formatters import HtmlFormatter
 
 
-def id_generator(size=6, chars=string.ascii_uppercase + string.digits + string.ascii_lowercase):
+def id_generator(size=6, chars=string.ascii_letters + string.digits):
     return ''.join(random.SystemRandom().choice(chars) for _ in range(size))
 
 
@@ -28,7 +35,7 @@ def is_image(path):
     return im
 
 
-def highlight(text, search):
+def hl(text, search):
     output = ''
     i = 0
     text = markupsafe.escape(text)
@@ -113,3 +120,77 @@ class Pagination(object):
                     yield None
                 yield num
                 last = num
+
+
+LANGUAGES = get_all_lexers()
+
+def get_language_for(filename, mimetype=None, default='text'):
+    """Get language for filename and mimetype"""
+    try:
+        if mimetype is None:
+            raise ClassNotFound()
+        lexer = get_lexer_for_mimetype(mimetype)
+    except ClassNotFound:
+        try:
+            lexer = get_lexer_for_filename(filename)
+        except ClassNotFound:
+            return default
+    return get_known_alias(lexer, default)
+
+
+def get_language_for_code(code, mimetype=None, default='text'):
+    """Get language for filename and mimetype"""
+    try:
+        lexer = guess_lexer(code)
+    except ClassNotFound:
+        return default
+    return get_known_alias(lexer, default)
+
+
+def lookup_language_alias(alias, default='text'):
+    """When passed a pygments alias returns the alias from LANGUAGES. If
+the alias does not exist at all or is not in languages, `default` is
+returned.
+"""
+    if alias in LANGUAGES:
+        return alias
+    try:
+        lexer = get_lexer_by_name(alias)
+    except ClassNotFound:
+        return default
+    return get_known_alias(lexer)
+
+
+def get_known_alias(lexer, default='text'):
+    """Return the known alias for the lexer."""
+    for alias in lexer.aliases:
+        if alias in LANGUAGES:
+            return alias
+    return default
+
+
+def list_languages():
+    """List all languages."""
+    languages = LANGUAGES.items()
+    languages.sort(key=lambda x: x[1].lstrip(' _-.').lower())
+    return languages
+
+
+def highlight(code, language, _preview=False, _linenos=True):
+    if language == 'php':
+        lexer = PhpLexer(startinline=True)
+    elif language == 'guess':
+        lexer = guess_lexer(code)
+    else:
+        try:
+            lexer = get_lexer_by_name(language)
+        except ClassNotFound:
+            lexer = TextLexer()
+    formatter = HtmlFormatter(
+        linenos=_linenos, cssclass='syntax', style='default')
+    return u'<div class="syntax">%s</div>' % \
+           pygments.highlight(code, lexer, formatter)
+
+
+def css(style='default', css_class='.syntax'):
+    return HtmlFormatter(style=style).get_style_defs(css_class)

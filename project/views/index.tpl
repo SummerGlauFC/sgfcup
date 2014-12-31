@@ -1051,7 +1051,7 @@
                     this.on("success", function (file, response) {
                         // Gets triggered when the files have successfully been sent.
                         // Redirect user or notify of success.
-                        response = JSON.parse(response);
+                        console.log(response);
                         console.log(file);
                         console.log(file.previewTemplate);
                         $('.dz-error-message span', file.previewTemplate).html('<a href="' + response.url + '">' + response.base + response.url + '</a>');

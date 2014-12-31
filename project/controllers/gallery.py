@@ -95,26 +95,44 @@ def gallery_view(user_key):
             for row in results:
                 row_file = {}
 
-                full_file_path = config.Settings["directories"][
-                    "files"] + row["shorturl"] + row["ext"]
+                if row["ext"] == "paste":
+                    paste_row = config.db.fetchone(
+                        'SELECT * FROM `pastes` WHERE `id` = %s', [row["original"]])
 
-                image = functions.is_image(full_file_path)
-                file_stats = os.stat(full_file_path)
+                    row_file["type"] = 2
+                    row_file["url"] = row["shorturl"]
+                    row_file["content"] = paste_row["content"]
+                    row_file["hits"] = row["hits"]
+                    row_file["name"] = paste_row["name"] or row["shorturl"]
+                    row_file["size"] = len(paste_row["content"].split('\n'))
 
-                row_file["url"] = row["shorturl"]
-                row_file["ext"] = row["ext"]
-                row_file["original"] = row["original"]
-                row_file["hits"] = row["hits"]
-                row_file["size"] = functions.sizeof_fmt(file_stats.st_size)
+                    row_file["time"] = {
+                        "epoch": row["date"].strftime('%s'),
+                        "timestamp": row["date"].strftime('%d/%m/%Y @ %H:%M:%S')
+                    }
+                else:
+                    full_file_path = config.Settings["directories"][
+                        "files"] + row["shorturl"] + row["ext"]
 
-                row_file["time"] = {
-                    "epoch": row["date"].strftime('%s'),
-                    "timestamp": row["date"].strftime('%d/%m/%Y @ %H:%M:%S')
-                }
+                    image = functions.is_image(full_file_path)
+                    file_stats = os.stat(full_file_path)
 
-                if image:
-                    row_file["type"] = 0
-                    row_file["resolution"] = image.size
+                    row_file["url"] = row["shorturl"]
+                    row_file["ext"] = row["ext"]
+                    row_file["original"] = row["original"]
+                    row_file["hits"] = row["hits"]
+                    row_file["size"] = functions.sizeof_fmt(file_stats.st_size)
+
+                    row_file["time"] = {
+                        "epoch": row["date"].strftime('%s'),
+                        "timestamp": row["date"].strftime('%d/%m/%Y @ %H:%M:%S')
+                    }
+
+                    if image:
+                        row_file["type"] = 0
+                        row_file["resolution"] = image.size
+                    else:
+                        row_file["type"] = 1
 
                 files.append(row_file)
 
@@ -141,7 +159,7 @@ def gallery_view(user_key):
             "url_for_page": url_for_page,
             "error": error if error else False,
             "types": config.file_type,
-            "hl": functools.partial(functions.highlight, search=query)
+            "hl": functools.partial(functions.hl, search=query)
         }
     else:
         return {"error": "Specified key does not exist."}
