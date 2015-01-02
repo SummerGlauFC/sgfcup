@@ -134,13 +134,17 @@ def api_upload_file(upload_type='file'):
                         "error": "This upload type does not exist or is not implemented as of yet."
                     }
 
-                return json.dumps({
-                    "success": True,
-                    "error": False,
-                    "url": '/' + ('' if upload_type == 'file' else upload_type + '/') + random_name,
-                    "key": 'anon' if is_public else key,
-                    "base": config.Settings["directories"]["url"]
-                })
+                if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+                    return json.dumps({
+                        "success": True,
+                        "error": False,
+                        "url": '/' + ('' if upload_type == 'file' else upload_type + '/') + random_name,
+                        "key": 'anon' if is_public else key,
+                        "base": config.Settings["directories"]["url"]
+                    })
+                else:
+                    response.content_type = 'text/html; charset=utf-8'
+                    return config.Settings["directories"]["url"] + '/' + random_name
         else:
             return {
                 "success": False,
