@@ -18,7 +18,7 @@ debug(True)
 if __name__ == '__main__':
     try:
         port = int(sys.argv[1])
-        run(app, reloader=False, host='0.0.0.0', port=port)
+        run(app, reloader=False, host='0.0.0.0', port=port, server='bjoern')
     except Exception as e:
         print e
         print 'Port to run on not specified.'
