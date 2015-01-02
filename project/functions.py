@@ -49,12 +49,12 @@ def hl(text, search):
     return "".join([output, text[i:]])
 
 
-def get_userid(key):
+def get_userid(key, return_row=False):
     userid = config.db.fetchone(
         "SELECT * FROM `accounts` WHERE `key` = %s", [key])
 
     if userid:
-        return userid["id"]
+        return userid["id"] if not return_row else userid
     else:
         return False
 

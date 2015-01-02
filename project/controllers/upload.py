@@ -12,6 +12,7 @@ import json
 # TODO: add paste handling
 
 
+@app.route('/api/upload', method='POST')
 @app.route('/api/upload/<upload_type>', method='POST')
 def api_upload_file(upload_type='file'):
     SESSION = request.environ.get('beaker.session')
@@ -98,6 +99,9 @@ def api_upload_file(upload_type='file'):
 
                     if config.Settings["ssl"]:
                         config.Settings['directories']['url'] = 'https://' + \
+                            request.environ.get('HTTP_HOST')
+                    else:
+                        config.Settings['directories']['url'] = 'http://' + \
                             request.environ.get('HTTP_HOST')
 
                     if not is_public:
