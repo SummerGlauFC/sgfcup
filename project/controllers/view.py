@@ -18,7 +18,7 @@ def api_thumb(url, ext=None):
             'SELECT * FROM `files` WHERE `shorturl` = %s', [url])
 
         if results:
-            if ext and ('.' + ext is not results["ext"]):
+            if ext and ('.' + ext != results["ext"]):
                 abort(404, 'File not found.')
             else:
                 size = 200, 200
