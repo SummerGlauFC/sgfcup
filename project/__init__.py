@@ -4,6 +4,6 @@ from bottle import Bottle, TEMPLATE_PATH
 import config
 app = Bottle()
 TEMPLATE_PATH.append(
-    config.Settings['directories']['base'] + '/project/views/')
+    config.Settings['directories']['template_base'] + '/project/views/')
 TEMPLATE_PATH.remove("./views/")
 from project.controllers import *

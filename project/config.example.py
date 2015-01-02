@@ -9,7 +9,8 @@ Settings = {
     "directories": {
         "files": base + "/img/p/",  # private image location
         "thumbs": base + "/img/t/",  # thumbnail location
-        "url": "sgfc.co"  # homeurl
+        "url": "sgfc.co",  # homeurl
+        "template_base": "/path/to/base_folder_for_independant_templates"
     },
     "database": {
         "user": "username",  # database user
