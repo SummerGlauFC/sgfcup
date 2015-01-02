@@ -6,6 +6,7 @@ base = "/path/to/base/folder"  # base folder
 
 Settings = {
     "ssl": True, # if to use https in urls or not
+    "use_nginx_sendfile": False, # use nginx xsendfile instead of static_file?
     "directories": {
         "files": base + "/img/p/",  # private image location
         "thumbs": base + "/img/t/",  # thumbnail location
