@@ -134,6 +134,9 @@ def api_upload_file(upload_type='file'):
                         "error": "This upload type does not exist or is not implemented as of yet."
                     }
 
+                if use_extensions:
+                    random_name = random_name + ext
+
                 if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
                     return json.dumps({
                         "success": True,

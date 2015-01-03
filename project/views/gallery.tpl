@@ -20,7 +20,7 @@
         <a href="{{ url_for_page(pagination.page + 1) }}" data-page="{{ page }}">&raquo;</a>
     {% endif %}
 {% endmacro %}
-{% macro write_ext(file) %}{% if show_ext %}{{ file.url }}.{{ file.ext }}{% else %}{{ file.url }}{% endif %}{% endmacro %}
+{% macro write_ext(file) %}{% if info.show_ext %}{{ file.url }}{{ file.ext }}{% else %}{{ file.url }}{% endif %}{% endmacro %}
 {% if not error %}
     {% if not info.pjax %}
         <!DOCTYPE html>
@@ -37,6 +37,10 @@
                     .highlight { background: yellow; }
                 </style>
                 <style>
+                    html,
+                    body {
+                        background: url("//sgfc.co/SAgXV") repeat scroll 0 0%, linear-gradient(to bottom, #485563 0%, #29323c 100%) repeat scroll 0 0 rgba(0, 0, 0, 0);
+                    }
                     .info
                     {
                         background: none repeat scroll 0 0 #FFFFFF;

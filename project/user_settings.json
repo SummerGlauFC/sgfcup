@@ -23,13 +23,23 @@
         "default": "",
         "notes": "This is only needed if \"Require password to view your gallery\" is set.<br />This password is for logging into the gallery, and does not change your key password."
     },
+    "gallery_style": {
+        "name": "Beta gallery",
+        "type": "radio",
+        "options": [
+            "Disabled",
+            "Enabled"
+        ],
+        "default": 0
+    },
     "groups": {
         "Image link settings": [
             "ext"
         ],
         "Gallery settings": [
             "block",
-            "gallery_password"
+            "gallery_password",
+            "gallery_style"
         ]
     }
 }

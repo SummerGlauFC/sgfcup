@@ -18,7 +18,6 @@ def gallery_redirect(user_key=None):
 
 @app.route('/gallery/', method="GET")
 @app.route('/gallery/<user_key>', method="GET")
-@view("gallery.tpl")
 def gallery_view(user_key=None):
     SESSION = request.environ.get('beaker.session')
 
@@ -28,6 +27,8 @@ def gallery_view(user_key=None):
         user_id = functions.get_userid(user_key)
         if user_id:
             settings = config.user_settings.get_all_values(user_id)
+
+            print settings
 
             if settings["block"]["value"] and settings["gallery_password"]["value"]:
                 auth_cookie = request.get_cookie("auth+%s" % user_id)
@@ -128,14 +129,17 @@ def gallery_view(user_key=None):
                             "files"] + row["shorturl"] + row["ext"]
 
                         image = functions.is_image(full_file_path)
-                        file_stats = os.stat(full_file_path)
+                        try:
+                            file_stats = os.stat(full_file_path)
+                            row_file["size"] = functions.sizeof_fmt(
+                                file_stats.st_size)
+                        except:
+                            pass
 
                         row_file["url"] = row["shorturl"]
                         row_file["ext"] = row["ext"]
                         row_file["original"] = row["original"]
                         row_file["hits"] = row["hits"]
-                        row_file["size"] = functions.sizeof_fmt(
-                            file_stats.st_size)
 
                         row_file["time"] = {
                             "epoch": row["date"].strftime('%s'),
@@ -150,7 +154,7 @@ def gallery_view(user_key=None):
 
                     files.append(row_file)
 
-            return {
+            return template("new_gallery.tpl" if settings["gallery_style"]["value"] else "gallery.tpl", {
                 "info": {
                     "key": user_key,
                     "id": user_id,
@@ -174,9 +178,9 @@ def gallery_view(user_key=None):
                 "error": error if error else False,
                 "types": config.file_type,
                 "hl": functools.partial(functions.hl, search=query)
-            }
+            })
         else:
-            return {"error": "Specified key does not exist."}
+            return template("gallery.tpl", {"error": "Specified key does not exist."})
 
 
 @app.route('/gallery/auth/<user_key:re:[a-zA-Z0-9_-]+>', method="GET")

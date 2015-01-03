@@ -42,15 +42,16 @@ def settings_process():
                     SESSION["key"] = confirm_key
                     SESSION["password"] = key_password
 
-                if change_password and key_password != change_password:
-                    config.db.execute("UPDATE `accounts` SET `password` = %s WHERE `key` = %s", [change_password, confirm_key])
+                if change_password:
+                    if key_password != change_password:
+                        config.db.execute("UPDATE `accounts` SET `password` = %s WHERE `key` = %s", [change_password, confirm_key])
 
-                    SESSION["id"] = account["id"]
-                    SESSION["key"] = confirm_key
-                    SESSION["password"] = change_password
-                else:
-                    message = "Password change ignored due to being the same as previous password."
-                    title = "Error"
+                        SESSION["id"] = account["id"]
+                        SESSION["key"] = confirm_key
+                        SESSION["password"] = change_password
+                    else:
+                        message = "Password change ignored due to being the same as previous password."
+                        title = "Error"
             else:
                 message = "Key or password is incorrect.",
                 title = "Error"
