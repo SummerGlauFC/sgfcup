@@ -25,253 +25,260 @@
     {% if not info.pjax %}
         <!DOCTYPE html>
         <html>
-            <head>
-                <link href="data:image/x-icon;base64,AAABAAEAEBAQAAAAAAAoAQAAFgAAACgAAAAQAAAAIAAAAAEABAAAAAAAgAAAAAAAAAAAAAAAEAAAAAAAAAAAAAAA//36AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAREREREQAAABERERERAAAAAAAAAAAAAAAAABEAAAAAAAABERAAAAAAABEREQAAAAABEREREAAAABERERERAAAAAAEREAAAAAAAAREQAAAAAAABERAAAAAAAAEREAAAAAAAAREQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA" rel="icon" type="image/x-icon" />
-                <!-- <link href='/static/css/style.css' rel='stylesheet' type='text/css'> -->
-                <meta name="viewport" content="width=device-width, maximum-scale=1">
-                <title>SGFC >> {{ info.key }}'{% if info.key[-1] != "s" %}s{% endif %} Gallery</title>
-                <script src="//ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
-                <script src="//browserstate.github.io/history.js/scripts/bundled/html4+html5/jquery.history.js"></script>
-                <style type="text/css">
-                    #error { padding: 20px; }
-                    .highlight { background: yellow; }
-                </style>
-                <style>
-                    /*  Authors     Craig Rozynski craigrozynski.com, dinosaurswithlaserz.com
-                                                Marco Lago marcolago.com
-                            Version     2.0 2011-07-15 */
 
-                    /* CSS Reset (customised) */
+        <head>
+            <link href="data:image/x-icon;base64,AAABAAEAEBAQAAAAAAAoAQAAFgAAACgAAAAQAAAAIAAAAAEABAAAAAAAgAAAAAAAAAAAAAAAEAAAAAAAAAAAAAAA//36AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAREREREQAAABERERERAAAAAAAAAAAAAAAAABEAAAAAAAABERAAAAAAABEREQAAAAABEREREAAAABERERERAAAAAAEREAAAAAAAAREQAAAAAAABERAAAAAAAAEREAAAAAAAAREQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA" rel="icon" type="image/x-icon" />
+            <!-- <link href='/static/css/style.css' rel='stylesheet' type='text/css'> -->
+            <meta name="viewport" content="width=device-width, maximum-scale=1">
+            <title>SGFC >> {{ info.key }}'{% if info.key[-1] != "s" %}s{% endif %} Gallery</title>
+            <script src="//ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
+            <script src="//browserstate.github.io/history.js/scripts/bundled/html4+html5/jquery.history.js"></script>
+            <style type="text/css">
+                /* CSS Reset (customised) */
+                html, body, div, span, h1, h2, h3, h4, h5, h6, p, em, img, small, strong {
+                margin: 0;
+                padding: 0;
+                border: 0;
+                font: inherit;
+                vertical-align: baseline;
+                }
+                body { display: block; }
+                html { overflow-y: scroll; }
+                a:hover, a:active { outline: none; }
+                small { font-size: 85%; }
+                strong, th { font-weight: bold; }
+                ::-moz-selection{ background: #3b7cbf; color: #fff; text-shadow: none; }
+                ::selection { background: #3b7cbf; color: #fff; text-shadow: none; }
+                a:link { -webkit-tap-highlight-color: #3b7cbf; }
+                .ie7 img { -ms-interpolation-mode: bicubic; }
+                h1, h2, h3, h4, h5, h6 { font-weight: bold; }
 
-                    html, body, div, span, h1, h2, h3, h4, h5, h6, p, em, img, small, strong {
-                        margin: 0;
-                        padding: 0;
-                        border: 0;
-                        font: inherit;
-                        vertical-align: baseline;
-                    }
-                    body { display: block; }
-                    html { overflow-y: scroll; }
-                    a:hover, a:active { outline: none; }
-                    small { font-size: 85%; }
-                    strong, th { font-weight: bold; }
-                    ::-moz-selection{ background: #3b7cbf; color: #fff; text-shadow: none; }
-                    ::selection { background: #3b7cbf; color: #fff; text-shadow: none; }
-                    a:link { -webkit-tap-highlight-color: #3b7cbf; }
-                    .ie7 img { -ms-interpolation-mode: bicubic; }
-                    h1, h2, h3, h4, h5, h6 { font-weight: bold; }
-
-                    /* Primary Styles */
-
+                body {
+                    background: url("//sgfc.co/SAgXV") repeat scroll 0 0%, linear-gradient(to bottom, rgba(239, 239, 239, 1) 0%, rgba(158, 158, 158, 1) 100%) repeat scroll 0 0 rgba(0, 0, 0, 0);
+                    color: #515047;
+                    font: 1em "HelveticaNeue-Light", "Helvetica Neue Light", "Helvetica Neue", sans-serif;
+                    margin: 0 auto;
+                    max-width: 1600px;
+                    overflow: hidden;
+                    padding: 10px;
+                }
+                .wrap {
+                    overflow: hidden;
+                }
+                .box {
+                    float: left;
+                    position: relative;
+                    width: 97%;
+                    margin: 0 3% 20px 0;
+                    padding-bottom: 97%;
+                }
+                .boxInner {
+                    position: absolute;
+                    left: 0;
+                    right: 0;
+                    top: 0;
+                    bottom: 0;
+                    overflow: hidden;
+                    background: #FFF
+                }
+                .boxInner img {
+                    width: 100%;
+                }
+                .boxInner .titleBox {
+                    position: absolute;
+                    bottom: 0;
+                    left: 0;
+                    right: 0;
+                    margin-bottom: 0px;
+                    background: #000;
+                    background: rgba(0, 0, 0, 0.8);
+                    color: #FFF;
+                    padding: 10px;
+                    text-align: center;
+                    -webkit-transition: all 0.3s ease-out;
+                    -moz-transition: all 0.3s ease-out;
+                    -o-transition: all 0.3s ease-out;
+                    transition: all 0.3s ease-out;
+                    z-index: 1;
+                }
+                .box.file .titleBox {
+                    height: 100%;
+                }
+                .box.file .titleBox h3 {
+                    padding-top: 20px;
+                }
+                body.no-touch .boxInner:hover .titleBox,
+                body.touch .boxInner.touchFocus .titleBox {
+                    margin-bottom: 0;
+                }
+                h1, h2, h3 { font-size: 3em; word-wrap: break-word; }
+                h1 {
+                    color: #515047;
+                    line-height: 0.8;
+                    letter-spacing: -0.05em;
+                    margin-bottom: 12px;
+                }
+                h2 {
+                    color: #d4d3c0;
+                    line-height: 0.9;
+                    letter-spacing: -0.05em;
+                }
+                h3 {
+                    color: #3b7cbf;
+                    line-height: 0.9;
+                    letter-spacing: -0.05em;
+                    padding-bottom: 10px;
+                }
+                small {
+                    font-size: 1em;
+                    color: #3b7cbf;
+                }
+                .boxInner {
+                    font-size: 1em;
+                    line-height: 1.15;
+                    color: #b9b8a4;
+                }
+                @media screen and (min-width:500px) {
+                    /* Tablet view: 2 tiles */
                     body {
-                        padding: 10px;
-                        font: 1em "HelveticaNeue-Light", "Helvetica Neue Light", "Helvetica Neue", sans-serif;
-                        color: #515047;
-                        background: url("//sgfc.co/SAgXV") repeat scroll 0 0%, linear-gradient(to bottom, rgba(239,239,239,1) 0%,rgba(158,158,158,1) 100%) repeat scroll 0 0 rgba(0, 0, 0, 0);
+                        padding: 40px;
                     }
-                    a:not(.pages), a:not(.pages):link, a:not(.pages):visited, a:not(.pages):active, .title, .category {
-                        float: left;
-                        width: 100%;
-                        height: auto;
-                        margin-bottom: 30px;
-                        text-decoration: none;
+                    .box {
+                        width: 47%;
+                        margin: 0 3% 20px 0;
+                        padding-bottom: 47%;
                     }
-                    h1, h2, h3 { font-size: 3em; word-wrap: break-word; }
-                    h1 {
-                        color: #515047;
-                        line-height: 0.8;
-                        letter-spacing: -0.05em;
-                    }
-                    h2 {
-                        color: #d4d3c0;
-                        line-height: 0.9;
-                        letter-spacing: -0.05em;
-                    }
-                    h3 {
-                        color: #3b7cbf;
-                        line-height: 0.9;
-                        letter-spacing: -0.05em;
-                    }
-                    p {
-                        font-size: 1.25em;
-                        line-height: 1.15;
-                        margin: 0.75em 0;
-                        color: #b9b8a4;
-                    }
-                    small {
-                        font-size: 1em;
-                        color: #3b7cbf;
-                    }
-                    img { max-width: 100%; }
+                }
+                @media screen and (min-width:800px) {
+                    /* Small desktop / ipad view: 3 tiles */
 
-                    a:not(.pages) {
-                        background: #fff;
+                    .box {
+                        width: 31%;
+                        margin: 0 2% 20px 0;
+                        padding-bottom: 31%;
                     }
+                }
+                @media screen and (min-width:1200px) {
+                    /* Medium desktop: 4 tiles */
 
-                    /* Media Queries */
+                    .box {
+                        width: 23%;
+                        margin: 20px 2% 0 0;
+                        padding-bottom: 23%;
+                    }
+                }
+                @media screen and (min-width:500px) {
+                    h2, h3 { font-size: 1.5em; }
+                    h1 { font-size: 2em; }
+                    .boxInner { line-height: 1.2; }
+                }
+                @media screen and (min-width:600px) {
+                    h2, h3 { font-size: 1.5em; }
+                    h1 { font-size: 2.5em; }
+                }
+                @media screen and (min-width:700px) {
+                    h1 { font-size: 3em; }
+                    h2, h3 { font-size: 2em; }
+                }
+                @media screen and (min-width:800px) {
+                    h2, h3 { font-size: 1.5em; }
+                    h1 { font-size: 2.5em; }
+                }
+                @media screen and (min-width:1000px) {
+                    h2, h3 { font-size: 2.25em; }
+                    h1 { font-size: 3.25em; }
+                }
+                @media screen and (min-width:1200px) {
+                }
+                @media screen and (min-width:1400px) {
+                }
+                @media screen and (min-width:1600px) {
+                    h2, h3 { font-size: 3em; }
+                    h1 { font-size: 4em; }
+                }
+                .hl {
+                    font-weight: bold;
+                    background-color: yellow;
+                }
+                .preview.paste {
+                    color: rgba(0, 0, 0, 0.5);
+                    height: 100%;
+                    overflow: hidden;
+                    position: absolute;
+                    top: 0;
+                    width: 100%;
+                    z-index: 0;
+                }
+                small {
+                    margin-top: 0.75em;
+                    display: block;
+                }
+                small a {
+                    background: none repeat scroll 0 0 #CCCCCC;
+                    border: 1px dashed #AAAAAA;
+                    display: inline-block;
+                    font-size: 16px!important;
+                    margin: 1px 1px 4px;
+                    padding: 5px;
+                    width: 20px;
+                }
+                .category {
+                    font-size: 1.25em;
+                    line-height: 1.2;
+                    padding-bottom: 1%;
+                }
+                .checkbawks {
+                    position: absolute;
+                    z-index: 4;
+                }
+            </style>
+        </head>
 
-                    /* Column Control Media Queries */
-
-                    @media screen and (min-width:500px) {
-                        body {
-                            max-width: 1600px;
-                            margin: 0 auto;
-                            padding: 40px;
-                            overflow: hidden;
-                        }
-                        a:not(.pages) {
-                            -webkit-transition: background-color .3s linear;
-                            -moz-transition: -color .3s linear;
-                            transition: background-color .3s linear;
-                        }
-                        a:not(.pages), a:not(.pages):link, a:not(.pages):visited, a:not(.pages):active, .title, .category {
-                            position: relative;
-                            top: 0;
-                            overflow: hidden;
-                        }
-                        div, h2 { position: absolute; }
-                    }
-
-                    /* Two Column */
-
-                    @media screen and (min-width:500px) {
-                        a:not(.pages), a:not(.pages):link, a:not(.pages):visited, a:not(.pages):hover, a:not(.pages):active, .title, .category {
-                            width: 47%;
-                            margin: 0 3% 20px 0;
-                            padding-bottom: 47%;
-                        }
-                    }
-
-                    /* Three Column */
-
-                    @media screen and (min-width:800px) {
-                        .title, .category, a:not(.pages), a:not(.pages):link, a:not(.pages):visited, a:not(.pages):hover, a:not(.pages):active {
-                            width: 31%;
-                            margin: 0 2% 20px 0;
-                            padding-bottom: 31%;
-                        }
-                    }
-
-                    /* Four Column */
-
-                    @media screen and (min-width:1200px) {
-                        .title, .category, a:not(.pages), a:not(.pages):link, a:not(.pages):visited, a:not(.pages):hover, a:not(.pages):active {
-                            width: 23%;
-                            margin: 20px 2% 0 0;
-                            padding-bottom: 23%;
-                        }
-                    }
-
-                    /* Font Size Control Media Queries */
-
-                    @media screen and (min-width:500px) {
-                        h1, h2, h3 { font-size: 2em; }
-                        p { font-size: 1em; line-height: 1.2; }
-                    }
-                    @media screen and (min-width:600px) {
-                        h1, h2, h3 { font-size: 2.5em; }
-                    }
-                    @media screen and (min-width:700px) {
-                        h1, h2, h3 { font-size: 3em; }
-                        p { font-size: 1.25em; }
-                    }
-                    @media screen and (min-width:800px) {
-                        h1, h2, h3 { font-size: 2.5em; }
-                        p { font-size: 1em; }
-                    }
-                    @media screen and (min-width:1000px) {
-                        h1, h2, h3 { font-size: 3.25em; }
-                        p { font-size: 1.25em; }
-                    }
-                    @media screen and (min-width:1200px) {
-                        p { font-size: 1em; }
-                    }
-                    @media screen and (min-width:1400px) {
-                        p { font-size: 1.25em; }
-                    }
-                    @media screen and (min-width:1600px) {
-                        h1, h2, h3 { font-size: 4em; }
-                    }
-                    small a {
-                        background: none repeat scroll 0 0 #CCCCCC;
-                        border: 1px dashed #AAAAAA;
-                        display: inline-block;
-                        font-size: 16px !important;
-                        margin: 1px 1px 4px;
-                        padding: 5px;
-                        width: 20px;
-                    }
-                    .category {
-                        padding-bottom: 1%;
-                    }
-                    .title > div {
-                        position: relative;
-                    }
-                    .info {
-                        background: rgba(0,0,0,0.8);
-                        color: #fff;
-                        width: 100%;
-                        z-index: 1;
-                    }
-                    a.file .info {
-                        padding-bottom: 100%;
-                    }
-                    .hl {
-                        font-weight: bold;
-                        background-color: yellow;
-                    }
-                    .preview.paste {
-                        position: absolute;
-                        z-index: 0;
-                        color: rgba(0, 0, 0, 0.5);
-                        bottom: 0;
-                    }
-                </style>
-            </head>
-
-            <body class="gallery">
+        <body class="no-touch">
+            <div class='loader' style="display:none;">
+                <img src="data:image/gif;base64,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" style="margin: 50px;" />
+            </div>
+            <div class="wrap">
     {% endif %}
                 <form class="sorty" action="" method="get">
-                    <div class="category">
+                    <div class="box category">
                         <h1>Gallery</h1>
-                        <p>
-                            <select name="sort" id="sort">
-                                {% for mode in info.sort.list %}
-                                    <option value="{{ loop.index0 }}" {% if loop.index0 == info.sort.current -%} selected {%- endif %}>
-                                        {{ mode[0] }}
-                                    </option>
-                                {% endfor %}
-                            </select>
-                            <input type="submit" value="Sort" />
-                            <span class="case" style="display: inline-block;">
-                                <input style="vertical-align: middle; margin-top: 3px;" type="checkbox" name="case" value="1" {% if info.search.case -%} checked {%- endif %} />Case-sensitive search
-                            </span>
-                            <input type="text" name="query" placeholder="search query" value="{{ info.search.query }}" />
-                                in
-                            <select name="in">
-                                {% for mode in info.search.modes %}
-                                    <option value="{{ loop.index0 }}" {% if loop.index0 == info.search.in -%} selected {%- endif %}>
-                                        {{ mode[0] }}
-                                    </option>
-                                {% endfor %}
-                            </select><br />
-                            <input type="submit" value="Search" />
-                        </p>
+                        <select name="sort" id="sort">
+                            {% for mode in info.sort.list %}
+                                <option value="{{ loop.index0 }}" {% if loop.index0 == info.sort.current -%} selected {%- endif %}>
+                                    {{ mode[0] }}
+                                </option>
+                            {% endfor %}
+                        </select>
+                        <input type="submit" value="Sort" />
+                        <span class="case" style="display: inline-block;">
+                            <input style="vertical-align: middle; margin-top: 3px;" type="checkbox" name="case" value="1" {% if info.search.case -%} checked {%- endif %} />Case-sensitive search
+                        </span>
+                        <input type="text" name="query" placeholder="search query" value="{{ info.search.query }}" />
+                            in
+                        <select name="in">
+                            {% for mode in info.search.modes %}
+                                <option value="{{ loop.index0 }}" {% if loop.index0 == info.search.in -%} selected {%- endif %}>
+                                    {{ mode[0] }}
+                                </option>
+                            {% endfor %}
+                        </select><br />
+                        <input type="submit" value="Search" />
+                        <br />
                         <small>{{ render_pagination(info.pages) }}</small>
                     </div>
                 </form>
                 <script>
                     var current_page = {{ info.pages.page }};
                 </script>
-                <div class='loader' style="display:none;">
-                    <img src="data:image/gif;base64,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" style="margin: 50px;" />
-                </div>
-                    <form action="/gallery/delete" method="post" class="main_form">
-                        <input type="hidden" name="key" value="{{ info.key }}" />
-                        {% for file in info.files %}
-                        <a href="{% if file.type == types.paste %}/paste/{{ file.url }}{% else %}/{{ write_ext(file) }}{% endif %}" class="title {{ types.keys()[types.values().index(file.type)] }}" style="{% if file.type == types.image %}background-image: url('/api/thumb/{{ file.url }}'); {% endif %}background-size: cover;">
-                            <div>
-                                <div class="info">
+                <form action="/gallery/delete" method="post" class="main_form">
+                    <input type="hidden" name="key" value="{{ info.key }}" />
+                    {% for file in info.files %}
+                    <div class="box title {{ types.keys()[types.values().index(file.type)] }}">
+                        <input type="checkbox" name="delete_this" value="{{ file.url }}" class="checkbawks" />
+                        <a href="{% if file.type == types.paste %}/paste/{{ file.url }}{% else %}/{{ write_ext(file) }}{% endif %}">
+                            <div class="boxInner" style="{% if file.type == types.image %}background-image: url('/api/thumb/{{ file.url }}'); {% endif %}background-size: cover;">
+                                <div class="titleBox">
                                     <h3>
                                         {% if file.type != types.paste %}
                                             {{ hl(file.original|truncate(20, True)) }}
@@ -286,66 +293,71 @@
                                     <span>Hits:</span> {{ file.hits }}
                                 </div>
                             </div>
-                            <div class="preview paste">
-                                {% if file.type == types.paste %}
+                            {%- if file.type == types.paste -%}
+                                <div class="preview paste">
                                     {{ file.content|truncate(1000, True) }}
-                                {% endif %}
-                            </div>
+                                </div>
+                            {%- endif -%}
                         </a>
-                        {% endfor %}
-                        <div class="category">
-                            <h1>pages</h1>
-                            <p>
-                                <small>{{ render_pagination(info.pages) }}</small>
-                            </p>
-                        </div>
-                    </form>
-                    <script>
-                         // $$(this).attr('href')
-                         var current_page;
-                         History.Adapter.bind(window,'statechange',function(){ // Note: We are using statechange instead of popstate
-                            // Log the State
-                            var State = History.getState(); // Note: We are using History.getState() instead of event.state
-                            History.log('statechange:', State.data, State.title, State.url);
-                            $('.main_form').fadeOut(100);
-                            $('.loader').fadeIn(100);
-                            $.ajax({
-                                url: State.url,
-                                beforeSend: function(jqXHR, settings) {
-                                    jqXHR.setRequestHeader('X-AJAX', 'true');
-                                },
-                                // You need to manually do the equivalent of "load" here
-                                success: function(result) {
-                                    $('.loader').hide();
-                                    $("body").html(result);
-                                }
-                            });
-                            current_page = State.data.state;
-                            console.log(current_page);
-                        });
-
-                        $(document).ready(function() {
-                            $(document).on('click','small a',function(e){
-                                e.preventDefault();
-                                console.log('prevented click' + e);
-                                if($(this).attr('data-page') !== undefined) {
-                                    console.log($(this).attr('data-page') + ' != ' + current_page);
-
-                                    a_this = $(this)
-
-                                    if($(this).attr('data-page') != current_page) {
-                                        History.pushState({state:$(this).attr('data-page')}, $(document).attr('title'), $(this).attr('href')); // logs {state:1}, "State 1", "?state=1"
-                                    }
-                                }
-                            })
-                        });
-
-                        // $$(document).pjax('#pages a', '#main')
-                    </script>
+                    </div>
+                    {% endfor %}
+                    <div class="box">
+                        <h1>pages</h1>
+                        <small>{{ render_pagination(info.pages) }}</small>
+                        <br /><br />
+                        <h1>delete</h1>
+                        <input type="password" value="" name="password" placeholder="key password" /> <input type="submit" value="Delete" />
+                    </div>
+                </form>
     {% if not info.pjax %}
-            </body>
-        </html>
-    {% endif %}
+            </div>
+            <script>
+                 // $$(this).attr('href')
+                 var current_page;
+                 History.Adapter.bind(window,'statechange',function(){ // Note: We are using statechange instead of popstate
+                    // Log the State
+                    var State = History.getState(); // Note: We are using History.getState() instead of event.state
+                    History.log('statechange:', State.data, State.title, State.url);
+                    $('.wrap').fadeTo(0, 100);
+                    $('.loader').fadeIn(100);
+                    $.ajax({
+                        url: State.url,
+                        beforeSend: function(jqXHR, settings) {
+                            jqXHR.setRequestHeader('X-AJAX', 'true');
+                        },
+                        // You need to manually do the equivalent of "load" here
+                        success: function(result) {
+                            $('.loader').hide();
+                            console.log(result);
+                            $(".wrap").html(result);
+                            $('.wrap').fadeTo(1, 100);
+                        }
+                    });
+                    current_page = State.data.state;
+                    console.log(current_page);
+                });
+
+                $(document).ready(function() {
+                    $(document).on('click','small a',function(e){
+                        e.preventDefault();
+                        console.log('prevented click' + e);
+                        if($(this).attr('data-page') !== undefined) {
+                            console.log($(this).attr('data-page') + ' != ' + current_page);
+
+                            a_this = $(this)
+
+                            if($(this).attr('data-page') != current_page) {
+                                History.pushState({state:$(this).attr('data-page')}, $(document).attr('title'), $(this).attr('href')); // logs {state:1}, "State 1", "?state=1"
+                            }
+                        }
+                    })
+                });
+
+                // $$(document).pjax('#pages a', '#main')
+            </script>
+        </body>
+    </html>
+{% endif %}
 {% else %}
     <!DOCTYPE HTML>
     <html>

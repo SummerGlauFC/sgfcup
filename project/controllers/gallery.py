@@ -49,7 +49,8 @@ def gallery_view(user_key=None):
                 "sort": 0,
                 "in": 0,
                 "page": 1,
-                "case": 0
+                "case": 0,
+                "beta": 0
             }
 
             def url_for_page(page):
@@ -153,6 +154,9 @@ def gallery_view(user_key=None):
                             row_file["type"] = 1
 
                     files.append(row_file)
+
+            if request.query.get('beta', False):
+                settings["gallery_style"]["value"] = 1
 
             return template("new_gallery.tpl" if settings["gallery_style"]["value"] else "gallery.tpl", {
                 "info": {

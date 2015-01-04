@@ -21,7 +21,7 @@ def api_thumb(url, ext=None):
             if ext and ('.' + ext != results["ext"]):
                 abort(404, 'File not found.')
             else:
-                size = 200, 200
+                size = 400, 400
                 base = Image.open(
                     config.Settings['directories']['files'] + results["shorturl"] + results["ext"])
                 image_info = base.info
