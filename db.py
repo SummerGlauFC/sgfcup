@@ -54,7 +54,6 @@ class DB(object):
 
     def execute(self, sql, args=None):
         ''' execute the SQL statement and return the cursor '''
-        print sql, args
         try:
             self.cur.execute(
                 sql, args) if args is not None else self.cur.execute(sql)

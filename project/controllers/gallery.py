@@ -28,8 +28,6 @@ def gallery_view(user_key=None):
         if user_id:
             settings = config.user_settings.get_all_values(user_id)
 
-            print settings
-
             if settings["block"]["value"] and settings["gallery_password"]["value"]:
                 auth_cookie = request.get_cookie("auth+%s" % user_id)
                 if not auth_cookie:
