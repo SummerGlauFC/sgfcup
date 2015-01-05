@@ -39,7 +39,7 @@
                 <style>
                     html,
                     body {
-                        background: url("//sgfc.co/SAgXV") repeat scroll 0 0%, linear-gradient(to bottom, #485563 0%, #29323c 100%) repeat scroll 0 0 rgba(0, 0, 0, 0);
+                        background: url("//sgfc.co/SAgXV") repeat fixed 0 0%, linear-gradient(to bottom, #485563 0%, #29323c 100%) repeat fixed 0 0 rgba(0, 0, 0, 0);
                     }
                     .info
                     {
