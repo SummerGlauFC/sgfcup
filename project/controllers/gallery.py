@@ -50,7 +50,7 @@ def gallery_view(user_key=None):
                 "in": 0,
                 "page": 1,
                 "case": 0,
-                "beta": 0
+                "beta": settings["gallery_style"]["value"]
             }
 
             def url_for_page(page):
@@ -70,6 +70,7 @@ def gallery_view(user_key=None):
 
             page = int(request.query.get('page', defaults['page']))
             case = int(request.query.get('case', defaults['case']))
+            style = int(request.query.get('beta', defaults['beta']))
             query_in = functions.get_inrange(
                 request.query.get('in'), defaults['in'], len(config.searchmodes))
             query = request.query.get('query', '')
@@ -155,10 +156,7 @@ def gallery_view(user_key=None):
 
                     files.append(row_file)
 
-            if request.query.get('beta', False):
-                settings["gallery_style"]["value"] = 1
-
-            return template("new_gallery.tpl" if settings["gallery_style"]["value"] else "gallery.tpl", {
+            return template("new_gallery.tpl" if style else "gallery.tpl", {
                 "info": {
                     "key": user_key,
                     "id": user_id,
