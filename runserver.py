@@ -14,7 +14,7 @@ session_opts = {
 }
 app = SessionMiddleware(app, session_opts)
 
-debug(True)
+debug(False)
 if __name__ == '__main__':
     try:
         port = int(sys.argv[1])
