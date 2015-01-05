@@ -132,7 +132,7 @@
                                         {% elif file.type == types.paste %}
                                             <a title="{{ file.name }}" href="/paste/{{ file.url }}" style="height: 200px; position: absolute; width: 200px;">
                                                 <span class="paste">
-                                                    {{ file.content|truncate(1000, True) }}
+                                                    {{ file.content|truncate(1000, True)|e }}
                                                 </span>
                                                 <img width="100%" height="100%" src="data:image/gif;base64,R0lGODlhAQABAID/AMDAwAAAACH5BAEAAAAALAAAAAABAAEAAAICRAEAOw==" style="opacity: 0;position: relative;top: -203px;">
                                         {% endif %}
@@ -141,9 +141,9 @@
                                                 <input type="checkbox" name="delete_this" value="{{ file.url }}" class="checkbawks" />
                                                 {% if file.type == types.file %}File:{% elif file.type == types.paste %}Paste:{%  endif %}
                                                 {% if file.type != types.paste %}
-                                                    <a title="{{ file.url }}" href="/{{ write_ext(file) }}">{{ hl(file.original) }}</a>
+                                                    <a title="{{ file.url }}" href="/{{ write_ext(file) }}">{{ hl(file.original|e) }}</a>
                                                 {% else %}
-                                                    <a title="{{ file.url }}" href="/paste/{{ file.url }}">{{ hl(file.name) }} {% if file.name != file.url %}({{ file.url }}){% endif %}</a>
+                                                    <a title="{{ file.url }}" href="/paste/{{ file.url }}">{{ hl(file.name|e) }} {% if file.name != file.url %}({{ file.url }}){% endif %}</a>
                                                 {% endif %}
                                                 <br />
                                             </span>

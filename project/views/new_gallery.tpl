@@ -281,9 +281,9 @@
                                 <div class="titleBox">
                                     <h3>
                                         {% if file.type != types.paste %}
-                                            {{ hl(file.original|truncate(20, True)) }}
+                                            {{ hl(file.original|truncate(20, True)|e) }}
                                         {% else %}
-                                            {{ hl(file.name) }}{% if file.name != file.url %} ({{ file.url }}){% endif %}
+                                            {{ hl(file.name|e) }}{% if file.name != file.url %} ({{ file.url }}){% endif %}
                                         {% endif %}
                                     </h3>
                                     <span>Size:</span> {% if file.type == types.image %}{{ file.size }} ({{ file.resolution[0] }}x{{ file.resolution[1] }}){% elif file.type == types.paste %}{{ file.size }} lines{% else %}{{ file.size }}{% endif %}
@@ -295,7 +295,7 @@
                             </div>
                             {%- if file.type == types.paste -%}
                                 <div class="preview paste">
-                                    {{ file.content|truncate(1000, True) }}
+                                    {{ file.content|truncate(1000, True)|e }}
                                 </div>
                             {%- endif -%}
                         </a>
