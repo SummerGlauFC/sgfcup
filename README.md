@@ -11,6 +11,8 @@ Dependencies
 * pygments
 * jsonmerge
 * bjoern
+* bottle-beaker 
+* beaker
 
 Dependencies can be installed via:
 
