@@ -15,7 +15,7 @@ def api_thumb(url, ext=None):
                            root=config.Settings['directories']['thumbs'])
     else:
         results = config.db.fetchone(
-            'SELECT * FROM `files` WHERE `shorturl` = %s', [url])
+            'SELECT * FROM `files` WHERE BINARY `shorturl` = %s', [url])
 
         if results:
             if ext and ('.' + ext != results["ext"]):
@@ -40,7 +40,7 @@ def api_thumb(url, ext=None):
 @app.route('/<url>.<ext>')
 def image_view(url, ext=None):
     results = config.db.fetchone(
-        'SELECT * FROM `files` WHERE `shorturl` = %s', [url])
+        'SELECT * FROM `files` WHERE BINARY `shorturl` = %s', [url])
 
     if results:
         if ext and ('.' + ext != results["ext"]):
@@ -73,7 +73,7 @@ def image_view(url, ext=None):
 @app.route('/paste/<url>/<flag>')
 def paste_view(url, flag=None):
     results = config.db.fetchone(
-        'SELECT * FROM `files` WHERE `shorturl` = %s', [url])
+        'SELECT * FROM `files` WHERE BINARY `shorturl` = %s', [url])
 
     if results:
         paste_row = config.db.fetchone(
