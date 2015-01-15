@@ -74,7 +74,7 @@
                                         </ul>
                                     {% else %}
                                         <span class="rightcol">
-                                            <input class="textbox" type="{{ value.type }}" name="{{ key }}" value="{{ value.value }}" />
+                                            <input class="textbox" type="{{ value.type }}" name="{{ item }}" value="{{ value.value }}" />
                                             {% if value.notes %}
                                                 <p>{{ value.notes }}</p>
                                             {% endif %}

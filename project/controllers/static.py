@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-from project import app, functions
+from project import app, functions, config
 from bottle import static_file, request
 from bottle import jinja2_view as view, jinja2_template as template
 
@@ -30,11 +30,14 @@ def paste_home():
 def keys():
     SESSION = request.environ.get('beaker.session')
 
+    settings = config.user_settings.get_all_values(SESSION.get('id', 0))
+
     return template(
         'general',
         title='Keys',
         message='Key: ' + SESSION.get('key', 'Not set.') +
-        '<br />Password: ' + SESSION.get('password', 'Not set.'),
+        '<br />Password: ' + SESSION.get('password', 'Not set.') +
+        '<br />Gallery view password: ' + settings["gallery_password"]["value"]
     )
 
 
