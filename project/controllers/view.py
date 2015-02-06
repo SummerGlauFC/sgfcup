@@ -82,7 +82,7 @@ def paste_view(url, flag=None):
         config.db.execute(
             'UPDATE `files` SET hits=hits+1 WHERE `id`=%s', [results["id"]])
 
-        if flag == "raw":
+        if "raw" in flag:
             response.content_type = 'text/plain; charset=utf-8'
             return paste_row["content"]
         else:
