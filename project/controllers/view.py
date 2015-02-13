@@ -86,9 +86,8 @@ def paste_view(url, flag=None, ext=None):
             'SELECT * FROM `revisions` WHERE `pasteid` = %s AND `fork` = 0',
             [paste_row["id"]])
 
-        if flag != "edit":
-            config.db.execute(
-                'UPDATE `files` SET hits=hits+1 WHERE `id`=%s', [results["id"]])
+        config.db.execute(
+            'UPDATE `files` SET hits=hits+1 WHERE `id`=%s', [results["id"]])
 
         is_owner = (paste_row["userid"] == SESSION.get("id", 0))
 
