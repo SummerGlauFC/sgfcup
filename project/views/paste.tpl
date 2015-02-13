@@ -36,28 +36,28 @@
                 {{ title }}
             </header>
             <div id="main">
-                <div class="boardlist">[ Characters: {{ length }} / Lines: {{ lines }} / Hits: {{ hits }} / Language: {{ lang }} ]
+                <div class="boardlist">[ Characters: {{ length }} | Lines: {{ lines }} | Hits: {{ hits }} | Language: {{ lang }} ]
                 <br />
                 [ Revisions:
                     {% if revisions -%}
                         {% for _revision in revisions[-5:]|reverse %}
                             <!-- {{ _revision.commit }}, {{ revision.commit }}-->
-                            {% if _revision.commit != revision.commit %}<a href="/paste/{{ url }}/{{ _revision.commit }}">{% endif %}
+                            {% if _revision.commit != revision.commit %}<a href="/paste/{{ url }}.{{ _revision.commit }}">{% endif %}
                                 {{ _revision.commit }}
                                 {% if _revision.commit != revision.commit %}</a>{% endif %}
                             {% if not loop.last -%}
                                 /
                             {% else %}
-                                / <a href="/paste/{{ url }}">base</a>
+                                / {% if revision.commit %}<a href="/paste/{{ url }}">{% endif %}base{% if revision.commit %}</a>{% endif %}
                             {%- endif %}
                         {% endfor %}
                     {% else -%}
-                    None.
+                    base
                     {%- endif %}
-                {% if revision.parent != revision.pasteid %}/ Parent: <a href="/paste/{{ revision.parent_url }}">{{ revision.parent_url }}</a>{% endif %} ]</div>
+                {% if revision.parent != revision.pasteid %}| Parent: <a href="/paste/{{ revision.parent_url }}">{{ revision.parent_url }}</a>{% endif %} ]</div>
                 {% if not edit %}
                     <div class="boardlist" style="float:right;">[
-                            <a href="/paste/{{ url }}/raw">View raw paste</a> /
+                            <a href="/paste/{{ url }}{% if revision.commit %}.{{ revision.commit }}{% endif %}/raw">View raw paste</a> |
                             <a href="/paste/{{ url }}/edit">{%- if is_owner %}Edit{% else %}Fork{% endif %} paste</a>
                      ]</div>
                     {% if revision.message %}

@@ -242,7 +242,7 @@
     {% endif %}
                 <form class="sorty" action="" method="get">
                     <div class="box category">
-                        <h1>Gallery</h1>
+                        <h1><a href="/">Gallery</a></h1>
                         <select name="sort" id="sort">
                             {% for mode in info.sort.list %}
                                 <option value="{{ loop.index0 }}" {% if loop.index0 == info.sort.current -%} selected {%- endif %}>

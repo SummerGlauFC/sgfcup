@@ -76,7 +76,7 @@
             <body class="gallery">
                 <div id="container">
                     <header>
-                        Gallery
+                        <a href="/">Gallery</a>
                     </header>
                     <div id="main">
     {% endif %}

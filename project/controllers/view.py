@@ -75,6 +75,13 @@ def image_view(url, ext=None):
 def paste_view(url, flag=None, ext=None):
     SESSION = request.environ.get('beaker.session')
 
+    if '.' in url:
+        url = url.split('.')
+        commit = url[-1]
+        url = url[0]
+    else:
+        commit = False
+
     results = config.db.fetchone(
         'SELECT * FROM `files` WHERE BINARY `shorturl` = %s', [url])
 
@@ -91,14 +98,17 @@ def paste_view(url, flag=None, ext=None):
 
         is_owner = (paste_row["userid"] == SESSION.get("id", 0))
 
-        if flag == "raw":
-            response.content_type = 'text/plain; charset=utf-8'
-            return paste_row["content"]
-        else:
+        if commit:
             revisions_row = config.db.fetchone(
                 'SELECT * FROM `revisions` WHERE `commit`=%s',
-                [flag])
+                [commit])
+        else:
+            revisions_row = None
 
+        if flag == "raw":
+            response.content_type = 'text/plain; charset=utf-8'
+            return revisions_row["paste"] if commit else paste_row["content"]
+        else:
             revision = {}
 
             if paste_row["name"]:
