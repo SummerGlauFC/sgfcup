@@ -47,6 +47,8 @@
                                 {% if _revision.commit != revision.commit %}</a>{% endif %}
                             {% if not loop.last -%}
                                 /
+                            {% else %}
+                                / <a href="/paste/{{ url }}">base</a>
                             {%- endif %}
                         {% endfor %}
                     {% else -%}
