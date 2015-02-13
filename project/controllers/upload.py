@@ -207,6 +207,8 @@ def api_edit_paste():
         try:
             revision_row = config.db.fetchone(
                 'SELECT * FROM `revisions` WHERE `commit`=%s', [commit])
+        except:
+            revision_row = False
 
         is_fork = True if not user_row else (
             user_row["id"] != paste_row["userid"])
