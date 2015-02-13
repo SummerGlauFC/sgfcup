@@ -73,6 +73,8 @@ def image_view(url, ext=None):
 @app.route('/paste/<url>/<flag>')
 @app.route('/paste/<url>/<flag>.<ext>')
 def paste_view(url, flag=None, ext=None):
+    SESSION = request.environ.get('beaker.session')
+
     results = config.db.fetchone(
         'SELECT * FROM `files` WHERE BINARY `shorturl` = %s', [url])
 
@@ -80,17 +82,39 @@ def paste_view(url, flag=None, ext=None):
         paste_row = config.db.fetchone(
             'SELECT * FROM `pastes` WHERE `id` = %s', [results["original"]])
 
-        config.db.execute(
-            'UPDATE `files` SET hits=hits+1 WHERE `id`=%s', [results["id"]])
+        revisions_rows = config.db.fetchall(
+            'SELECT * FROM `revisions` WHERE `pasteid` = %s AND `fork` = 0',
+            [paste_row["id"]])
+
+        if flag != "edit":
+            config.db.execute(
+                'UPDATE `files` SET hits=hits+1 WHERE `id`=%s', [results["id"]])
+
+        is_owner = (paste_row["userid"] == SESSION.get("id", 0))
 
         if flag == "raw":
             response.content_type = 'text/plain; charset=utf-8'
             return paste_row["content"]
         else:
+            revisions_row = config.db.fetchone(
+                'SELECT * FROM `revisions` WHERE `commit`=%s',
+                [flag])
+
+            revision = {}
+
             if paste_row["name"]:
                 title = 'Paste "%s" (%s)' % (paste_row["name"], url)
             else:
                 title = 'Paste %s' % url
+
+            if revisions_row:
+                paste_row["content"] = revisions_row["paste"]
+                revision = revisions_row
+
+                revision["parent_url"] = config.db.fetchone(
+                    'SELECT * FROM `pastes` WHERE `id` = %s', [revision["parent"]])["shorturl"]
+
+                title += " (revision %s)" % revision["commit"]
 
             lang = paste_row['lang']
             content = functions.highlight(paste_row["content"], lang)
@@ -99,8 +123,20 @@ def paste_view(url, flag=None, ext=None):
             hits = results["hits"]
             css = functions.css()
 
+            if SESSION.get('id'):
+                key = SESSION.get('key')
+                password = SESSION.get('password')
+            else:
+                key = functions.id_generator(15)
+                password = functions.id_generator(15)
+
+            edit = (flag == "edit")
+
             return template('paste', title=title, content=content, css=css,
                             url=url, lang=lang, length=length,
-                            hits=hits, lines=lines)
+                            hits=hits, lines=lines, edit=edit,
+                            raw_paste=paste_row["content"], is_owner=is_owner,
+                            key=key, password=password, id=paste_row["id"],
+                            revisions=revisions_rows, revision=revision)
     else:
         abort(404, 'File not found.')
