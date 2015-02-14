@@ -188,22 +188,21 @@ def api_edit_paste():
     is_authed = True
     revision_row = False
 
-    if not is_public:
-        user = config.db.fetchone(
-            'SELECT * FROM `accounts` WHERE `key`=%s', [form["key"]])
+    user_row = config.db.fetchone(
+        'SELECT * FROM `accounts` WHERE `key`=%s', [form["key"]])
 
-        if user:
-            is_authed = (user["password"] == form["password"])
-            user_id = user["id"]
+    if not is_public:
+        if user_row:
+            is_authed = (user_row["password"] == form["password"])
+            user_id = user_row["id"]
         else:
             new_account = config.db.insert(
                 'accounts', {"key": form["key"], "password": form["password"]})
             user_id = new_account.lastrowid
 
-    if is_authed:
-        user_row = config.db.fetchone(
-            'SELECT * FROM `accounts` WHERE `key`=%s', [form["key"]])
+            user_row = {"id": user_id}
 
+    if is_authed:
         try:
             revision_row = config.db.fetchone(
                 'SELECT * FROM `revisions` WHERE `commit`=%s', [commit])
@@ -249,7 +248,7 @@ def api_edit_paste():
                 return json.dumps({
                     "success": True,
                     "error": False,
-                    "url": '/paste/' + paste_row["shorturl"] + '/' + commit if not is_fork else '/paste/%s' % random_name,
+                    "url": '/paste/' + paste_row["shorturl"] + '.' + commit if not is_fork else '/paste/%s' % random_name,
                     "key": 'anon' if is_public else form["key"],
                     "base": config.Settings["directories"]["url"]
                 })

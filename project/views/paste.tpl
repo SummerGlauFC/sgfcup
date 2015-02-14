@@ -37,35 +37,43 @@
             </header>
             <div id="main">
                 <div class="boardlist">[ Characters: {{ length }} | Lines: {{ lines }} | Hits: {{ hits }} | Language: {{ lang }} ]
-                <br />
-                [ Revisions:
+                <br />[ Revisions:
                     {% if revisions -%}
-                        {% for _revision in revisions[-5:]|reverse %}
-                            <!-- {{ _revision.commit }}, {{ revision.commit }}-->
-                            {% if _revision.commit != revision.commit %}<a href="/paste/{{ url }}.{{ _revision.commit }}">{% endif %}
+                        {%- for _revision in revisions[-5:]|reverse -%}
+                            {%- if _revision.commit != revision.commit -%}<a href="/paste/{{ url }}.{{ _revision.commit }}">{%- endif %}
                                 {{ _revision.commit }}
-                                {% if _revision.commit != revision.commit %}</a>{% endif %}
-                            {% if not loop.last -%}
+                                {% if _revision.commit != revision.commit -%}</a>{%- endif -%}
+                            {%- if not loop.last %}
                                 /
-                            {% else %}
+                            {% else -%}
                                 / {% if revision.commit %}<a href="/paste/{{ url }}">{% endif %}base{% if revision.commit %}</a>{% endif %}
-                            {%- endif %}
-                        {% endfor %}
-                    {% else -%}
+                            {%- endif -%}
+                        {%- endfor -%}
+                    {%- else -%}
                     base
-                    {%- endif %}
+                    {%- endif -%}
                 {% if revision.parent != revision.pasteid %}| Parent: <a href="/paste/{{ revision.parent_url }}">{{ revision.parent_url }}</a>{% endif %} ]</div>
                 {% if not edit %}
-                    <div class="boardlist" style="float:right;">[
+                    <div class="boardlist" style="float: right; text-align: right;">[
                             <a href="/paste/{{ url }}{% if revision.commit %}.{{ revision.commit }}{% endif %}/raw">View raw paste</a> |
-                            <a href="/paste/{{ url }}/edit">{%- if is_owner %}Edit{% else %}Fork{% endif %} paste</a>
-                     ]</div>
+                            <a href="/paste/{{ url }}{% if revision.commit %}.{{ revision.commit }}{% endif %}/edit">{%- if is_owner %}Edit{% else %}Fork{% endif %} paste</a>
+                     ]
+                     {% if revision.commit %}
+                     <br />
+                     [ View: {% if flag != "diff" %}<a href="/paste/{{ url }}.{{ revision.commit }}/diff">{% endif %}Diff{% if flag != "diff" %}</a>{% endif %} / {% if flag == "diff" %}<a href="/paste/{{ url }}.{{ revision.commit }}">{% endif %}Normal{% if flag == "diff" %}</a>{% endif %} ]
+                     {% endif %}
+                    </div>
                     {% if revision.message %}
                         <h2 style="text-align:center">Message: {{ revision.message|e }}</h2>
                     {% endif %}
-                    <div class="allcode">
+                    <!-- {{_commit}} {{ flag }} -->
+                    {% if use_wrapper %}
+                        <div class="allcode">
+                            {{ content }}
+                        </div>
+                    {% else %}
                         {{ content }}
-                    </div>
+                    {% endif %}
                 {% else %}
                     <form action="/api/edit/paste" method="POST">
                         <div class="allcode">

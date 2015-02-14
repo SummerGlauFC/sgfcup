@@ -11,13 +11,14 @@ Dependencies
 * pygments
 * jsonmerge
 * bjoern
-* bottle-beaker 
+* bottle-beaker
 * beaker
+* ghdiff
 
 Dependencies can be installed via:
 
-    pip install git+https://github.com/bottlepy/bottle.git jinja2 python-magic pillow pygments jsonmerge bjoern
-    
+    pip install git+https://github.com/bottlepy/bottle.git jinja2 python-magic pillow pygments jsonmerge bjoern bottle-beaker beaker ghdiff
+
 Please edit `project/config.example.py`, and rename it to `config.py`,
 then run `database.sql` on the database you've put in `config.py`.
 
@@ -34,7 +35,7 @@ The program is run like so:
 Notes
 -----
 The app also has the ability to serve a file through [nginx's XSendfile](http://wiki.nginx.org/XSendfile). To use this, nginx must have a location block for `/get_image/`, like so:
-    
+
     location /get_image/ {
         internal;
         alias /path/to/project/img/p/; # note the trailing slash
@@ -50,9 +51,9 @@ LICENSE
     Everyone is permitted to copy and distribute verbatim or modified
     copies of this license document, and changing it is allowed as long
     as the name is changed.
-    
-                DO WHAT THE FUCK YOU WANT TO PUBLIC LICENSE 
-        TERMS AND CONDITIONS FOR COPYING, DISTRIBUTION AND MODIFICATION 
+
+                DO WHAT THE FUCK YOU WANT TO PUBLIC LICENSE
+        TERMS AND CONDITIONS FOR COPYING, DISTRIBUTION AND MODIFICATION
 
     0. You just DO WHAT THE FUCK YOU WANT TO.
 

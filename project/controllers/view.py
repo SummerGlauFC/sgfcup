@@ -5,6 +5,7 @@ from bottle import jinja2_view as view, jinja2_template as template
 import os
 from PIL import Image, ImageOps
 import magic
+import ghdiff
 
 
 @app.route('/api/thumb/<url>')
@@ -105,6 +106,24 @@ def paste_view(url, flag=None, ext=None):
         else:
             revisions_row = None
 
+        commits = ['base']
+
+        for row in revisions_rows:
+            commits.append(row["commit"])
+
+        if commit in commits:
+            current_commit = commits.index(commit)
+            current_commit = commits[
+                current_commit - 1 if current_commit - 1 >= 0 else 0]
+        else:
+            current_commit = commits[0]
+
+        if current_commit == "base" and commit == "" and flag == "diff":
+            flag = ""
+
+        def previous_commit():
+            return config.db.fetchone('SELECT * FROM `revisions` WHERE `commit`=%s', [current_commit])["paste"] if current_commit != 'base' else config.db.fetchone('SELECT * FROM `pastes` WHERE `id`=%s', [paste_row["id"]])["content"]
+
         if flag == "raw":
             response.content_type = 'text/plain; charset=utf-8'
             return revisions_row["paste"] if commit else paste_row["content"]
@@ -116,8 +135,18 @@ def paste_view(url, flag=None, ext=None):
             else:
                 title = 'Paste %s' % url
 
+            lang = paste_row['lang']
+
             if revisions_row:
-                paste_row["content"] = revisions_row["paste"]
+                if flag == "diff":
+                    prev_commit = previous_commit()
+
+                    paste_row["content"] = ghdiff.diff(
+                        prev_commit, revisions_row["paste"])
+                    lang = "diff"
+                else:
+                    paste_row["content"] = revisions_row["paste"]
+
                 revision = revisions_row
 
                 revision["parent_url"] = config.db.fetchone(
@@ -125,10 +154,17 @@ def paste_view(url, flag=None, ext=None):
 
                 title += " (revision %s)" % revision["commit"]
 
-            lang = paste_row['lang']
-            content = functions.highlight(paste_row["content"], lang)
+            use_wrapper = False if flag == "diff" and commit in commits else True
+
+            if not use_wrapper:
+                content = paste_row["content"]
+            else:
+                content = functions.highlight(
+                    paste_row["content"], lang)
+
             length = len(paste_row["content"])
             lines = len(paste_row["content"].split('\n'))
+
             hits = results["hits"]
             css = functions.css()
 
@@ -146,6 +182,8 @@ def paste_view(url, flag=None, ext=None):
                             hits=hits, lines=lines, edit=edit,
                             raw_paste=paste_row["content"], is_owner=is_owner,
                             key=key, password=password, id=paste_row["id"],
-                            revisions=revisions_rows, revision=revision)
+                            revisions=revisions_rows, revision=revision,
+                            flag=flag, _commit=commit, commits=commits,
+                            use_wrapper=use_wrapper)
     else:
         abort(404, 'File not found.')
