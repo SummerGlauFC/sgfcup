@@ -4,13 +4,14 @@ from db import DB
 from pprint import pprint
 import cPickle as pickle
 
+
 class PickleSettings(object):
 
-    ''' A class to handle the use of JSON for user settings. '''
+    ''' A class to handle the use of Pickle for user settings. '''
 
     def __init__(self, json_file, db_instance):
         ''' expects to be called as such:
-            test = JSONSettings("user_settings.json", db)
+            settings = PickleSettings("user_settings.json", db)
             where "user_settings.json" is the filename of the base config
             and db is an instance of db.DB '''
 
@@ -28,15 +29,14 @@ class PickleSettings(object):
 
         if current_config:
             if current_config["json"] != "0":
-                #merged_json = json.dumps(merge(
-                #    json.loads(current_config["json"]), json.loads(new_json)))
-
-                merged_json = merge(pickle.loads(current_config["json"]), new_json)
+                merged_json = merge(
+                    pickle.loads(current_config["json"]), new_json)
 
                 self.db.execute(
                     "UPDATE `settings` SET `json`=%s WHERE `userid`=%s", (pickle.dumps(merged_json, -1), user_id))
         else:
-            self.db.insert("settings", {"userid": user_id, "json": pickle.dumps(new_json, -1)})
+            self.db.insert(
+                "settings", {"userid": user_id, "json": pickle.dumps(new_json, -1)})
 
     def changeValues(self, values):
         ''' returns a dict which contains the users new value for an option '''
@@ -78,7 +78,7 @@ class PickleSettings(object):
     def set(self, user_id, items):
         ''' sets multiple values at once (avoids multiple sql selects)
             expects to be called as such:
-                set(user_id, items)
+                instance.set(user_id, items)
             where user_id is the id of a user from the `accounts` table
             and items is a dictionary of key: value
                 like: {"ext": 0, "gallery_password": "test"} '''
@@ -90,6 +90,9 @@ class PickleSettings(object):
                 current_config)
 
     def get_all_values(self, user_id):
+        ''' returns all values from a users config, including defaults
+            just a version of get for every key instead.
+        '''
         jsoned = self._get(user_id)
         for key in jsoned:
             if "value" not in jsoned[key] and "default" in jsoned[key]:

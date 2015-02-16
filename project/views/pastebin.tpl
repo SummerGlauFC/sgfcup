@@ -4,7 +4,7 @@
 <head>
     <title>SGFC | Pastebin</title>
     <link href="/favicon.ico" rel="icon" type="image/x-icon" />
-    <link href="/static/css/normalize.css" rel="stylesheet">
+    <link href="//cdnjs.cloudflare.com/ajax/libs/normalize/3.0.2/normalize.min.css" rel="stylesheet">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     {% include "main.css" %}
     <style type="text/css">
@@ -130,16 +130,16 @@
     </script>
     <script>
         $('#clear-fields').on('click', function () {
-            $('#key').get(0).setAttribute('value', ''); //this works
-            $('#password').get(0).setAttribute('value', ''); //this works
+            $('#key').get(0).setAttribute('value', '');
+            $('#password').get(0).setAttribute('value', '');
         });
         $("form").submit(function () {
-            var url = "/api/upload/paste"; // the script where you handle the form input.
+            var url = "/api/upload/paste";
             $("textarea").hide();
             $.ajax({
                 type: "POST",
                 url: url,
-                data: $("form").serialize(), // serializes the form's elements.
+                data: $("form").serialize(),
                 success: function (data) {
                     if (data.success) {
                         $("#message").html('<a href="' + data.url + '">' + data.base + data.url + '</a>');
@@ -149,7 +149,7 @@
                     $("#message").fadeIn(250);
                 }
             });
-            return false; // avoid to execute the actual submit of the form.
+            return false;
         });
     </script>
 </body>

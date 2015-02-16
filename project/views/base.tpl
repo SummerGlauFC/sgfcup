@@ -4,7 +4,7 @@
 <head>
     <title>SGFC | {% block title %}{% endblock %}</title>
     <link href="/favicon.ico" rel="icon" type="image/x-icon" />
-    <link href="/static/css/normalize.css" rel="stylesheet">
+    <link href="//cdnjs.cloudflare.com/ajax/libs/normalize/3.0.2/normalize.min.css" rel="stylesheet">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     {% include "main.css" %}
     <style>{% block css %}{% endblock %}</style>
@@ -35,6 +35,7 @@
                         </table>
                     </div>
                 </div>
+                <div id="previews" class="dropzone-previews"></div>
             </td>
         </tr>
     </table>

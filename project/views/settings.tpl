@@ -6,6 +6,7 @@
     <title>SGFC >> Settings</title>
     <link rel="icon" type="image/ico" href="/favicon.ico" />
     <link href='/static/css/style.css' rel='stylesheet' type='text/css'>
+    <link href='/static/css/settings.css' rel='stylesheet' type='text/css'>
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <style type="text/css">
         html,
@@ -91,8 +92,6 @@
             </td>
         </tr>
     </table>
-    <script src="//ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js" type="text/javascript"></script>
-    <!--<script src="http://summerglaufc.org/js/script.js"></script>-->
 </body>
 
 </html>

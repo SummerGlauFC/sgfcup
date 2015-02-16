@@ -21,14 +21,20 @@ def gallery_redirect(user_key=None):
 def gallery_view(user_key=None):
     SESSION = request.environ.get('beaker.session')
 
+    # If a user does not provide a gallery to view, redirect to their own.
     if not user_key:
         redirect('/redirect/gallery/%s' % SESSION.get('key', ''))
     else:
+        # User provided a key, get the ID that corresponds to that key.
         user_id = functions.get_userid(user_key)
         if user_id:
+            # Check the users settings to see if they have specified
+            # to have gallery access restricted.
             settings = config.user_settings.get_all_values(user_id)
 
             if settings["block"]["value"] and settings["gallery_password"]["value"]:
+                # Check the authentication cookie to see if viewer is
+                # permitted to view this gallery.
                 auth_cookie = request.get_cookie("auth+%s" % user_id)
                 if not auth_cookie:
                     redirect('/gallery/auth/' + user_key)
@@ -39,10 +45,10 @@ def gallery_view(user_key=None):
                     if not hex_pass == auth_cookie:
                         redirect('/gallery/auth/' + user_key)
 
-            files = []
-            error = ''
-            page_error = False
+            files = []  # list to store all files that pertain to this gallery
+            error = ''  # simple error string, should be good enough.
 
+            # Default values for gallery options like sort mode and searches.
             defaults = {
                 "sort": 0,
                 "in": 0,
@@ -51,6 +57,8 @@ def gallery_view(user_key=None):
                 "beta": settings["gallery_style"]["value"]
             }
 
+            # This function generates a url for a given page number,
+            # including all GET queries and whatnot
             def url_for_page(page):
                 get_query = request.query
                 path = request.urlparts.path
@@ -66,6 +74,7 @@ def gallery_view(user_key=None):
 
                 return path + '?' + urllib.urlencode(new_query)
 
+            # shorthand assignments for oftenly used data
             page = int(request.query.get('page', defaults['page']))
             case = int(request.query.get('case', defaults['case']))
             style = int(request.query.get('beta', defaults['beta']))
@@ -75,8 +84,16 @@ def gallery_view(user_key=None):
             current_sort = functions.get_inrange(
                 request.query.get('sort'), defaults['sort'], len(config.sortmodes))
 
+            # Start organising the SQL search ability
+            # maybe this should be rewritten into a reusable class?
+            # NOTE: this might be hard as it depends a lot on the structure
+            #       i've already established in this project
             sql_search = ''
+            # Ensure case-sensitive searching with a binary conversion
             collate = ' COLLATE utf8_bin ' if case else ' '
+
+            # oh my god building SQL like this is disgusting but
+            # i don't have the effort to make it better
             if query:
                 sql_search = '`%s`%sLIKE %%s AND' % (
                     config.searchmodes[query_in][1], collate)
@@ -93,6 +110,7 @@ def gallery_view(user_key=None):
             total_entries = config.db.fetchone(
                 'SELECT COUNT(`userid`) AS total FROM `files` WHERE ' + (sql_search if query else '') + '`userid` = %s', format_list)['total']
 
+            # generate pages with a useful pagination class
             pagination = functions.Pagination(page, 30, total_entries)
 
             results = config.db.fetchall(
@@ -104,10 +122,13 @@ def gallery_view(user_key=None):
                 else:
                     error += "This page does not exist. "
 
+            # there are results, and also no errors at this time
+            # so lets continue
             if results and error == '':
                 for row in results:
                     row_file = {}
 
+                    # Start building file information
                     if row["ext"] == "paste":
                         paste_row = config.db.fetchone(
                             'SELECT * FROM `pastes` WHERE `id` = %s', [row["original"]])
@@ -180,16 +201,19 @@ def gallery_view(user_key=None):
                 "hl": functools.partial(functions.hl, search=query)
             })
         else:
+            # The key the user specified doesn't exist, "raise" an error.
             return template("gallery.tpl", {"error": "Specified key does not exist."})
 
 
 @app.route('/gallery/auth/<user_key:re:[a-zA-Z0-9_-]+>', method="GET")
 def gallery_auth_view(user_key):
+    # Return the authentication page
     return template('gallery_auth.tpl')
 
 
 @app.route('/gallery/auth/<user_key:re:[a-zA-Z0-9_-]+>', method="POST")
 def gallery_auth_do(user_key):
+    # Set a long cookie to grant a user access to a gallery
     max_age = (3600 * 24 * 7 * 30 *
                12) if int(request.forms.get('remember', 0)) else None
     authcode = request.forms.get('authcode')
@@ -206,6 +230,8 @@ def gallery_delete():
 
     messages = []
 
+    # Get the information for a user and check basics like
+    # if the password is correct or if they've even provided files to delete.
     userid = functions.get_userid(key, return_row=True)
     if userid["password"] != password:
         return template('general.tpl',
@@ -219,6 +245,7 @@ def gallery_delete():
 
     file_rows = {}
     for row in keys_uploads:
+        # Build a list of file uploads that belong to a user
         file_rows[row["shorturl"]] = row
 
     for short_url in files_to_delete:
@@ -233,6 +260,8 @@ def gallery_delete():
             delete_query = config.db.execute(
                 "DELETE FROM `files` WHERE `shorturl` = %s", [short_url])
 
+            # Special treatment for pastes as they don't physically exist
+            # as files
             if is_paste:
                 config.db.execute(
                     'DELETE FROM `pastes` WHERE `id` = %s', [file_row["original"]])
@@ -245,6 +274,7 @@ def gallery_delete():
                 except OSError:
                     messages.append('Could not delete %s' % short_url)
 
+    # Optimize the tables after delete operations
     config.db.execute('OPTIMIZE TABLE `files`')
     config.db.execute('OPTIMIZE TABLE `pastes`')
 

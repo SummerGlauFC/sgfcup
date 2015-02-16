@@ -9,8 +9,6 @@ import magic
 import json
 import hashlib
 
-# this file is responsible for handling the upload of files, and also pastes.
-
 
 @app.route('/api/upload', method='POST')
 @app.route('/api/upload/<upload_type>', method='POST')

@@ -28,7 +28,6 @@
 
         <head>
             <link href="data:image/x-icon;base64,AAABAAEAEBAQAAAAAAAoAQAAFgAAACgAAAAQAAAAIAAAAAEABAAAAAAAgAAAAAAAAAAAAAAAEAAAAAAAAAAAAAAA//36AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAREREREQAAABERERERAAAAAAAAAAAAAAAAABEAAAAAAAABERAAAAAAABEREQAAAAABEREREAAAABERERERAAAAAAEREAAAAAAAAREQAAAAAAABERAAAAAAAAEREAAAAAAAAREQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA" rel="icon" type="image/x-icon" />
-            <!-- <link href='/static/css/style.css' rel='stylesheet' type='text/css'> -->
             <meta name="viewport" content="width=device-width, maximum-scale=1">
             <title>SGFC >> {{ info.key }}'{% if info.key[-1] != "s" %}s{% endif %} Gallery</title>
             <script src="//ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
@@ -312,11 +311,9 @@
     {% if not info.pjax %}
             </div>
             <script>
-                 // $$(this).attr('href')
                  var current_page;
-                 History.Adapter.bind(window,'statechange',function(){ // Note: We are using statechange instead of popstate
-                    // Log the State
-                    var State = History.getState(); // Note: We are using History.getState() instead of event.state
+                 History.Adapter.bind(window,'statechange',function(){
+                    var State = History.getState();
                     History.log('statechange:', State.data, State.title, State.url);
                     $('.wrap').fadeTo(0, 100);
                     $('.loader').fadeIn(100);
@@ -325,7 +322,6 @@
                         beforeSend: function(jqXHR, settings) {
                             jqXHR.setRequestHeader('X-AJAX', 'true');
                         },
-                        // You need to manually do the equivalent of "load" here
                         success: function(result) {
                             $('.loader').hide();
                             console.log(result);
@@ -347,13 +343,11 @@
                             a_this = $(this)
 
                             if($(this).attr('data-page') != current_page) {
-                                History.pushState({state:$(this).attr('data-page')}, $(document).attr('title'), $(this).attr('href')); // logs {state:1}, "State 1", "?state=1"
+                                History.pushState({state:$(this).attr('data-page')}, $(document).attr('title'), $(this).attr('href'));
                             }
                         }
                     })
                 });
-
-                // $$(document).pjax('#pages a', '#main')
             </script>
         </body>
     </html>

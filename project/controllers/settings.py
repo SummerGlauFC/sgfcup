@@ -7,8 +7,10 @@ from bottle import jinja2_view as view, jinja2_template as template
 def settings_view():
     SESSION = request.environ.get('beaker.session')
 
+    # Get the current settings for a user and fill in the settings page
     settings = config.user_settings.get_all_values(SESSION.get("id", 0))
-    return template("settings.tpl", settings=settings, key=SESSION.get("key"), password=SESSION.get("password"))
+    return template("settings.tpl", settings=settings,
+                    key=SESSION.get("key"), password=SESSION.get("password"))
 
 
 @app.route('/settings', method='POST')
@@ -23,6 +25,7 @@ def settings_process():
     message = ''
     title = ''
 
+    # Make sure the user as entered their info for comfirmation
     if not confirm_key or not confirm_password:
         return {
             "message": "You didn't enter your key or password for confirmation.",
@@ -32,6 +35,8 @@ def settings_process():
         account = config.db.fetchone(
             "SELECT * FROM `accounts` WHERE `key` = %s", [confirm_key])
 
+        # Check if the users provided details are right, and
+        # execute any password changes
         if account:
             key_password = account["password"]
             key_id = account["id"]
@@ -44,7 +49,9 @@ def settings_process():
 
                 if change_password:
                     if key_password != change_password:
-                        config.db.execute("UPDATE `accounts` SET `password` = %s WHERE `key` = %s", [change_password, confirm_key])
+                        config.db.execute(
+                            "UPDATE `accounts` SET `password` = %s WHERE `key` = %s",
+                            [change_password, confirm_key])
 
                         SESSION["id"] = account["id"]
                         SESSION["key"] = confirm_key
@@ -56,7 +63,11 @@ def settings_process():
                 message = "Key or password is incorrect.",
                 title = "Error"
 
+            # Convert form strings to integers as HTTP likes to not
+            # distinguish them.
             new_forms = functions.strs_to_ints(request.forms)
+
+            # Use the PickleSettings class in order to update/set settings
             config.user_settings.set(SESSION["id"], new_forms)
         else:
             message = "Account does not exist.",

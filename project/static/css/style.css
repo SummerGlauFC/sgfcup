@@ -1,721 +1,184 @@
 /* Base CSS */
 
-    *::-moz-selection { background: none repeat scroll 0 0 #FE57A1;    color: #FFFFFF;    text-shadow: none;}
-
-    html, body {
-        width: 100% !important;
-        height: 100% !important;
-        margin:0 !important;
-        padding:0 !important;
-        border:0 !important;
-    }
-
-    #maintb {
-        width:100%;
-        height:100%;
-    }
-
-    .index #maintb, .general #maintb, .pastebin #maintb, .settings #maintb {
-        width: 900px;
-        margin: 0 auto;
-
-    }
-
-    #maintd {
-        vertical-align:middle;
-    }
-
-
-    body {
-        background: url("http://sgfc.co/EHGdM") repeat scroll 0 0 #000000;
-        font-family: Arial, sans-serif;
-        font-size: 14px;
-    }
-
-    p, h2 {
-        padding: 3px 7px;
-    }
-    .rules {
-        color: black;
-        display: block;
-        font-family: arial !important;
-    }
-    .rules ul, .rules ul li {
-        text-align: left !important;
-        font-size: 14px;
-        font-weight: 400;
-    }
-    p {
-        font-size: 12px;
-        margin-bottom: 12px;
-    }
-    .submit {
-        text-align: center
-    }
-    a:link, a:visited {
-        color: #34345C;
-        text-decoration: none;
-    }
-    label {
-        display: inline-block;
-        text-align: right;
-        width: auto;
-    }
-    label {
-        padding: 0 0 0 2px;
-        text-align: center;
-        width: 36px;
-    }
-    #identification label {
-        width: 76px;
-    }
-    #identification {margin-top: 10px;}
-    #identification br { margin-bottom: 5px; }
-
-    #filess, #url { display:inline-block; }
-    .unimportant { text-align: center; font-size: 10px; }
-
-    #container {
-        color: #EEEEEE;
-        text-align: center;
-        /*text-shadow: 0 -1px 0 rgba(0, 0, 0, 0.3), 0 1px 0 rgba(255, 255, 255, 0.4);*/
-        width: 900px;
-    }
-
-    header {
-        color: #EEEEEE;
-        font-family: 'Open Sans', 'Helvetica Neue', Segoe UI, Helvetica, Arial,sans-serif;
-        font-size: 3.5em;
-        letter-spacing: 0;
-        margin-bottom: 10px;
-        /*text-shadow: 0 -1px 0 rgba(0, 0, 0, 0.3), 0 1px 0 rgba(255, 255, 255, 0.4);*/
-        text-align: center !important;
-    }
-
-    #main {
-        background: none repeat scroll 0 0 #EEEEEE;
-        border: 1px solid #999999;
-        box-shadow: 0 1px 5px 0 rgba(0, 0, 0, 0.4) inset;
-        color: #222233;
-        font-size: 13px;
-        margin: 0 auto;
-        padding: 20px 9px;
-        text-align: center;
-        /*text-shadow: 0 -1px 0 rgba(0, 0, 0, 0.15), 0 1px 0 rgba(255, 255, 255, 0.8);*/
-        transition: all 215ms linear 0s;
-        width: 40%;
-    }
-
-    body.general #main {
-        text-align: left;
-    }
-
-    .rules {
-        background: none repeat scroll 0 0 #EEEEEE;
-        box-shadow: 0 1px 5px 0 rgba(0, 0, 0, 0.4) inset;
-        color: #000000;
-        font-size: 13px;
-        margin: 10px auto 0;
-        padding: 10px;
-        text-align: center;
-        /*text-shadow: 0 -1px 0 rgba(0, 0, 0, 0.15), 0 1px 0 rgba(255, 255, 255, 0.8);*/
-        width: 40%;
-    }
-
-    header div {
-        background: none repeat scroll 0 0 #EEEEEE;
-        box-shadow: 0 1px 5px 0 rgba(0, 0, 0, 0.4) inset;
-        color: #000000;
-        font-size: 13px;
-        margin: 20px auto 0;
-        padding: 14px 10px;
-        text-align: center;
-        /*text-shadow: 0 -1px 0 rgba(0, 0, 0, 0.15), 0 1px 0 rgba(255, 255, 255, 0.8);*/
-        width: 40%;
-        font-weight: 400;
-    }
-
-
-/* paste */
-
-    body.paste #container {
-        color: #EEEEEE;
-        text-align: center;
-        /*text-shadow: 0 -1px 0 rgba(0, 0, 0, 0.3), 0 1px 0 rgba(255, 255, 255, 0.4);*/
-        width: 98%;
-        margin: 20px auto;
-    }
-
-    body.paste header {
-        color: #EEEEEE;
-        font-family: 'Open Sans', 'Helvetica Neue', Segoe UI, Helvetica, Arial,sans-serif;
-        font-size: 2.5em;
-        letter-spacing: 0;
-        margin-bottom: 10px;
-        /*text-shadow: 0 -1px 0 rgba(0, 0, 0, 0.3), 0 1px 0 rgba(255, 255, 255, 0.4);*/
-    }
-
-    body.paste #main {
-        background: none repeat scroll 0 0 #EEEEEE;
-        border: 1px solid #999999;
-        box-shadow: 0 1px 5px 0 rgba(0, 0, 0, 0.4) inset;
-        color: #222233;
-        font-size: 13px;
-        margin: 0 auto;
-        padding: 20px 10px;
-        text-align: left;
-        /*text-shadow: 0 -1px 0 rgba(0, 0, 0, 0.15), 0 1px 0 rgba(255, 255, 255, 0.8);*/
-        transition: all 215ms linear 0s;
-        width: 90%;
-    }
-
-    body.paste .rules {
-        background: none repeat scroll 0 0 #EEEEEE;
-        box-shadow: 0 1px 5px 0 rgba(0, 0, 0, 0.4) inset;
-        color: #000000;
-        font-size: 13px;
-        margin: 10px auto 0;
-        padding: 10px;
-        text-align: center;
-        /*text-shadow: 0 -1px 0 rgba(0, 0, 0, 0.15), 0 1px 0 rgba(255, 255, 255, 0.8);*/
-        width: 90%;
-    }
-
-    body.paste header div {
-        background: none repeat scroll 0 0 #EEEEEE;
-        box-shadow: 0 1px 5px 0 rgba(0, 0, 0, 0.4) inset;
-        color: #000000;
-        font-size: 13px;
-        margin: 20px auto 0;
-        padding: 14px 11px;
-        text-align: center;
-        /*text-shadow: 0 -1px 0 rgba(0, 0, 0, 0.15), 0 1px 0 rgba(255, 255, 255, 0.8);*/
-        width: 90%;
-        font-weight: 400;
-    }
-
-    body.paste .linenos { border-right: 1px solid black; padding-right: 10px; text-align: right; width: 14px; }
-    body.paste .code { padding-left: 5px }
-    body.paste .allcode { overflow: auto; width: 100%; text-shadow: none; font-family: 'InconsolataMedium',Consolas,"Liberation Mono",Courier,monospace; font-size: 13px; }
-    body.paste pre { font-family: 'InconsolataMedium',Consolas,Monaco,"Liberation Mono",Courier,monospace; }
-    body.paste .filename {
-        background: none repeat scroll 0 0 #DDDDDD;
-        font-family: Arial;
-        font-size: 16px;
-        margin: 0;
-        padding: 7px 9px;
-    }
-
-    body.paste div.boardlist {
-        color: #000;
-        font-size: 9pt;
-        margin-top: 3px;
-        margin-bottom: 10px;
-        padding: 3px 3px 3px 10px;
-        display: inline-block;
-    }
-
-    body.paste a:link, body.paste a:visited {
-        color: #34345C;
-        text-decoration: none;
-    }
-    body.paste div.boardlist a:link:hover, body.paste div.boardlist a:visited:hover {
-        color: #FF0000;
-    }
-
-    body.pastebin label {
-        display: inline-block;
-        text-align: right;
-        width: auto;
-    }
-    body.pastebin label {
-        padding: 0 0 0 2px;
-        text-align: center;
-        width: 70px;
-    }
-    body.pastebin #identification label {
-        width: 76px;
-    }
-    body.pastebin #filess, body.pastebin #url { display:block; }
-    body.pastebin #identification {margin-top: 10px;}
-    body.pastebin #identification br { margin-bottom: 5px; }
-
-    body.pastebin #container {
-        color: #EEEEEE;
-        text-align: center;
-        /*text-shadow: 0 -1px 0 rgba(0, 0, 0, 0.3), 0 1px 0 rgba(255, 255, 255, 0.4);*/
-        width: 900px;
-    }
-
-    body.pastebin header {
-        color: #EEEEEE;
-        font-family: 'Open Sans', 'Helvetica Neue', Segoe UI, Helvetica, Arial,sans-serif;
-        font-size: 3.5em;
-        letter-spacing: 0;
-        margin-bottom: 10px;
-        /*text-shadow: 0 -1px 0 rgba(0, 0, 0, 0.3), 0 1px 0 rgba(255, 255, 255, 0.4);*/
-    }
-
-    body.pastebin #main {
-        background: none repeat scroll 0 0 #EEEEEE;
-        border: 1px solid #999999;
-        box-shadow: 0 1px 5px 0 rgba(0, 0, 0, 0.4) inset;
-        color: #222233;
-        font-size: 13px;
-        margin: 0 auto;
-        padding: 20px 10px;
-        text-align: center;
-        /*text-shadow: 0 -1px 0 rgba(0, 0, 0, 0.15), 0 1px 0 rgba(255, 255, 255, 0.8);*/
-        transition: all 215ms linear 0s;
-        width: 90%;
-    }
-
-    body.pastebin .rules {
-        background: none repeat scroll 0 0 #EEEEEE;
-        box-shadow: 0 1px 5px 0 rgba(0, 0, 0, 0.4) inset;
-        color: #000000;
-        font-size: 13px;
-        margin: 10px auto 0;
-        padding: 10px;
-        text-align: center;
-        /*text-shadow: 0 -1px 0 rgba(0, 0, 0, 0.15), 0 1px 0 rgba(255, 255, 255, 0.8);*/
-        width: 90%;
-    }
-
-    body.pastebin header div {
-        background: none repeat scroll 0 0 #EEEEEE;
-        box-shadow: 0 1px 5px 0 rgba(0, 0, 0, 0.4) inset;
-        color: #000000;
-        font-size: 13px;
-        margin: 20px auto 0;
-        padding: 14px 11px;
-        text-align: center;
-        /*text-shadow: 0 -1px 0 rgba(0, 0, 0, 0.15), 0 1px 0 rgba(255, 255, 255, 0.8);*/
-        width: 90%;
-        font-weight: 400;
-    }
-
-    body.pastebin textarea {
-        background: none repeat scroll 0 0 rgba(255, 255, 255, 0.9);
-        border: 1px solid #DDDDDD;
-        border-radius: 5px 5px 5px 5px;
-        font-family: 'InconsolataMedium',Consolas, Monaco, "Liberation Mono",Courier,monospace;
-        font-size: 14px;
-        padding: 5px;
-        width: 95%;
-    }
-
-/* settings */
-
-    body.settings label {
-        display: inline-block;
-        text-align: right;
-        width: auto;
-    }
-    body.settings label {
-        padding: 4.5px 5px 4.5px 15px;
-        text-align: left;
-        width: 165px;
-        float: left;
-        display: block;
-    }
-
-    body.settings #container {
-        color: #EEEEEE;
-        text-align: center;
-        /*text-shadow: 0 -1px 0 rgba(0, 0, 0, 0.3), 0 1px 0 rgba(255, 255, 255, 0.4);*/
-        width: 900px;
-    }
-
-    body.settings header {
-        color: #EEEEEE;
-        font-family: 'Open Sans', 'Helvetica Neue', Segoe UI, Helvetica, Arial,sans-serif;
-        font-size: 2.5em;
-        letter-spacing: 0;
-        margin-bottom: 10px;
-        /*text-shadow: 0 -1px 0 rgba(0, 0, 0, 0.3), 0 1px 0 rgba(255, 255, 255, 0.4);*/
-    }
-
-    body.settings header div {
-        background: none repeat scroll 0 0 #EEEEEE;
-        box-shadow: 0 1px 5px 0 rgba(0, 0, 0, 0.4) inset;
-        color: #000000;
-        font-size: 13px;
-        margin: 20px auto 0;
-        padding: 14px 10px;
-        text-align: center;
-        /*text-shadow: 0 -1px 0 rgba(0, 0, 0, 0.15), 0 1px 0 rgba(255, 255, 255, 0.8);*/
-        width: 70%;
-        font-weight: 400;
-    }
-
-    body.settings #main {
-        background: none repeat scroll 0 0 #EEEEEE;
-        border: 1px solid #999999;
-        box-shadow: 0 1px 5px 0 rgba(0, 0, 0, 0.4) inset;
-        color: #222233;
-        font-size: 13px;
-        margin: 0 auto;
-        padding: 20px 10px;
-        text-align: left;
-        /*text-shadow: 0 -1px 0 rgba(0, 0, 0, 0.15), 0 1px 0 rgba(255, 255, 255, 0.8);*/
-        transition: all 215ms linear 0s;
-        width: 70%;
-    }
-
-    body.settings form p {
-        font-size: 9px;
-        color: #777777;
-        padding: 0 0 0 10px;
-    }
-
-    body.settings .textbox, body.settings select {
-        width: 248px;
-    }
-    body.settings input.textbox {
-        height: 25px;
-        margin-bottom: 5px;
-    }
-    body.settings input, body.settings select, body.settings textarea {
-        -moz-box-sizing: border-box;
-    }
-    body.settings .textbox, body.settings textarea, body.settings select {
-        background: none repeat scroll 0 0 #FFFFFF;
-        border: 1px solid #888888;
-        outline: 0 none;
-        padding: 4px 5px;
-    }
-    body.settings input, body.settings textarea, body.settings select, body.settings button {
-        font: 11px Tahoma,Calibri,Verdana,Geneva,sans-serif;
-    }
-
-    body.settings .button {
-        background: url("http://sgfc.co/EKBzf") repeat-x scroll left top #E9E9E9;
-        border: 1px solid #A8A8A8;
-        color: #424242;
-        cursor: pointer;
-        font: bold 11px Tahoma,Calibri,Verdana,Geneva,sans-serif;
-        margin-left: 5px;
-        padding: 4px 5px;
-        border-radius: 0 0 0 0;
-        float: none;
-        display: inline-block;
-    }
-
-    body.settings h2 {
-        font-weight: bold;
-        background: none repeat-x scroll 0 0 #CCCCCC;
-        border-top: 1px solid #CECECE;
-        color: #3E3E3E;
-        padding: 4px 10px;
-        margin-bottom: 10px;
-        font-size: 11pt;
-    }
-
-    body.settings option {
-        font-family: inherit;
-        font-size: inherit;
-        font-style: inherit;
-        font-weight: inherit;
-    }
-
-    body.settings select {
-        margin: 0 0 5px -4px;
-    }
-
-    body.settings form .rightcol {
-        display: block;
-        float: none;
-        margin-left: 175px;
-        max-width: 496px;
-        margin-top: 0px;
-        margin-bottom: 0;
-    }
-
-    body.settings ul {
-        margin-left: 145px !important;
-    }
-
-    body.settings ul label {
-        width: auto;
-        float: none;
-        display: inline;
-    }
-
-    body.settings li {
-        list-style: none outside none;
-    }
-
-/* gallery */
-
-    body.gallery #container {
-        color: #EEEEEE;
-        text-align: center;
-        /*text-shadow: 0 -1px 0 rgba(0, 0, 0, 0.3), 0 1px 0 rgba(255, 255, 255, 0.4);*/
-        width: 100%;
-        margin: 20px 0 0;
-    }
-
-    body.gallery header {
-        color: #EEEEEE;
-        font-family: 'Open Sans', 'Helvetica Neue', Segoe UI, Helvetica, Arial,sans-serif;
-        font-size: 2.5em;
-        letter-spacing: 0;
-        margin-bottom: 10px;
-        /*text-shadow: 0 -1px 0 rgba(0, 0, 0, 0.3), 0 1px 0 rgba(255, 255, 255, 0.4);*/
-    }
-
-    body.gallery #main {
-        background: none repeat scroll 0 0 #EEEEEE;
-        border: 0px solid #999999;
-        box-shadow: 0 1px 5px 0 rgba(0, 0, 0, 0.4) inset;
-        color: #222233;
-        font-size: 16px;
-        margin: 0 auto;
-        padding: 0;
-        text-align: center;
-        /*text-shadow: 0 -1px 0 rgba(0, 0, 0, 0.15), 0 1px 0 rgba(255, 255, 255, 0.4);*/
-        transition: all 215ms linear 0s;
-        width: 100%;
-    }
-
-    body.gallery .rules {
-        background: none repeat scroll 0 0 #EEEEEE;
-        box-shadow: 0 1px 5px 0 rgba(0, 0, 0, 0.4) inset;
-        color: #000000;
-        font-size: 13px;
-        margin: 10px auto 0;
-        padding: 10px;
-        text-align: center;
-        /*text-shadow: 0 -1px 0 rgba(0, 0, 0, 0.15), 0 1px 0 rgba(255, 255, 255, 0.8);*/
-        width: 90%;
-    }
-
-    body.gallery header div {
-        background: none repeat scroll 0 0 #EEEEEE;
-        box-shadow: 0 1px 5px 0 rgba(0, 0, 0, 0.4) inset;
-        color: #000000;
-        font-size: 13px;
-        margin: 20px auto 0;
-        padding: 14px 11px;
-        text-align: center;
-        /*text-shadow: 0 -1px 0 rgba(0, 0, 0, 0.15), 0 1px 0 rgba(255, 255, 255, 0.8);*/
-        width: 90%;
-        font-weight: 400;
-    }
-
-    body.gallery .left {
-        text-align: left;
-    }
-
-    body.gallery .sorty div {
-        color: rgba(0, 0, 0, 0.5);
-        display: block;
-        font-size: 0.8em;
-        margin-top: 3px;
-    }
-
-    body.gallery a {
-        font-weight: 400;
-        text-decoration: none;
-    }
-
-
-    body.gallery .sorty div a {
-        text-decoration: underline !important;
-    }
-
-
-    body.gallery h2 {
-        background: none repeat scroll 0 0 #DDDDDD;
-        font-family: Arial;
-        font-size: 16px;
-        margin: 0 0 0;
-        padding: 7px 9px;
-        text-align: center;
-    }
-
-    body.gallery .group {
-        padding: 10px 0;
-        background: #FFFFFF;
-    }
-
-    body.gallery .pages {
-        font-weight: 400 !important;
-    }
-
-    body.gallery .pages.bottom {
-        border-top: 1px solid rgba(0, 0, 0, 0.3);
-    }
-
-    body.gallery .debug.top {
-        font-size: 16px;
-        font-weight: 400;
-        border-bottom: 1px solid rgba(0, 0, 0, 0.3);
-    }
-
-    body.gallery .debug {
-        margin: 0;
-        font-size: 9pt;
-        border-top: 1px solid rgba(0, 0, 0, 0.3);
-    }
-
-    body.gallery p {
-        font-size: 12px;
-        margin-bottom: 12px;
-    }
-    body.gallery .submit {
-        text-align: center
-    }
-
-    body.gallery .wrapper
-    {
-        display: inline-block;
-        height: 200px;
-        margin-bottom: 40px;
-        margin-left: 5px;
-        width: 200px;
-    }
-
-    body.gallery .img
-    {
-        background-color: #FFFFFF;
-        background-position: center center;
-        background-size: cover;
-        height: 200px;
-        width: 200px;
-        -webkit-box-shadow: inset 0 0 1px rgba(0,0,0,.8), inset 0 2px 0 rgba(255,255,255,.5), inset 0 -1px 0 rgba(0,0,0,.4);
-        -moz-box-shadow: inset 0 0 1px rgba(0,0,0,.8), inset 0 2px 0 rgba(255,255,255,.5), inset 0 -1px 0 rgba(0,0,0,.4);
-        box-shadow: inset 0 0 1px rgba(0,0,0,.8), inset 0 2px 0 rgba(255,255,255,.5), inset 0 -1px 0 rgba(0,0,0,.4);
-        z-index: 2;
-    }
-
-    body.gallery img {    border: 0 none }
-
-    .clearfix:after {
-         visibility: hidden;
-         display: block;
-         font-size: 0;
-         line-height: 0;
-         content: " ";
-         clear: both;
-         height: 0;
-         width: 0;
-         }
-    .clearfix { display: inline-block; }
-    /* start commented backslash hack \*/
-    * html .clearfix { height: 1%; }
-    .clearfix { display: inline-block; }
-    /* close commented backslash hack */
-
-    body.gallery hr { clear:both }
-
-    body.gallery .disabled {
-        color: #444;
-        text-decoration:line-through;
-    }
-
-    body.gallery .checkbawks {
-        margin: 1px 3px 1px 1px;
-        vertical-align: bottom;
-        float:left;
-    }
-
-    body.gallery .paste {
-        display: inline-block; position: relative; width: 200px; top: 1px; height: 199px; overflow-y: scroll;
-        font-size: 8pt;
-    }
-
-    body.gallery.gc .wrapper {
-        border-bottom: 1px solid rgba(0, 0, 0, 0.3);
-        clear: both;
-        display: block;
-        float: none;
-        padding: 15px;
-        width: 100%;
-        margin-bottom: 0px;
-        margin-left: 0px;
-        height: auto;
-        -moz-box-sizing: border-box;
-        box-sizing: border-box;
-    }
-
-    body.gallery.gc .wrapper:nth-last-child(2) {
-        /*border: none;*/
-    }
-
-    body.gallery.gc .img {
-        height: 80px;
-        width: 80px;
-        float: left;
-        position: relative;
-    }
-
-    body.gallery.gc .img a {
-         top: 0px; left: 0px;
-    }
-
-    body.gallery.gc .paste {
-        display: block;
-        font-size: 8pt;
-        height: 79px;
-        overflow-y: auto;
-        position: relative;
-        text-align: center;
-        top: 1px;
-        width: 80px;
-        z-index: 2;
-    }
-
-    body.gallery.gc h2 {
-        margin: 0;
-    }
-
-    body.gallery.gc .checkbawks {
-        margin: 1px 0;
-        vertical-align: middle;
-        float: none;
-    }
-
-    body.gallery.gc .info
-    {
-        box-shadow: none;
-        color: #000000;
-        display: block;
-        float: left;
-        font-size: 150%;
-        line-height: 80px;
-        margin-left: 0;
-        overflow: hidden;
-        text-align: left !important;
-        text-overflow: ellipsis;
-        white-space: nowrap;
-        width: 40%;
-        padding: 0 11px;
-        -moz-box-sizing: border-box;
-        box-sizing: border-box;
-    }
-
-    body.gallery.gc .info.details {
-        font-size: 14px;
-        display:table-cell;
-        vertical-align:middle;
-        margin-top: 21px;
-        line-height: 19px !important;
-        color: rgba(0,0,0,.5);
-        width: 25%;
-        padding: 0;
-    }
-
-    body.gallery.gc .info.details span {
-        color: #000;
-    }
-    body.gallery h2.pages { padding: 15px; }
-    body.gallery h2.pages a { background: none repeat scroll 0 0 #CCCCCC;
-    border: 1px dashed #AAAAAA;
+*::-moz-selection {
+    text-shadow: none;
+    color: #FFFFFF;
+    background: none repeat scroll 0 0 #FE57A1;
+}
+
+html,
+body {
+    width: 100% !important;
+    height: 100% !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    border: 0 !important;
+}
+
+#maintb {
+    width: 100%;
+    height: 100%;
+}
+
+.index #maintb,
+.general #maintb,
+.pastebin #maintb,
+.settings #maintb {
+    width: 900px;
+    margin: 0 auto;
+}
+
+#maintd {
+    vertical-align: middle;
+}
+
+body {
+    font-family: Arial,sans-serif;
+    font-size: 14px;
+    background: url("http://sgfc.co/EHGdM") repeat scroll 0 0 #000000;
+}
+
+p,
+h2 {
+    padding: 3px 7px;
+}
+
+.rules {
+    display: block;
+    font-family: arial !important;
+    color: black;
+}
+
+.rules ul,
+.rules ul li {
+    text-align: left !important;
+    font-size: 14px;
+    font-weight: 400;
+}
+
+p {
+    margin-bottom: 12px;
+    font-size: 12px;
+}
+
+.submit {
+    text-align: center;
+}
+
+a:link,
+a:visited {
+    text-decoration: none;
+    color: #34345C;
+}
+
+label {
     display: inline-block;
-    font-size: 16px !important;
-    margin: 1px 1px 4px;
-    padding: 5px;
-    width: 20px; }
-    body.gallery h2.pages a:last-child {padding: 5px;}
+    width: auto;
+    text-align: right;
+}
+
+label {
+    width: 36px;
+    padding: 0 0 0 2px;
+    text-align: center;
+}
+
+#identification label {
+    width: 76px;
+}
+
+#identification {
+    margin-top: 10px;
+}
+
+#identification br {
+    margin-bottom: 5px;
+}
+
+#filess,
+#url {
+    display: inline-block;
+}
+
+.unimportant {
+    text-align: center;
+    font-size: 10px;
+}
+
+#container {
+    width: 900px;
+    text-align: center;
+    color: #EEEEEE;
+}
+
+header {
+    margin-bottom: 10px;
+    text-align: center !important;
+    font-family: 'Open Sans','Helvetica Neue',Segoe UI,Helvetica,Arial,sans-serif;
+    font-size: 3.5em;
+    letter-spacing: 0;
+    color: #EEEEEE;
+}
+
+#main {
+    width: 40%;
+    margin: 0 auto;
+    padding: 20px 9px;
+    border: 1px solid #999999;
+    text-align: center;
+    font-size: 13px;
+    color: #222233;
+    background: none repeat scroll 0 0 #EEEEEE;
+    box-shadow: 0 1px 5px 0 rgba(0,0,0,0.4) inset;
+    transition: all 215ms linear 0s;
+}
+
+body.general #main {
+    text-align: left;
+}
+
+.rules {
+    width: 40%;
+    margin: 10px auto 0;
+    padding: 10px;
+    text-align: center;
+    font-size: 13px;
+    color: #000000;
+    background: none repeat scroll 0 0 #EEEEEE;
+    box-shadow: 0 1px 5px 0 rgba(0,0,0,0.4) inset;
+}
+
+header div {
+    width: 40%;
+    margin: 20px auto 0;
+    padding: 14px 10px;
+    text-align: center;
+    font-size: 13px;
+    font-weight: 400;
+    color: #000000;
+    background: none repeat scroll 0 0 #EEEEEE;
+    box-shadow: 0 1px 5px 0 rgba(0,0,0,0.4) inset;
+}
+
+.clearfix:after {
+    content: " ";
+    display: block;
+    visibility: hidden;
+    clear: both;
+    width: 0;
+    height: 0;
+    font-size: 0;
+    line-height: 0;
+}
+
+.clearfix {
+    display: inline-block;
+}
+
+* html .clearfix {
+    height: 1%;
+}
+
+.clearfix {
+    display: inline-block;
+}
