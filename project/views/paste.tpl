@@ -28,6 +28,45 @@
             #commit {
                 padding: 4px 3px;
             }
+
+            .diff {
+                border: 1px solid #cccccc;
+                font-family: 'InconsolataMedium',Consolas,Monaco,"Liberation Mono",Courier,monospace;
+                font-size: 13px;
+                line-height: 1.2;
+                white-space: normal;
+                background: none repeat scroll 0 0 #f8f8f8;
+                word-wrap: break-word;
+            }
+
+            .diff div:hover {
+                background-color: #ffc;
+            }
+
+            .diff .control {
+                color: #999999;
+                background-color: #eaf2f5;
+            }
+
+            .diff .insert {
+                color: #000000;
+                background-color: #ddffdd;
+            }
+
+            .diff .insert .highlight {
+                color: #000000;
+                background-color: #aaffaa;
+            }
+
+            .diff .delete {
+                color: #000000;
+                background-color: #ffdddd;
+            }
+
+            .diff .delete .highlight {
+                color: #000000;
+                background-color: #ffaaaa;
+            }
         </style>
     </head>
 

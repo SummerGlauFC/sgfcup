@@ -142,7 +142,7 @@ def paste_view(url, flag=None, ext=None):
                     prev_commit = previous_commit()
 
                     paste_row["content"] = ghdiff.diff(
-                        prev_commit, revisions_row["paste"])
+                        prev_commit, revisions_row["paste"], css=False)
                     lang = "diff"
                 else:
                     paste_row["content"] = revisions_row["paste"]
