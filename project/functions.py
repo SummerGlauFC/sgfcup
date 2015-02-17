@@ -187,10 +187,10 @@ def highlight(code, language, _preview=False, _linenos=True):
         except ClassNotFound:
             lexer = TextLexer()
     formatter = HtmlFormatter(
-        linenos=_linenos, cssclass='syntax', style='default')
+        linenos=_linenos, cssclass='syntax', style='vs')
     return u'<div class="syntax">%s</div>' % \
            pygments.highlight(code, lexer, formatter)
 
 
 def css(style='default', css_class='.syntax'):
-    return HtmlFormatter(style=style).get_style_defs(css_class)
+    return HtmlFormatter(style='vs').get_style_defs(css_class)
