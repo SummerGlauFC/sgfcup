@@ -10,45 +10,55 @@ import json
 import hashlib
 
 
+# File upload endpoint.
 @app.route('/api/upload', method='POST')
 @app.route('/api/upload/<upload_type>', method='POST')
 def api_upload_file(upload_type='file'):
     SESSION = request.environ.get('beaker.session')
 
+    # All user submitted data
     form = {
         "key": request.forms.get('key', False),
         "password": request.forms.get('password', False),
         "file": request.files.get('files')
     }
 
+    # Short references
     id_generator = functions.id_generator
-
     key = form["key"]
     password = form["password"]
-
     directory = config.Settings["directories"]["files"]
+    
+    # Generated random file name
     random_name = id_generator(random.SystemRandom().randint(4, 7))
-    is_public = (not key and not password)
+    is_public = (not key and not password) # If the user is uploading anonymously
     is_authed = False
 
     errors = ''
 
+    # Generate a random string for anon uploads
     if is_public:
         key = id_generator(15)
         password = id_generator(15)
 
+    # Returns JSON to the homepage/ShareX
     response.content_type = 'application/json; charset=utf-8'
 
+    # Keys must only contain alphanumerics and underscores/hyphens
     if re.match("^[a-zA-Z0-9_-]+$", key):
+        # Check if user has provided a file to upload or is not uploading a file.
         if form["file"] or upload_type is not "file":
             if not is_public:
+                # Check if the specified account already exists.
                 user = config.db.fetchone(
                     'SELECT * FROM `accounts` WHERE `key`=%s', [key])
 
+                # If it does, check their password is correct.
                 if user:
                     is_authed = (user["password"] == password)
                     user_id = user["id"]
                 else:
+                    # If the account doesn't exist, make a new account.
                     new_account = config.db.insert(
                         'accounts', {"key": key, "password": password})
                     user_id = new_account.lastrowid
@@ -59,6 +69,7 @@ def api_upload_file(upload_type='file'):
             if not is_authed:
                 errors += 'Incorrect Key or password. '
 
+                # Exit abruptly.
                 response.status = 500
                 return {
                     "success": False,
@@ -66,17 +77,20 @@ def api_upload_file(upload_type='file'):
                 }
             else:
                 if not is_public:
+                    # Store the users credentials in a session cookie.
                     SESSION["key"] = key
                     SESSION["password"] = password
                     SESSION["id"] = user_id
 
                 if upload_type == 'file':
+                    # Get filename of the upload, and split it for extension.
                     filename = form["file"].filename
                     name, ext = os.path.splitext(filename)
 
                     if '.' not in filename:
                         name = random_name
 
+                    # Guess the file extension if none is provided.
                     if ext == '':
                         buff = form["file"].file.read()
                         ext = guess_extension(
