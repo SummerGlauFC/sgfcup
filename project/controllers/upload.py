@@ -85,6 +85,8 @@ def api_upload_file(upload_type='file'):
                     SESSION["password"] = password
                     SESSION["id"] = user_id
 
+                user_id = 1 if is_anon else SESSION["id"]
+
                 if upload_type == 'file':
                     # Get filename of the upload, and split it for extension.
                     filename = form["file"].filename
@@ -106,7 +108,6 @@ def api_upload_file(upload_type='file'):
                         form["file"].save(directory + random_name + ext)
 
                     # Use the base user id if the user is uploading anonymously
-                    user_id = 1 if is_anon else SESSION["id"]
 
                     config.db.insert(
                         'files', {"userid": user_id, "shorturl": random_name,
