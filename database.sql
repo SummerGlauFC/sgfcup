@@ -1,5 +1,4 @@
 -- --------------------------------------------------------
--- Host:                         203.30.165.139
 -- Server version:               5.5.5-10.0.12-MariaDB - MariaDB Server
 -- Server OS:                    Linux
 -- HeidiSQL Version:             8.2.0.4675
