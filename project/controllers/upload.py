@@ -28,16 +28,18 @@ def api_upload_file(upload_type='file'):
     key = form["key"]
     password = form["password"]
     directory = config.Settings["directories"]["files"]
-    
+
     # Generated random file name
     random_name = id_generator(random.SystemRandom().randint(4, 7))
-    is_public = (not key and not password) # If the user is uploading anonymously
+    # If the user is uploading anonymously
+    is_anon = (not key and not password)
     is_authed = False
+    use_extensions = False
 
     errors = ''
 
     # Generate a random string for anon uploads
-    if is_public:
+    if is_anon:
         key = id_generator(15)
         password = id_generator(15)
 
@@ -46,9 +48,10 @@ def api_upload_file(upload_type='file'):
 
     # Keys must only contain alphanumerics and underscores/hyphens
     if re.match("^[a-zA-Z0-9_-]+$", key):
-        # Check if user has provided a file to upload or is not uploading a file.
+        # Check if user has provided a file to upload or is not uploading a
+        # file.
         if form["file"] or upload_type is not "file":
-            if not is_public:
+            if not is_anon:
                 # Check if the specified account already exists.
                 user = config.db.fetchone(
                     'SELECT * FROM `accounts` WHERE `key`=%s', [key])
@@ -76,7 +79,7 @@ def api_upload_file(upload_type='file'):
                     "error": errors
                 }
             else:
-                if not is_public:
+                if not is_anon:
                     # Store the users credentials in a session cookie.
                     SESSION["key"] = key
                     SESSION["password"] = password
@@ -86,45 +89,48 @@ def api_upload_file(upload_type='file'):
                     # Get filename of the upload, and split it for extension.
                     filename = form["file"].filename
                     name, ext = os.path.splitext(filename)
-
-                    if '.' not in filename:
-                        name = random_name
+                    buff = None
 
                     # Guess the file extension if none is provided.
-                    if ext == '':
+                    if not ext:
                         buff = form["file"].file.read()
                         ext = guess_extension(
                             magic.from_buffer(buff, mime=True))
 
-                    filename = name + ext
-                    if name == random_name:
+                    # If a buffer is used, write directly to a file
+                    # else use bottle's method to save a file
+                    if buff:
                         with open(directory + name + ext, 'w') as fout:
                             fout.write(buff)
                     else:
                         form["file"].save(directory + random_name + ext)
 
-                    user_id = 1 if is_public else SESSION["id"]
+                    # Use the base user id if the user is uploading anonymously
+                    user_id = 1 if is_anon else SESSION["id"]
 
                     config.db.insert(
                         'files', {"userid": user_id, "shorturl": random_name,
                                   "ext": ext, "original": filename})
 
-                    if config.Settings["ssl"]:
-                        config.Settings['directories']['url'] = 'https://' + \
-                            request.environ.get('HTTP_HOST')
-                    else:
-                        config.Settings['directories']['url'] = 'http://' + \
-                            request.environ.get('HTTP_HOST')
+                    # Decide whether to return a https URL or not
+                    protocol = 'https' if config.Settings["ssl"] else 'http'
 
-                    if not is_public:
+                    config.Settings['directories']['url'] = '{}://{}'.format(
+                        protocol, request.environ.get('HTTP_HOST'))
+
+                    # Check if user has selected to show extensions
+                    # in their URLs.
+                    if not is_anon:
                         use_extensions = config.user_settings.get(
                             SESSION["id"], "ext")
+
                 elif upload_type == 'paste':
                     paste_body = request.forms.get('paste_body')
                     paste_lang = request.forms.get('lang', 'text')
                     paste_name = request.forms.get('paste_name', random_name)
 
                     if paste_body:
+                        # Reject pastes longer than 65000 characters
                         if len(paste_body) > 65000:
                             return {
                                 "success": False,
@@ -132,7 +138,8 @@ def api_upload_file(upload_type='file'):
                             }
 
                         paste_id = config.db.insert(
-                            'pastes', {"userid": user_id, "shorturl": random_name,
+                            'pastes', {"userid": user_id,
+                                       "shorturl": random_name,
                                        "name": paste_name, "lang": paste_lang,
                                        "content": paste_body}).lastrowid
 
@@ -141,20 +148,23 @@ def api_upload_file(upload_type='file'):
                                       "shorturl": random_name,
                                       "ext": 'paste', "original": paste_id})
                 else:
+                    # The type the user provided doesn't exist.
                     return {
                         "success": False,
-                        "error": "This upload type does not exist or is not implemented as of yet."
+                        "error": "This upload type does not exist."
                     }
 
+                # Use extensions if user has specified it in their settings.
                 if not upload_type == 'paste' and use_extensions:
                     random_name = random_name + ext
 
+                # Only return JSON if it was requested by javascript.
                 if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
                     return json.dumps({
                         "success": True,
                         "error": False,
                         "url": '/' + ('' if upload_type == 'file' else upload_type + '/') + random_name,
-                        "key": 'anon' if is_public else key,
+                        "key": 'anon' if is_anon else key,
                         "base": config.Settings["directories"]["url"]
                     })
                 else:
@@ -184,18 +194,19 @@ def api_edit_paste():
         "commit": request.forms.get('commit', False)
     }
 
-    is_public = (not form["key"] and not form["password"])
+    is_anon = (not form["key"] and not form["password"])
 
-    if is_public:
+    # Generate random credentials if user is uploading anonymously.
+    if is_anon:
         form["key"] = functions.id_generator(15)
         form["password"] = functions.id_generator(15)
 
+    # Generate paste name
     random_name = functions.id_generator(random.SystemRandom().randint(4, 7))
 
+    # Select the paste that is being edited
     paste_row = config.db.fetchone(
         'SELECT * FROM `pastes` WHERE `id` = %s', [form["id"]])
-
-    commit = hashlib.sha1(form["paste"]).hexdigest()[0:7]
 
     is_authed = True
     revision_row = False
@@ -203,7 +214,8 @@ def api_edit_paste():
     user_row = config.db.fetchone(
         'SELECT * FROM `accounts` WHERE `key`=%s', [form["key"]])
 
-    if not is_public:
+    # Check credentials for user if they exist, else make a new account.
+    if not is_anon:
         if user_row:
             is_authed = (user_row["password"] == form["password"])
             user_id = user_row["id"]
@@ -215,15 +227,21 @@ def api_edit_paste():
             user_row = {"id": user_id}
 
     if is_authed:
+        # Generate a hash for the paste revision
+        commit = hashlib.sha1(form["paste"]).hexdigest()[0:7]
+
+        # Try see if this revision already exists
         try:
             revision_row = config.db.fetchone(
                 'SELECT * FROM `revisions` WHERE `commit`=%s', [commit])
         except:
             revision_row = False
 
+        # Check whether to fork or just edit the paste
         is_fork = True if not user_row else (
             user_row["id"] != paste_row["userid"])
 
+        # Reject long pastes
         if len(form["paste"]) > 65000:
             return json.dumps({
                 "success": False,
@@ -231,12 +249,14 @@ def api_edit_paste():
             })
         else:
             if paste_row and user_row and not revision_row:
-                if not is_public:
+                # Set credentials for an account in case they changed
+                if not is_anon:
                     SESSION["key"] = form["key"]
                     SESSION["password"] = form["password"]
                     SESSION["id"] = user_row["id"]
 
                 if is_fork:
+                    # Insert into pastes as well as the users gallery as a fork
                     paste_id = config.db.insert(
                         'pastes', {"userid": user_row["id"], "shorturl": random_name,
                                    "name": paste_row["name"],
@@ -248,6 +268,7 @@ def api_edit_paste():
                                   "shorturl": random_name,
                                   "ext": 'paste', "original": paste_id})
 
+                # Insert as a revision regardless of being a fork or edit
                 config.db.insert(
                     'revisions', {"pasteid": paste_row["id"] if not is_fork else paste_id,
                                   "userid": user_row["id"],
@@ -257,11 +278,12 @@ def api_edit_paste():
                                   "fork": is_fork,
                                   "parent": paste_row["id"]})
 
+                # Return data as JSON to javascript
                 return json.dumps({
                     "success": True,
                     "error": False,
                     "url": '/paste/' + paste_row["shorturl"] + '.' + commit if not is_fork else '/paste/%s' % random_name,
-                    "key": 'anon' if is_public else form["key"],
+                    "key": 'anon' if is_anon else form["key"],
                     "base": config.Settings["directories"]["url"]
                 })
             else:

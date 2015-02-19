@@ -15,10 +15,13 @@ from pygments.formatters import HtmlFormatter
 
 
 def id_generator(size=6, chars=string.ascii_letters + string.digits):
+    ''' Generates a random string of given size '''
     return ''.join(random.SystemRandom().choice(chars) for _ in range(size))
 
 
 def strs_to_ints(dicts):
+    ''' Converts all strings which are ints in a dict to actual ints
+        (for bottle GET/POST variables) '''
     new = {}
 
     for key, value in dicts.iteritems():
@@ -28,6 +31,7 @@ def strs_to_ints(dicts):
 
 
 def is_image(path):
+    ''' Check if a path is an image with PIL, and return the image object '''
     try:
         im = Image.open(path)
     except IOError:
@@ -36,6 +40,7 @@ def is_image(path):
 
 
 def hl(text, search):
+    ''' Use regex to highlight all occurances of a substring in a string '''
     output = ''
     i = 0
     text = markupsafe.escape(text)
@@ -50,6 +55,7 @@ def hl(text, search):
 
 
 def get_userid(key, return_row=False):
+    ''' Gets a users ID from their `key` '''
     userid = config.db.fetchone(
         "SELECT * FROM `accounts` WHERE `key` = %s", [key])
 
@@ -60,6 +66,7 @@ def get_userid(key, return_row=False):
 
 
 def get_inrange(get, default, highest):
+    ''' Checks if an int is in a range '''
     if get:
         if int(get) in range(highest):
             return int(get)
@@ -70,6 +77,7 @@ def get_inrange(get, default, highest):
 
 
 def sizeof_fmt(num, short=None):
+    ''' Bytes to a human-readable format '''
     for x in ['bytes', 'KB', 'MB', 'GB']:
         if num < 1024.0 and num > -1024.0:
             return "%3.2f %s" % (num, x) if not short else "%3.0f %s" % (num, x)
@@ -78,6 +86,7 @@ def sizeof_fmt(num, short=None):
 
 
 class Pagination(object):
+    ''' Useful pagination class '''
 
     def __init__(self, page, per_page, total_count):
         self.page = page
@@ -123,6 +132,7 @@ class Pagination(object):
 
 
 LANGUAGES = get_all_lexers()
+
 
 def get_language_for(filename, mimetype=None, default='text'):
     """Get language for filename and mimetype"""
@@ -177,6 +187,7 @@ def list_languages():
 
 
 def highlight(code, language, _preview=False, _linenos=True):
+    ''' Syntax highlights a code file '''
     if language == 'php':
         lexer = PhpLexer(startinline=True)
     elif language == 'guess':
@@ -193,4 +204,5 @@ def highlight(code, language, _preview=False, _linenos=True):
 
 
 def css(style='default', css_class='.syntax'):
+    ''' Gets the CSS for pygments '''
     return HtmlFormatter(style='vs').get_style_defs(css_class)

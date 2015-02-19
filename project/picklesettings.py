@@ -90,8 +90,8 @@ class PickleSettings(object):
                 current_config)
 
     def get_all_values(self, user_id):
-        ''' returns all values from a users config, including defaults
-            just a version of get for every key instead.
+        ''' returns all values from a users config, including defaults.
+            Like a version of get for every key instead.
         '''
         jsoned = self._get(user_id)
         for key in jsoned:
