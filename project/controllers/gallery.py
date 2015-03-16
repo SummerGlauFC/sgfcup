@@ -150,17 +150,12 @@ def gallery_view(user_key=None):
                             "files"] + row["shorturl"] + row["ext"]
 
                         image = functions.is_image(full_file_path)
-                        try:
-                            file_stats = os.stat(full_file_path)
-                            row_file["size"] = functions.sizeof_fmt(
-                                file_stats.st_size)
-                        except:
-                            pass
 
                         row_file["url"] = row["shorturl"]
                         row_file["ext"] = row["ext"]
                         row_file["original"] = row["original"]
                         row_file["hits"] = row["hits"]
+                        row_file["size"] = functions.sizeof_fmt(row["size"])
 
                         row_file["time"] = {
                             "epoch": row["date"].strftime('%s'),

@@ -28,6 +28,7 @@ CREATE TABLE IF NOT EXISTS `files` (
   `ext` tinytext NOT NULL,
   `original` text NOT NULL,
   `hits` int(11) NOT NULL DEFAULT '0',
+  `size` int(11) NOT NULL DEFAULT '0',
   `date` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
   PRIMARY KEY (`id`)
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8;

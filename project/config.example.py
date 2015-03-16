@@ -35,7 +35,8 @@ sortmodes = [
     ["Date (descending)", "id", "DESC"],
     ["Date (ascending)", "id", "ASC"],
     ["Hits (descending)", "hits", "DESC"],
-    ["Hits (ascending)", "hits", "ASC"]
+    ["Hits (ascending)", "hits", "ASC"],
+    ["Size", "size", "DESC"]
 ]
 
 # Search modes used by the gallery ("Name", "database column")
