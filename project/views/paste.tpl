@@ -80,7 +80,7 @@
                 <br />[ Revisions:
                     {% if revisions -%}
                         {%- for _revision in revisions[-5:]|reverse -%}
-                            {%- if _revision.commit != revision.commit -%}<a href="/paste/{{ url }}.{{ _revision.commit }}">{%- endif %}
+                            {%- if _revision.commit != revision.commit -%}<a href="/paste/{{ url }}.{{ _revision.commit }}" title="{{ _revision.message }}">{%- endif %}
                                 {{ _revision.commit }}
                                 {% if _revision.commit != revision.commit -%}</a>{%- endif -%}
                             {%- if not loop.last %}
