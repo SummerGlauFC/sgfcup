@@ -101,17 +101,19 @@ def api_upload_file(upload_type='file'):
 
                     # If a buffer is used, write directly to a file
                     # else use bottle's method to save a file
+                    fullname = directory + name + ext
                     if buff:
-                        with open(directory + name + ext, 'w') as fout:
+                        with open(fullname, 'w') as fout:
                             fout.write(buff)
                     else:
-                        form["file"].save(directory + random_name + ext)
+                        form["file"].save(fullname)
 
                     # Use the base user id if the user is uploading anonymously
 
                     config.db.insert(
                         'files', {"userid": user_id, "shorturl": random_name,
-                                  "ext": ext, "original": filename})
+                                  "ext": ext, "original": filename,
+                                  'size': os.path.getsize(fullname)})
 
                     # Decide whether to return a https URL or not
                     protocol = 'https' if config.Settings["ssl"] else 'http'
