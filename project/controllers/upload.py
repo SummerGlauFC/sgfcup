@@ -16,19 +16,20 @@ import hashlib
 def puush_auth():
     key = request.forms.get('e', '')
     password = request.forms.get('p', '')
+    hash = request.forms.get('k', '')
 
     user = config.db.fetchone(
         'SELECT * FROM `accounts` WHERE `key`=%s', [key])
 
-    hash = hashlib.md5(key + password).hexdigest()
+    hash = hash if hash else hashlib.md5(key + password).hexdigest()
+    print 'key: {}, password: {}, hash: {}'.format(key, password, hash)
 
-    authed = False
+    is_authed = False
 
-    # If it does, check their password is correct.
+    # If it does, check their password OR hash is correct.
     if user:
-        is_authed = (user["password"] == password)
+        is_authed = (user["password"] == password or user["hash"] == hash)
         user_id = user["id"]
-        authed = True
     else:
         # If the account doesn't exist, make a new account.
         new_account = config.db.insert(
@@ -38,9 +39,9 @@ def puush_auth():
                          }
         )
         user_id = new_account.lastrowid
-        authed = True
+        is_authed = True
 
-    if authed:
+    if is_authed:
         user = config.db.fetchone(
             'SELECT * FROM `accounts` WHERE `id`=%s', [user_id])
 
@@ -58,7 +59,7 @@ def puush_up():
     k = request.forms.get('k', '')
     f = request.files.get('f', '')
 
-    print k
+    print k, request.forms.get('c', '')
 
     user = config.db.fetchone(
         'SELECT * FROM `accounts` WHERE `hash`=%s', [k])
