@@ -38,11 +38,11 @@ def puush_auth():
         is_authed = True
 
     user = config.db.fetchone(
-        'SELECT * FROM `accounts` WHERE `key`=%s', [key])
+        'SELECT * FROM `accounts` WHERE `id`=%s', [user_id])
 
     if user and not user["hash"]:
-        config.db.execute("UPDATE `accounts` SET `hash`=%s WHERE `key`=%s",
-                          [hash, key])
+        config.db.execute("UPDATE `accounts` SET `hash`=%s WHERE `id`=%s",
+                          [hash, user_id])
 
     return "1,{},,0".format(hash)
 
@@ -64,6 +64,14 @@ def puush_up():
         print 'we fucked up'
         return '-1'
 
+@app.route('/api/hist', method='POST')
+def puush_up():
+    k = request.forms.get('k', '')
+
+    user = config.db.fetchone(
+        'SELECT * FROM `accounts` WHERE `hash`=%s', [k])
+
+    return '-1'
 
 @app.route('/api/upload', method='POST')
 @app.route('/api/upload/<upload_type>', method='POST')
