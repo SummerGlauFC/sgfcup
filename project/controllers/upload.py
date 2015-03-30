@@ -170,7 +170,9 @@ def api_upload_file(upload_type='file', form=None, puush=False):
                                   "size": os.path.getsize(directory + random_name + ext)}).lastrowid
 
                     # Decide whether to return a https URL or not
-                    protocol = 'https' if config.Settings["ssl"] else 'http'
+                    # protocol = 'https' if config.Settings["ssl"] else 'http'
+
+                    protocol = 'http'
 
                     if puush:
                         host = config.Settings['directories']['url']
