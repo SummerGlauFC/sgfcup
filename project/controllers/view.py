@@ -10,14 +10,16 @@ import ghdiff
 
 @app.route('/api/thumb/<url>')
 @app.route('/api/thumb/<url>.<ext>')
-def api_thumb(url, ext=None):
+def api_thumb(url, ext=None, temp=False, size=(400, 400)):
     # Thumbnailer route
     # Generated for the gallery
 
     # Return the currently saved thumbnail if it exists
-    if 'thumb_' + url + '.jpg' in os.listdir(config.Settings['directories']['thumbs']):
+    if 'thumb_' + url + '.jpg' in os.listdir(config.Settings['directories']['thumbs']) and not temp:
         return static_file('thumb_' + url + '.jpg',
                            root=config.Settings['directories']['thumbs'])
+    elif 'thumb_' + url + '.jpg' in os.listdir('/tmp') and temp:
+        return static_file('thumb_' + url + '.jpg', root='/tmp/')
     else:
         # Select the full file from the database
         results = config.db.fetchone(
@@ -29,18 +31,22 @@ def api_thumb(url, ext=None):
                 abort(404, 'File not found.')
             else:
                 # Generate a 400x400 JPEG thumbnail
-                size = 400, 400
+                size = size if size else (400, 400)
                 base = Image.open(
                     config.Settings['directories']['files'] + results["shorturl"] + results["ext"])
                 image_info = base.info
                 if base.mode not in ("L", "RGBA"):
                     base = base.convert("RGBA")
                 base = ImageOps.fit(base, size, Image.ANTIALIAS)
-                base.save(config.Settings['directories']['thumbs']
-                          + 'thumb_' + url + '.jpg', **image_info)
-                # Serve the thumbnail
-                return static_file('thumb_' + url + '.jpg',
-                                   root=config.Settings['directories']['thumbs'])
+                if temp:
+                    base.save('/tmp/thumb_' + url + '.jpg', **image_info)
+                    return static_file('thumb_' + url + '.jpg', root='/tmp/')
+                else:
+                    base.save(config.Settings['directories']['thumbs']
+                              + 'thumb_' + url + '.jpg', **image_info)
+                    # Serve the thumbnail
+                    return static_file('thumb_' + url + '.jpg',
+                                       root=config.Settings['directories']['thumbs'])
         else:
             abort(404, 'File not found.')
 

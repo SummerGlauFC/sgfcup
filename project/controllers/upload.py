@@ -8,6 +8,7 @@ from mimetypes import guess_extension
 import magic
 import json
 import hashlib
+from .view import api_thumb
 
 
 # File upload endpoint.
@@ -73,7 +74,7 @@ def puush_up():
 
 
 @app.route('/api/hist', method='POST')
-def puush_up():
+def puush_hist():
     k = request.forms.get('k', '')
 
     user = config.db.fetchone(
@@ -96,10 +97,56 @@ def puush_up():
                 id=row["id"], date=row["date"].strftime('%Y-%m-%d %H:%M:%S'),
                 url="{}://{}/{}".format(protocol, host, row["shorturl"]),
                 original=row["original"].replace(',', '_'), hits=row["hits"])
-                
+
             ret += "{id},{date},{url},{original},{hits},0\n".format(**formats)
 
     return ret
+
+
+@app.route('/api/del', method='POST')
+def puush_del():
+    k = request.forms.get('k', '')
+    i = request.forms.get('i', '')
+
+    user = config.db.fetchone(
+        'SELECT * FROM `accounts` WHERE `hash`=%s', [k])
+
+    f = config.db.fetchone(
+        'SELECT * FROM `files` WHERE `id`=%s', [i])
+
+    if f["userid"] == user["id"]:
+        try:
+            delete_query = config.db.execute(
+                "DELETE FROM `files` WHERE `id` = %s", [i])
+
+            os.remove(config.Settings["directories"]
+                      ["files"] + f["shorturl"] + f["ext"])
+        except:
+            return '-1'
+
+        return puush_hist()
+    else:
+        return '-1'
+
+
+@app.route('/api/thumb', method='POST')
+def puush_del():
+    k = request.forms.get('k', '')
+    i = request.forms.get('i', '')
+
+    user = config.db.fetchone(
+        'SELECT * FROM `accounts` WHERE `hash`=%s', [k])
+
+    f = config.db.fetchone(
+        'SELECT * FROM `files` WHERE `id`=%s', [i])
+
+    if f["userid"] == user["id"]:
+        try:
+            return api_thumb(f["shorturl"], temp=True, size=(100, 100))
+        except:
+            return '-1'
+    else:
+        return '-1'
 
 
 @app.route('/api/upload', method='POST')
