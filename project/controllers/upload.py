@@ -177,7 +177,9 @@ def api_upload_file(upload_type='file', form=None, puush=False):
                     else:
                         host = request.environ.get('HTTP_HOST')
 
-                    config.Settings['directories']['url'] = '{}://{}'.format(
+                    print host, config.Settings['directories']['url'], request.environ.get('HTTP_HOST')
+
+                    host = '{}://{}'.format(
                         protocol, host)
 
                     # Check if user has selected to show extensions
@@ -228,13 +230,13 @@ def api_upload_file(upload_type='file', form=None, puush=False):
                         "error": False,
                         "url": '/' + ('' if upload_type == 'file' else upload_type + '/') + random_name,
                         "key": 'anon' if is_anon else key,
-                        "base": config.Settings["directories"]["url"]
+                        "base": host
                     })
                 else:
                     response.content_type = 'text/html; charset=utf-8'
                     if puush:
-                        return "0,{},{},0".format(config.Settings["directories"]["url"] + '/' + random_name, file_id)
-                    return config.Settings["directories"]["url"] + '/' + random_name
+                        return "0,{},{},0".format(host + '/' + random_name, file_id)
+                    return host + '/' + random_name
         else:
             if puush:
                 return '-1'
