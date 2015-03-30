@@ -11,17 +11,72 @@ import hashlib
 
 
 # File upload endpoint.
+# puush api integration
+@app.route('/api/auth', method='POST')
+def puush_auth():
+    key = request.forms.get('e', '')
+    password = request.forms.get('p', '')
+
+    user = config.db.fetchone(
+        'SELECT * FROM `accounts` WHERE `key`=%s', [key])
+
+    hash = hashlib.md5(key + password).hexdigest()
+
+    # If it does, check their password is correct.
+    if user:
+        is_authed = (user["password"] == password)
+        user_id = user["id"]
+    else:
+        # If the account doesn't exist, make a new account.
+        new_account = config.db.insert(
+            'accounts', {"key": key,
+                         "password": password,
+                         "hash": hash
+                         }
+        )
+        user_id = new_account.lastrowid
+        is_authed = True
+
+    user = config.db.fetchone(
+        'SELECT * FROM `accounts` WHERE `key`=%s', [key])
+
+    if user and not user["hash"]:
+        config.db.execute("UPDATE `accounts` SET `hash`=%s WHERE `key`=%s",
+                          [hash, key])
+
+    return "1,{},,0".format(hash)
+
+
+@app.route('/api/up', method='POST')
+def puush_up():
+    k = request.forms.get('k', '')
+    f = request.files.get('f', '')
+
+    print k
+
+    user = config.db.fetchone(
+        'SELECT * FROM `accounts` WHERE `hash`=%s', [k])
+
+    if user:
+        return api_upload_file('file', {
+            "key": user["key"], "password": user["password"], "file": f}, puush=True)
+    else:
+        print 'we fucked up'
+        return '-1'
+
+
 @app.route('/api/upload', method='POST')
 @app.route('/api/upload/<upload_type>', method='POST')
-def api_upload_file(upload_type='file'):
+def api_upload_file(upload_type='file', form=None, puush=False):
     SESSION = request.environ.get('beaker.session')
 
     # All user submitted data
-    form = {
-        "key": request.forms.get('key', False),
-        "password": request.forms.get('password', False),
-        "file": request.files.get('files')
-    }
+    if not form:
+        form = {
+            "key": request.forms.get('key', False),
+            "password": request.forms.get('password', False),
+            "file": request.files.get('files')
+        }
 
     # Short references
     id_generator = functions.id_generator
@@ -109,16 +164,21 @@ def api_upload_file(upload_type='file'):
 
                     # Use the base user id if the user is uploading anonymously
 
-                    config.db.insert(
+                    file_id = config.db.insert(
                         'files', {"userid": user_id, "shorturl": random_name,
                                   "ext": ext, "original": filename,
-                                  "size": os.path.getsize(directory + random_name + ext)})
+                                  "size": os.path.getsize(directory + random_name + ext)}).lastrowid
 
                     # Decide whether to return a https URL or not
                     protocol = 'https' if config.Settings["ssl"] else 'http'
 
+                    if puush:
+                        host = config.Settings['directories']['url']
+                    else:
+                        host = request.environ.get('HTTP_HOST')
+
                     config.Settings['directories']['url'] = '{}://{}'.format(
-                        protocol, request.environ.get('HTTP_HOST'))
+                        protocol, host)
 
                     # Check if user has selected to show extensions
                     # in their URLs.
@@ -145,11 +205,11 @@ def api_upload_file(upload_type='file'):
                                        "name": paste_name, "lang": paste_lang,
                                        "content": paste_body}).lastrowid
 
-                        config.db.insert(
+                        file_id = config.db.insert(
                             'files', {"userid": user_id,
                                       "shorturl": random_name,
                                       "ext": 'paste', "original": paste_id,
-                                      "size": len(paste_body)})
+                                      "size": len(paste_body)}).lastrowid
                 else:
                     # The type the user provided doesn't exist.
                     return {
@@ -172,13 +232,19 @@ def api_upload_file(upload_type='file'):
                     })
                 else:
                     response.content_type = 'text/html; charset=utf-8'
+                    if puush:
+                        return "0,{},{},0".format(config.Settings["directories"]["url"] + '/' + random_name, file_id)
                     return config.Settings["directories"]["url"] + '/' + random_name
         else:
+            if puush:
+                return '-1'
             return {
                 "success": False,
                 "error": errors
             }
     else:
+        if puush:
+            return '-1'
         return {
             "success": False,
             "error": 'Invalid key given. (can only contain letters, numbers, underscores and hyphens)'
