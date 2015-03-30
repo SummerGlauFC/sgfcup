@@ -22,10 +22,13 @@ def puush_auth():
 
     hash = hashlib.md5(key + password).hexdigest()
 
+    authed = False
+
     # If it does, check their password is correct.
     if user:
         is_authed = (user["password"] == password)
         user_id = user["id"]
+        authed = True
     else:
         # If the account doesn't exist, make a new account.
         new_account = config.db.insert(
@@ -35,16 +38,19 @@ def puush_auth():
                          }
         )
         user_id = new_account.lastrowid
-        is_authed = True
+        authed = True
 
-    user = config.db.fetchone(
-        'SELECT * FROM `accounts` WHERE `id`=%s', [user_id])
+    if authed:
+        user = config.db.fetchone(
+            'SELECT * FROM `accounts` WHERE `id`=%s', [user_id])
 
-    if user and not user["hash"]:
-        config.db.execute("UPDATE `accounts` SET `hash`=%s WHERE `id`=%s",
-                          [hash, user_id])
+        if user and not user["hash"]:
+            config.db.execute("UPDATE `accounts` SET `hash`=%s WHERE `id`=%s",
+                              [hash, user_id])
 
-    return "1,{},,0".format(hash)
+        return "1,{},,0".format(hash)
+    else:
+        return '-1'
 
 
 @app.route('/api/up', method='POST')
@@ -64,6 +70,7 @@ def puush_up():
         print 'we fucked up'
         return '-1'
 
+
 @app.route('/api/hist', method='POST')
 def puush_up():
     k = request.forms.get('k', '')
@@ -72,6 +79,7 @@ def puush_up():
         'SELECT * FROM `accounts` WHERE `hash`=%s', [k])
 
     return '-1'
+
 
 @app.route('/api/upload', method='POST')
 @app.route('/api/upload/<upload_type>', method='POST')
