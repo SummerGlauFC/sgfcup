@@ -81,7 +81,7 @@ def puush_up():
 
     ret = "0\n"
     res = config.db.fetchall(
-        'SELECT * in `files` WHERE `userid` = %s ORDER BY `date` DESC LIMIT 10', user["id"])
+        'SELECT * FROM `files` WHERE `userid` = %s ORDER BY `date` DESC LIMIT 10', user["id"])
 
     protocol = 'http'
 
@@ -90,14 +90,14 @@ def puush_up():
     else:
         host = request.environ.get('HTTP_HOST')
 
-    formats = tuple(
-        id=row["id"], date=row["date"].strftime('%Y-%m-%d %H:%M:%S'),
-        url="{}://{}/{}".format(protocol, host, row["shorturl"]),
-        original=row["original"].replace(',', '_'), hits=row["hits"])
-
     if res:
         for row in res:
-            ret += "{id},{date},{url},{original},{hits},0\n".format(*formats)
+            formats = dict(
+                id=row["id"], date=row["date"].strftime('%Y-%m-%d %H:%M:%S'),
+                url="{}://{}/{}".format(protocol, host, row["shorturl"]),
+                original=row["original"].replace(',', '_'), hits=row["hits"])
+                
+            ret += "{id},{date},{url},{original},{hits},0\n".format(**formats)
 
     return ret
 
