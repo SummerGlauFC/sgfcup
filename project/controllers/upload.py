@@ -134,7 +134,7 @@ def api_upload_file(upload_type='file', form=None, puush=False):
                     # in their URLs.
                     if not is_anon:
                         use_extensions = config.user_settings.get(
-                            SESSION["id"], "ext")
+                            user_id, "ext")
 
                 elif upload_type == 'paste':
                     paste_body = request.forms.get('paste_body')
