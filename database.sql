@@ -14,6 +14,7 @@ CREATE TABLE IF NOT EXISTS `accounts` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `key` varchar(30) NOT NULL,
   `password` varchar(30) NOT NULL,
+  `hash` varchar(50) NOT NULL,
   PRIMARY KEY (`id`)
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8;
 
