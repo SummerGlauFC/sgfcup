@@ -87,6 +87,19 @@ def api_upload_file(upload_type='file', form=None, puush=False):
                     SESSION["id"] = user_id
 
                 user_id = 1 if is_anon else SESSION["id"]
+                
+                # Decide whether to return a https URL or not
+                protocol = 'https' if config.Settings["ssl"] and not puush else 'http'
+
+                # protocol = 'http'
+
+                if puush:
+                    host = config.Settings['directories']['url']
+                else:
+                    host = request.environ.get('HTTP_HOST')
+
+                host = '{}://{}'.format(
+                    protocol, host)
 
                 if upload_type == 'file':
                     # Get filename of the upload, and split it for extension.
@@ -114,21 +127,6 @@ def api_upload_file(upload_type='file', form=None, puush=False):
                         'files', {"userid": user_id, "shorturl": random_name,
                                   "ext": ext, "original": filename,
                                   "size": os.path.getsize(directory + random_name + ext)}).lastrowid
-
-                    # Decide whether to return a https URL or not
-                    # protocol = 'https' if config.Settings["ssl"] else 'http'
-
-                    protocol = 'http'
-
-                    if puush:
-                        host = config.Settings['directories']['url']
-                    else:
-                        host = request.environ.get('HTTP_HOST')
-
-                    print host, config.Settings['directories']['url'], request.environ.get('HTTP_HOST')
-
-                    host = '{}://{}'.format(
-                        protocol, host)
 
                     # Check if user has selected to show extensions
                     # in their URLs.
