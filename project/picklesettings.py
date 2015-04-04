@@ -58,8 +58,16 @@ class PickleSettings(object):
             "SELECT * FROM `settings` WHERE userid = %s", [user_id])
 
         if current_config:
+            json = pickle.loads(current_config["json"])
+
+            # make sure removed config values are ignored
+            new = {}
+            for key in json:
+                if key in self.json_file:
+                    new[key] = json[key]
+
             merged_json = merge(
-                self.json_file, pickle.loads(current_config["json"]))
+                self.json_file, new)
             return merged_json
         else:
             return self.json_file
