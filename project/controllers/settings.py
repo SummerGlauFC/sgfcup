@@ -60,7 +60,7 @@ def settings_process():
                         message = "Password change ignored due to being the same as previous password."
                         title = "Error"
             else:
-                message = "Key or password is incorrect.",
+                message = "Key or password is incorrect."
                 title = "Error"
 
             # Convert form strings to integers as HTTP likes to not
@@ -70,10 +70,11 @@ def settings_process():
             # Use the PickleSettings class in order to update/set settings
             config.user_settings.set(SESSION["id"], new_forms)
         else:
-            message = "Account does not exist.",
+            message = "Account does not exist."
             title = "Error"
 
     return {
-        "message": "Your settings have been set" if not message else message,
-        "title": "Success!" if not title else title
+        "message": "Your settings have been set." if not message else message,
+        "title": "Success!" if not title else title,
+        "extra": "<a href='/settings'>Return to settings...</a>"
     }

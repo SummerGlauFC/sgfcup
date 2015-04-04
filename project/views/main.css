@@ -183,6 +183,7 @@
         width: 319px;
         border-right: 1px solid #0b0b0b;
         text-align: center;
+        position: relative;
     }
 
     #main {
@@ -299,5 +300,15 @@
     .toggle-rules {
         display: block;
         margin: 0 auto;
+    }
+
+    .bottom {
+        bottom: 0;
+        box-sizing: padding-box;
+        line-height: 1.6em;
+        margin: 0 auto;
+        padding: 1em;
+        position: absolute;
+        width: 100%;
     }
 </style>

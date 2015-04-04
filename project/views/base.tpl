@@ -24,6 +24,9 @@
                             <h3>{{ self.title() }}</h3>
                         {% endblock %}
                         </div>
+                        <div class="bottom">
+                        {% block extra %}{% endblock %}
+                        </div>
                     </header>
                     <div id="main">
                         <table id="overlaytb">
