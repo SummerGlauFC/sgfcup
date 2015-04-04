@@ -114,7 +114,7 @@
                 uploadMultiple: false,
                 previewsContainer: "#previews",
                 parallelUploads: 2,
-                maxFiles: 20,
+                maxFiles: 1000,
                 paramName: "files",
                 clickable: "#filess",
                 addRemoveLinks: true,
