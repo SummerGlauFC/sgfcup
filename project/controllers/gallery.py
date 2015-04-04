@@ -54,7 +54,7 @@ def gallery_view(user_key=None):
                 "in": 0,
                 "page": 1,
                 "case": 0,
-                "beta": settings["gallery_style"]["value"]
+                # "beta": settings["gallery_style"]["value"]
             }
 
             # This function generates a url for a given page number,
@@ -77,7 +77,7 @@ def gallery_view(user_key=None):
             # shorthand assignments for oftenly used data
             page = int(request.query.get('page', defaults['page']))
             case = int(request.query.get('case', defaults['case']))
-            style = int(request.query.get('beta', defaults['beta']))
+            # style = int(request.query.get('beta', defaults['beta']))
             query_in = functions.get_inrange(
                 request.query.get('in'), defaults['in'], len(config.searchmodes))
             query = request.query.get('query', '')
@@ -169,6 +169,8 @@ def gallery_view(user_key=None):
                             row_file["type"] = 1
 
                     files.append(row_file)
+
+            style = False  # rip new style, too much effort to maintain
 
             return template("new_gallery.tpl" if style else "gallery.tpl", {
                 "info": {
