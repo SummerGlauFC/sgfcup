@@ -114,7 +114,7 @@
                         </h2>
                         <div class='loader' style="display:none;">
                         </div>
-                        <form action="/gallery/delete" method="post" class="main_form">
+                        <form action="/gallery/delete" method="post" class="main_form" onsubmit="return confirm('Do you really want to delete your files?');">
                             <input type="hidden" name="key" value="{{ info.key }}" />
                             {% for file in info.files %}
                                 <div class="wrapper">
@@ -158,10 +158,17 @@
                             </h2>
                             <h2 class="debug">
                                 <div>
-                                    delete selected images: <input type="password" value="" name="password" placeholder="key password" /> <input type="submit" value="Delete" />
+                                    password: <input type="password" value="" name="password" placeholder="key password" /> <input type="submit" name="type" value="Delete Selected" /> <input type="submit" name="type" value="Delete All" />
                                 </div>
                             </h2>
                         </form>
+                        <h2 class="debug">
+                            <div>
+                                <form action="/gallery/delete/advanced" method="get" class="main_form">
+                                    <input type="submit" value="Advanced Delete..." />
+                                </form>
+                            </div>
+                        </h2>
     {% if not info.pjax %}
                     </div>
                 </div>

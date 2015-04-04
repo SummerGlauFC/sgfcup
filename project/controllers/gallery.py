@@ -219,60 +219,177 @@ def gallery_auth_do(user_key):
     redirect('/gallery/%s' % user_key)
 
 
+@app.route('/gallery/delete/advanced', method="GET")
+def gallery_delete_advanced_view():
+    SESSION = request.environ.get('beaker.session')
+
+    return template('delete_advanced.tpl', key=SESSION.get('key', ''))
+    # wip
+
+
+@app.route('/gallery/delete/advanced', method="POST")
+def gallery_delete_advanced_view():
+    def build_sql_parts(form):
+        mapping = {
+            "less": '<=',
+            "greater": '>='
+        }
+        if (form.get("operator") in ['less', 'greater']
+                and form.get("type") in ['hits', 'size']
+                and form.get("key")
+                and form.get("password")
+                and form.get("threshold")):
+            operator = mapping[form.get("operator")]
+            del_type = form.get("type")
+            key = form.get("key")
+            password = form.get("password")
+            threshold = form.get('threshold')
+        else:
+            return False
+
+        return {"table": 'files',
+                "operator": operator,
+                "threshold": threshold,
+                "type": del_type,
+                "key": key,
+                "password": password}
+
+    parts = build_sql_parts(request.forms)
+
+    user = config.db.fetchone(
+        'SELECT * FROM `accounts` WHERE `key`=%s AND `password`=%s', [parts['key'], parts['password']])
+
+    size = 0
+    count = 0
+    messages = []
+
+    if user and parts:
+        user_id = user["id"]
+        sql = "SELECT * FROM `{table}` WHERE `userid` = %s AND `{type}` {operator} %s".format(
+            **parts)
+        files = config.db.fetchall(sql, [user_id, parts["threshold"]])
+        for f in files:
+            is_paste = (f["ext"] == "paste")
+            size += f["size"]
+            count += 1
+
+            delete_query = config.db.execute(
+                "DELETE FROM `files` WHERE `id` = %s", [f["id"]])
+
+            # Special treatment for pastes as they don't physically exist
+            # as files
+            if is_paste:
+                config.db.execute(
+                    'DELETE FROM `pastes` WHERE `id` = %s', [f["original"]])
+            else:
+                try:
+                    os.remove(config.Settings["directories"]["files"]
+                              + f["shorturl"] + f["ext"])
+                    messages.append('Removed file "%s" (%s)' %
+                                    (f["original"], f["shorturl"]))
+                except OSError:
+                    messages.append('Could not delete %s' % f["shorturl"])
+
+        messages.append("{0} items deleted. {1} of disk space saved.".format(
+            count, functions.sizeof_fmt(size)))
+    else:
+        return 'Not authed or malformed request.'
+
+    return template('delete.tpl', messages=messages, key=parts['key'])
+
+
 @app.route('/gallery/delete', method="POST")
 def gallery_delete():
     files_to_delete = request.forms.getall('delete_this')
     key = request.forms.get('key')
     password = request.forms.get('password')
 
+    del_type = request.forms.get('type')
+
     messages = []
 
-    # Get the information for a user and check basics like
-    # if the password is correct or if they've even provided files to delete.
-    userid = functions.get_userid(key, return_row=True)
-    if userid["password"] != password:
+    if del_type in ["Delete Selected", "Delete All"]:
+        # Get the information for a user and check basics like
+        # if the password is correct or if they've even provided files to
+        # delete.
+        userid = functions.get_userid(key, return_row=True)
+        if userid["password"] != password:
+            return template('general.tpl',
+                            title='Error', content="Password is incorrect.")
+        elif not files_to_delete and del_type == "Delete Selected":
+            return template('general.tpl',
+                            title='Error', content="No files were provided.")
+
+        keys_uploads = config.db.fetchall(
+            'SELECT * FROM `files` WHERE `userid` = %s', [userid["id"]])
+
+        file_rows = {}
+        for row in keys_uploads:
+            # Build a list of file uploads that belong to a user
+            file_rows[row["shorturl"]] = row
+
+        size = 0
+        count = 0
+
+        if del_type == "Delete Selected":
+            for short_url in files_to_delete:
+                if short_url not in file_rows:
+                    messages.append(
+                        'File "%s" does not belong to this user or does not exist.' %
+                        short_url)
+                else:
+                    file_row = file_rows[short_url]
+                    is_paste = (file_row["ext"] == "paste")
+                    size += file_row["size"]
+                    count += 1
+
+                    delete_query = config.db.execute(
+                        "DELETE FROM `files` WHERE `shorturl` = %s", [short_url])
+
+                    # Special treatment for pastes as they don't physically exist
+                    # as files
+                    if is_paste:
+                        config.db.execute(
+                            'DELETE FROM `pastes` WHERE `id` = %s', [file_row["original"]])
+                    else:
+                        try:
+                            os.remove(config.Settings["directories"]["files"]
+                                      + short_url + file_row["ext"])
+                            messages.append('Removed file "%s" (%s)' %
+                                            (file_row["original"], short_url))
+                        except OSError:
+                            messages.append('Could not delete %s' % short_url)
+
+        elif del_type == "Delete All":
+            for k, row in file_rows.iteritems():
+                is_paste = (row["ext"] == "paste")
+                size += row["size"]
+                count += 1
+
+                delete_query = config.db.execute(
+                    "DELETE FROM `files` WHERE `shorturl` = %s", [row["shorturl"]])
+
+                # Special treatment for pastes as they don't physically exist
+                # as files
+                if is_paste:
+                    config.db.execute(
+                        'DELETE FROM `pastes` WHERE `id` = %s', [row["original"]])
+                else:
+                    try:
+                        os.remove(config.Settings["directories"]["files"]
+                                  + row["shorturl"] + row["ext"])
+                    except OSError:
+                        messages.append('Could not delete %s' %
+                                        row["shorturl"])
+
+        messages.append("{0} items deleted. {1} of disk space saved.".format(
+            count, functions.sizeof_fmt(size)))
+
+        # Optimize the tables after delete operations
+        config.db.execute('OPTIMIZE TABLE `files`')
+        config.db.execute('OPTIMIZE TABLE `pastes`')
+
+        return template('delete.tpl', messages=messages, key=key)
+    else:
         return template('general.tpl',
-                        title='Error', content="Password is incorrect.")
-    elif not files_to_delete:
-        return template('general.tpl',
-                        title='Error', content="No files were provided.")
-
-    keys_uploads = config.db.fetchall(
-        'SELECT * FROM `files` WHERE `userid` = %s', [userid["id"]])
-
-    file_rows = {}
-    for row in keys_uploads:
-        # Build a list of file uploads that belong to a user
-        file_rows[row["shorturl"]] = row
-
-    for short_url in files_to_delete:
-        if short_url not in file_rows:
-            messages.append(
-                'File "%s" does not belong to this user or does not exist.' %
-                short_url)
-        else:
-            file_row = file_rows[short_url]
-            is_paste = (file_row["ext"] == "paste")
-
-            delete_query = config.db.execute(
-                "DELETE FROM `files` WHERE `shorturl` = %s", [short_url])
-
-            # Special treatment for pastes as they don't physically exist
-            # as files
-            if is_paste:
-                config.db.execute(
-                    'DELETE FROM `pastes` WHERE `id` = %s', [file_row["original"]])
-            else:
-                try:
-                    os.remove(config.Settings["directories"]["files"]
-                              + short_url + file_row["ext"])
-                    messages.append('Removed file "%s" (%s)' %
-                                    (file_row["original"], short_url))
-                except OSError:
-                    messages.append('Could not delete %s' % short_url)
-
-    # Optimize the tables after delete operations
-    config.db.execute('OPTIMIZE TABLE `files`')
-    config.db.execute('OPTIMIZE TABLE `pastes`')
-
-    return template('delete.tpl', messages=messages, key=key)
+                        title='Error', content="That is not a valid delete type.")
