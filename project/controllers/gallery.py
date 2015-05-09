@@ -224,7 +224,6 @@ def gallery_delete_advanced_view():
     SESSION = request.environ.get('beaker.session')
 
     return template('delete_advanced.tpl', key=SESSION.get('key', ''))
-    # wip
 
 
 @app.route('/gallery/delete/advanced', method="POST")
