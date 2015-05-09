@@ -20,7 +20,7 @@ class PickleSettings(object):
 
         self.db = db_instance
 
-    def do(self, user_id, new_json, current_config=None):
+    def _do(self, user_id, new_json, current_config=None):
         ''' handles the insertion of user info into the database '''
 
         if not current_config:
@@ -94,8 +94,8 @@ class PickleSettings(object):
         current_config = self.db.fetchone(
             "SELECT * FROM `settings` WHERE userid = %s", [user_id])
 
-        self.do(user_id, self.changeValues(items),
-                current_config)
+        self._do(user_id, self.changeValues(items),
+                 current_config)
 
     def get_all_values(self, user_id):
         ''' returns all values from a users config, including defaults.
