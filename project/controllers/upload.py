@@ -9,6 +9,8 @@ import magic
 import json
 import hashlib
 
+id_generator = functions.id_generator
+
 
 # File upload endpoint.
 @app.route('/api/upload', method='POST')
@@ -25,7 +27,6 @@ def api_upload_file(upload_type='file', form=None, puush=False):
         }
 
     # Short references
-    id_generator = functions.id_generator
     key = form["key"]
     password = form["password"]
     directory = config.Settings["directories"]["files"]
@@ -45,7 +46,7 @@ def api_upload_file(upload_type='file', form=None, puush=False):
         password = id_generator(15)
 
     # Returns JSON to the homepage/ShareX
-    response.content_type = 'application/json; charset=utf-8'
+    # response.content_type = 'application/json; charset=utf-8'
 
     # Keys must only contain alphanumerics and underscores/hyphens
     if re.match("^[a-zA-Z0-9_-]+$", key):
@@ -87,9 +88,10 @@ def api_upload_file(upload_type='file', form=None, puush=False):
                     SESSION["id"] = user_id
 
                 user_id = 1 if is_anon else SESSION["id"]
-                
+
                 # Decide whether to return a https URL or not
-                protocol = 'https' if config.Settings["ssl"] and not puush else 'http'
+                protocol = 'https' if config.Settings[
+                    "ssl"] and not puush else 'http'
 
                 # protocol = 'http'
 
@@ -101,7 +103,7 @@ def api_upload_file(upload_type='file', form=None, puush=False):
                 host = '{}://{}'.format(
                     protocol, host)
 
-                if upload_type == 'file':
+                if upload_type is 'file':
                     # Get filename of the upload, and split it for extension.
                     filename = form["file"].filename
                     name, ext = os.path.splitext(filename)
@@ -134,7 +136,7 @@ def api_upload_file(upload_type='file', form=None, puush=False):
                         use_extensions = config.user_settings.get(
                             user_id, "ext")
 
-                elif upload_type == 'paste':
+                elif upload_type is 'paste':
                     paste_body = request.forms.get('paste_body')
                     paste_lang = request.forms.get('lang', 'text')
                     paste_name = request.forms.get('paste_name', random_name)
@@ -150,13 +152,15 @@ def api_upload_file(upload_type='file', form=None, puush=False):
                         paste_id = config.db.insert(
                             'pastes', {"userid": user_id,
                                        "shorturl": random_name,
-                                       "name": paste_name, "lang": paste_lang,
+                                       "name": paste_name,
+                                       "lang": paste_lang,
                                        "content": paste_body}).lastrowid
 
                         file_id = config.db.insert(
                             'files', {"userid": user_id,
                                       "shorturl": random_name,
-                                      "ext": 'paste', "original": paste_id,
+                                      "ext": 'paste',
+                                      "original": paste_id,
                                       "size": len(paste_body)}).lastrowid
                 else:
                     # The type the user provided doesn't exist.
@@ -166,18 +170,18 @@ def api_upload_file(upload_type='file', form=None, puush=False):
                     }
 
                 # Use extensions if user has specified it in their settings.
-                if not upload_type == 'paste' and use_extensions:
+                if upload_type is not 'paste' and use_extensions:
                     random_name = random_name + ext
 
                 # Only return JSON if it was requested by javascript.
                 if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
-                    return json.dumps({
+                    return {
                         "success": True,
                         "error": False,
                         "url": '/' + ('' if upload_type == 'file' else upload_type + '/') + random_name,
                         "key": 'anon' if is_anon else key,
                         "base": host
-                    })
+                    }
                 else:
                     response.content_type = 'text/html; charset=utf-8'
                     if puush:
@@ -186,6 +190,7 @@ def api_upload_file(upload_type='file', form=None, puush=False):
         else:
             if puush:
                 return '-1'
+
             return {
                 "success": False,
                 "error": errors
@@ -193,6 +198,7 @@ def api_upload_file(upload_type='file', form=None, puush=False):
     else:
         if puush:
             return '-1'
+
         return {
             "success": False,
             "error": 'Invalid key given. (can only contain letters, numbers, underscores and hyphens)'
@@ -215,11 +221,11 @@ def api_edit_paste():
 
     # Generate random credentials if user is uploading anonymously.
     if is_anon:
-        form["key"] = functions.id_generator(15)
-        form["password"] = functions.id_generator(15)
+        form["key"] = id_generator(15)
+        form["password"] = id_generator(15)
 
     # Generate paste name
-    random_name = functions.id_generator(random.SystemRandom().randint(4, 7))
+    random_name = id_generator(random.SystemRandom().randint(4, 7))
 
     # Select the paste that is being edited
     paste_row = config.db.fetchone(
@@ -260,10 +266,10 @@ def api_edit_paste():
 
         # Reject long pastes
         if len(form["paste"]) > 65000:
-            return json.dumps({
+            return {
                 "success": False,
                 "error": "Your paste exceeds the maximum character length of 65000"
-            })
+            }
         else:
             if paste_row and user_row and not revision_row:
                 # Set credentials for an account in case they changed
@@ -275,7 +281,8 @@ def api_edit_paste():
                 if is_fork:
                     # Insert into pastes as well as the users gallery as a fork
                     paste_id = config.db.insert(
-                        'pastes', {"userid": user_row["id"], "shorturl": random_name,
+                        'pastes', {"userid": user_row["id"],
+                                   "shorturl": random_name,
                                    "name": paste_row["name"],
                                    "lang": paste_row["lang"],
                                    "content": form["paste"]}).lastrowid
@@ -283,7 +290,8 @@ def api_edit_paste():
                     config.db.insert(
                         'files', {"userid": user_row["id"],
                                   "shorturl": random_name,
-                                  "ext": 'paste', "original": paste_id})
+                                  "ext": 'paste',
+                                  "original": paste_id})
 
                 # Insert as a revision regardless of being a fork or edit
                 config.db.insert(
@@ -296,13 +304,13 @@ def api_edit_paste():
                                   "parent": paste_row["id"]})
 
                 # Return data as JSON to javascript
-                return json.dumps({
+                return {
                     "success": True,
                     "error": False,
-                    "url": '/paste/' + paste_row["shorturl"] + '.' + commit if not is_fork else '/paste/%s' % random_name,
+                    "url": '/paste/%s' % (paste_row["shorturl"] + '.' + commit if not is_fork else random_name),
                     "key": 'anon' if is_anon else form["key"],
                     "base": config.Settings["directories"]["url"]
-                })
+                }
             else:
                 return "An error has occured."
     else:

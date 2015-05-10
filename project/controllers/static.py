@@ -7,6 +7,7 @@ from bottle import jinja2_view as view, jinja2_template as template
 # user info page, the favicon and all stylesheets
 # (provided their HTTP server doesn't serve the stylesheets/favicon)
 
+
 @app.route('/')
 @view('index.tpl')
 def index():
@@ -34,19 +35,19 @@ def paste_home():
 
 
 @app.route('/keys')
+@view('general.tpl')
 def keys():
     SESSION = request.environ.get('beaker.session')
 
     settings = config.user_settings.get_all_values(SESSION.get('id', 0))
 
     # Provide the user with their details.
-    return template(
-        'general',
-        title='Keys',
-        message='Key: ' + SESSION.get('key', 'Not set.') +
+    return {
+        "title": 'Keys',
+        "message": 'Key: ' + SESSION.get('key', 'Not set.') +
         '<br />Password: ' + SESSION.get('password', 'Not set.') +
         '<br />Gallery view password: ' + settings["gallery_password"]["value"]
-    )
+    }
 
 
 @app.route('/:file#(favicon.ico)#')

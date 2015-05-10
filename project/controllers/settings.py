@@ -4,17 +4,19 @@ from bottle import jinja2_view as view, jinja2_template as template
 
 
 @app.route('/settings', method='GET')
+@view('settings.tpl')
 def settings_view():
     SESSION = request.environ.get('beaker.session')
 
-    # Get the current settings for a user and fill in the settings page
-    settings = config.user_settings.get_all_values(SESSION.get("id", 0))
-    return template("settings.tpl", settings=settings,
-                    key=SESSION.get("key"), password=SESSION.get("password"))
+    return {
+        "settings": config.user_settings.get_all_values(SESSION.get("id", 0)),
+        "key": SESSION.get("key"),
+        "password": SESSION.get("password")
+    }
 
 
 @app.route('/settings', method='POST')
-@view("general.tpl")
+@view('general.tpl')
 def settings_process():
     SESSION = request.environ.get("beaker.session")
 
