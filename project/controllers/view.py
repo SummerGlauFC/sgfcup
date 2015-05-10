@@ -1,11 +1,37 @@
 # -*- coding: utf-8 -*-
 from project import app, config, functions
-from bottle import request, static_file, abort, redirect, response
+from bottle import request, abort, redirect, response
+from bottle import static_file as bottle_static_file
 from bottle import jinja2_view as view, jinja2_template as template
 import os
 from PIL import Image, ImageOps
 import magic
 import ghdiff
+
+
+def static_file(path, root, filename=False):
+    # Use the sendfile built into nginx if it's available
+    if config.Settings["use_nginx_sendfile"]:
+        file_path = root + path
+        response.set_header(
+            'Content-Type', magic.from_file(file_path, mime=True))
+
+        if filename:
+            response.set_header('Content-Disposition',
+                                'inline; filename="{0}"'.format(filename))
+
+        folder = 't' if root is config.Settings[
+            'directories']['thumbs'] else 'p'
+
+        response.set_header('X-Accel-Redirect',
+                            '/get_image/{}/{}'.format(folder, path))
+
+        return 'This should be handled by nginx.'
+    else:
+        # Or just use the default bottle file serve function
+        # path = results["shorturl"] + results["ext"]
+        # root = config.Settings["directories"]["files"]
+        return bottle_static_file(path, root=root)
 
 
 @app.route('/api/thumb/<url>')
@@ -71,24 +97,12 @@ def image_view(url, ext=None):
                 config.db.execute(
                     'UPDATE `files` SET hits=hits+1 WHERE `id`=%s', [results["id"]])
 
-                # Use the sendfile built into nginx if it's available
-                if config.Settings["use_nginx_sendfile"]:
-                    filename = results["shorturl"] + results["ext"]
-                    file_path = config.Settings[
-                        "directories"]["files"] + filename
-                    response.set_header(
-                        'Content-Type', magic.from_file(file_path, mime=True))
-                    response.set_header('Content-Disposition',
-                                        'inline; filename="{0}"'.format(results["original"]))
-                    response.set_header('X-Accel-Redirect',
-                                        '/get_image/{0}'.format(filename))
-                    return 'nginx :)'
-                else:
-                    # Or just use the default bottle file serve function
-                    return static_file(results["shorturl"] + results["ext"],
-                                       root=config.Settings["directories"]["files"])
-    else:
-        abort(404, 'File not found.')
+                return static_file(
+                    results["shorturl"] + results["ext"],
+                    root=config.Settings["directories"]["files"],
+                    filename=results["original"])
+
+    abort(404, 'File not found.')
 
 
 @app.route('/paste/<url>')

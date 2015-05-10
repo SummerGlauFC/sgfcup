@@ -38,7 +38,7 @@ The app also has the ability to serve a file through [nginx's XSendfile](http://
 
     location /get_image/ {
         internal;
-        alias /path/to/project/img/p/; # note the trailing slash
+        alias /path/to/project/img/; # note the trailing slash
     }
 
 LICENSE
