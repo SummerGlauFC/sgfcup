@@ -52,7 +52,7 @@ def api_upload_file(upload_type='file', form=None, puush=False):
     if re.match("^[a-zA-Z0-9_-]+$", key):
         # Check if user has provided a file to upload or is not uploading a
         # file.
-        if form["file"] or upload_type is not "file":
+        if form["file"] or upload_type != "file":
             if not is_anon:
                 # Check if the specified account already exists.
                 user = config.db.fetchone(
@@ -103,7 +103,7 @@ def api_upload_file(upload_type='file', form=None, puush=False):
                 host = '{}://{}'.format(
                     protocol, host)
 
-                if upload_type is 'file':
+                if upload_type == 'file':
                     # Get filename of the upload, and split it for extension.
                     filename = form["file"].filename
                     name, ext = os.path.splitext(filename)
@@ -136,7 +136,7 @@ def api_upload_file(upload_type='file', form=None, puush=False):
                         use_extensions = config.user_settings.get(
                             user_id, "ext")
 
-                elif upload_type is 'paste':
+                elif upload_type == 'paste':
                     paste_body = request.forms.get('paste_body')
                     paste_lang = request.forms.get('lang', 'text')
                     paste_name = request.forms.get('paste_name', random_name)
@@ -170,7 +170,7 @@ def api_upload_file(upload_type='file', form=None, puush=False):
                     }
 
                 # Use extensions if user has specified it in their settings.
-                if upload_type is not 'paste' and use_extensions:
+                if upload_type != 'paste' and use_extensions:
                     random_name = random_name + ext
 
                 # Only return JSON if it was requested by javascript.
