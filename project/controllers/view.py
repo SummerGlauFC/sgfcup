@@ -128,6 +128,11 @@ def paste_view(url, flag=None, ext=None):
         paste_row = config.db.fetchone(
             'SELECT * FROM `pastes` WHERE `id` = %s', [results["original"]])
 
+        if not paste_row:
+            print 'Deleting a paste that was not found...'
+            config.db.execute("DELETE FROM `files` WHERE `id` = %s", [results['id']])
+            abort(404, 'File not found.')
+
         # Select every revision for specified paste
         revisions_rows = config.db.fetchall(
             'SELECT * FROM `revisions` WHERE `pasteid` = %s AND `fork` = 0',
