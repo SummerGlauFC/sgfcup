@@ -56,23 +56,16 @@ def api_thumb(url, ext=None, temp=False, size=(400, 400)):
             if ext and ('.' + ext != results["ext"]):
                 abort(404, 'File not found.')
             else:
-                # Generate a 400x400 JPEG thumbnail
-                size = size if size else (400, 400)
+                # Generate a 400x400 (by default) JPEG thumbnail
                 base = Image.open(
                     config.Settings['directories']['files'] + results["shorturl"] + results["ext"])
                 image_info = base.info
                 if base.mode not in ("L", "RGBA"):
                     base = base.convert("RGBA")
                 base = ImageOps.fit(base, size, Image.ANTIALIAS)
-                if temp:
-                    base.save('/tmp/thumb_' + url + '.jpg', **image_info)
-                    return static_file('thumb_' + url + '.jpg', root='/tmp/')
-                else:
-                    base.save(config.Settings['directories']['thumbs']
-                              + 'thumb_' + url + '.jpg', **image_info)
-                    # Serve the thumbnail
-                    return static_file('thumb_' + url + '.jpg',
-                                       root=config.Settings['directories']['thumbs'])
+                save_dir = '/tmp/' if temp else config.Settings['directories']['thumbs']
+                base.save(save_dir + 'thumb_' + url + '.jpg', **image_info)
+                return static_file('thumb_' + url + '.jpg', root=save_dir)
         else:
             abort(404, 'File not found.')
 
