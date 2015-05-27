@@ -59,23 +59,28 @@ def api_thumb(url, ext=None, temp=False, size=(400, 400)):
                 # Generate a 400x400 (by default) JPEG thumbnail
                 base = Image.open(
                     config.Settings['directories']['files'] + results["shorturl"] + results["ext"])
-                image_info = base.info
-                if base.mode not in ("L", "RGBA"):
-                    base = base.convert("RGBA")
-                base = ImageOps.fit(base, size, Image.ANTIALIAS)
-                save_dir = '/tmp/' if temp else config.Settings['directories']['thumbs']
-                base.save(save_dir + 'thumb_' + url + '.jpg', **image_info)
-                return static_file('thumb_' + url + '.jpg', root=save_dir)
+                if size < base.size:
+                    image_info = base.info
+                    if base.mode not in ("L", "RGBA"):
+                        base = base.convert("RGBA")
+                    base = ImageOps.fit(base, size, Image.ANTIALIAS)
+                    save_dir = '/tmp/' if temp else config.Settings['directories']['thumbs']
+                    base.save(save_dir + 'thumb_' + url + '.jpg', **image_info)
+                    return static_file('thumb_' + url + '.jpg', root=save_dir)
+                else:
+                    returrn image_view(url, ext, results=results)
         else:
             abort(404, 'File not found.')
 
 
 @app.route('/<url>')
 @app.route('/<url>.<ext>')
-def image_view(url, ext=None):
+def image_view(url, ext=None, results=None):
     # Check if the requested file exists
-    results = config.db.fetchone(
-        'SELECT * FROM `files` WHERE BINARY `shorturl` = %s', [url])
+    # Also, use a passed-through results if it exists.
+    if not results:
+        results = config.db.fetchone(
+            'SELECT * FROM `files` WHERE BINARY `shorturl` = %s', [url])
 
     if results:
         # Check if extension matches the one in the database (if provided)
