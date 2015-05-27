@@ -68,7 +68,7 @@ def api_thumb(url, ext=None, temp=False, size=(400, 400)):
                     base.save(save_dir + 'thumb_' + url + '.jpg', **image_info)
                     return static_file('thumb_' + url + '.jpg', root=save_dir)
                 else:
-                    returrn image_view(url, ext, results=results)
+                    return image_view(url, ext, results=results)
         else:
             abort(404, 'File not found.')
 
