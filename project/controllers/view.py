@@ -51,15 +51,15 @@ def api_thumb(url, ext=None, temp=False, size=(400, 400)):
         results = config.db.fetchone(
             'SELECT * FROM `files` WHERE BINARY `shorturl` = %s', [url])
 
-        if results:
-            # Check if extension matches the one in the database (if provided)
-            if ext and ('.' + ext != results["ext"]):
-                abort(404, 'File not found.')
-            else:
-                # Generate a 400x400 JPEG thumbnail
-                size = size if size else (400, 400)
-                base = Image.open(
-                    config.Settings['directories']['files'] + results["shorturl"] + results["ext"])
+    if results:
+        # Check if extension matches the one in the database (if provided)
+        if ext and ('.' + ext != results["ext"]):
+            abort(404, 'File not found.')
+        else:
+            # Generate a 400x400 JPEG thumbnail
+            base = Image.open(
+                config.Settings['directories']['files'] + results["shorturl"] + results["ext"])
+            if base.size > size:
                 image_info = base.info
                 if base.mode not in ("L", "RGBA"):
                     base = base.convert("RGBA")
@@ -73,9 +73,11 @@ def api_thumb(url, ext=None, temp=False, size=(400, 400)):
                     # Serve the thumbnail
                     return static_file('thumb_' + url + '.jpg',
                                        root=config.Settings['directories']['thumbs'])
-        else:
-            abort(404, 'File not found.')
-
+            else:
+                return static_file(results["shorturl"] + results["ext"],
+                                       root=config.Settings['directories']['files'])
+    else:
+        abort(404, 'File not found.')
 
 @app.route('/<url>')
 @app.route('/<url>.<ext>')
