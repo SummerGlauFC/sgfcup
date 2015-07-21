@@ -11,7 +11,7 @@ Settings = config.Settings
 
 def auth_session(fn):
     def check_session(**kwargs):
-        SESSION = request.environ.get('beaker.session')
+        SESSION = request.environ.get('beaker.session', {})
 
         if SESSION.get("admin", False):
             return fn(**kwargs)
@@ -95,7 +95,7 @@ def login():
 
 @app.post('/admin/login')
 def do_login():
-    SESSION = request.environ.get('beaker.session')
+    SESSION = request.environ.get('beaker.session', {})
 
     user = request.forms.get('key')
     password = request.forms.get('password')

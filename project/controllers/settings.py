@@ -6,7 +6,7 @@ from bottle import jinja2_view as view, jinja2_template as template
 @app.route('/settings', method='GET')
 @view('settings.tpl')
 def settings_view():
-    SESSION = request.environ.get('beaker.session')
+    SESSION = request.environ.get('beaker.session', {})
 
     return {
         "settings": config.user_settings.get_all_values(SESSION.get("id", 0)),
@@ -18,7 +18,7 @@ def settings_view():
 @app.route('/settings', method='POST')
 @view('general.tpl')
 def settings_process():
-    SESSION = request.environ.get("beaker.session")
+    SESSION = request.environ.get("beaker.session", {})
 
     confirm_key = request.forms.get('confirm_key')
     confirm_password = request.forms.get('confirm_pass')

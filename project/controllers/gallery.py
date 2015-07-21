@@ -20,7 +20,7 @@ def gallery_redirect(user_key=None):
 @app.route('/gallery/<user_key>', method="GET")
 @view("gallery.tpl")
 def gallery_view(user_key=None):
-    SESSION = request.environ.get('beaker.session')
+    SESSION = request.environ.get('beaker.session', {})
 
     # If a user does not provide a gallery to view, redirect to their own.
     if not user_key:
@@ -223,7 +223,7 @@ def gallery_auth_do(user_key):
 @app.route('/gallery/delete/advanced', method="GET")
 @view('delete_advanced.tpl')
 def gallery_delete_advanced_view():
-    SESSION = request.environ.get('beaker.session')
+    SESSION = request.environ.get('beaker.session', {})
 
     return {
         "key": SESSION.get('key', '')

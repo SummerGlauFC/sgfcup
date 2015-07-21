@@ -9,7 +9,7 @@ from bottle import jinja2_view as view, jinja2_template as template
 
 
 def key_password_return(SESSION):
-    SESSION = request.environ.get('beaker.session')
+    SESSION = request.environ.get('beaker.session', {})
 
     # Check if the user has got their key and password stored, else
     # generate a mostly secure key for them.
@@ -35,7 +35,7 @@ def paste_home():
 @app.route('/keys')
 @view('general.tpl')
 def keys():
-    SESSION = request.environ.get('beaker.session')
+    SESSION = request.environ.get('beaker.session', {})
 
     settings = config.user_settings.get_all_values(SESSION.get('id', 0))
 

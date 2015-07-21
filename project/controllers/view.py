@@ -107,7 +107,7 @@ def image_view(url, ext=None, results=None):
 @app.route('/paste/<url>/<flag>')
 @app.route('/paste/<url>/<flag>.<ext>')
 def paste_view(url, flag=None, ext=None):
-    SESSION = request.environ.get('beaker.session')
+    SESSION = request.environ.get('beaker.session', {})
 
     # Extract the commit from the URL, if it exists.
     if '.' in url:

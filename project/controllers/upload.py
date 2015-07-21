@@ -16,7 +16,7 @@ id_generator = functions.id_generator
 @app.route('/api/upload', method='POST')
 @app.route('/api/upload/<upload_type>', method='POST')
 def api_upload_file(upload_type='file', form=None, puush=False):
-    SESSION = request.environ.get('beaker.session')
+    SESSION = request.environ.get('beaker.session', {})
 
     # All user submitted data
     if not form:
@@ -208,7 +208,7 @@ def api_upload_file(upload_type='file', form=None, puush=False):
 
 @app.route('/api/edit/paste', method='POST')
 def api_edit_paste():
-    SESSION = request.environ.get('beaker.session')
+    SESSION = request.environ.get('beaker.session', {})
 
     form = {
         "key": request.forms.get('key', False),
