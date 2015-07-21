@@ -8,30 +8,28 @@ from bottle import jinja2_view as view, jinja2_template as template
 # (provided their HTTP server doesn't serve the stylesheets/favicon)
 
 
-@app.route('/')
-@view('index.tpl')
-def index():
+def key_password_return(SESSION):
     SESSION = request.environ.get('beaker.session')
 
     # Check if the user has got their key and password stored, else
     # generate a mostly secure key for them.
-    if SESSION.get('id'):
-        return {"key": SESSION.get('key'), "password": SESSION.get('password')}
-    else:
-        return {"key": functions.id_generator(15), "password": functions.id_generator(15)}
+    if SESSION:
+        if SESSION.get('id'):
+            return {"key": SESSION.get('key'), "password": SESSION.get('password')}
+
+    return {"key": functions.id_generator(15), "password": functions.id_generator(15)}
+
+
+@app.route('/')
+@view('index.tpl')
+def index():
+    return key_password_return(request.environ.get('beaker.session'))
 
 
 @app.get('/paste')
 @view('pastebin.tpl')
 def paste_home():
-    SESSION = request.environ.get('beaker.session')
-
-    # Check if the user has got their key and password stored, else
-    # generate a mostly secure key for them.
-    if SESSION.get('id'):
-        return {"key": SESSION.get('key'), "password": SESSION.get('password')}
-    else:
-        return {"key": functions.id_generator(15), "password": functions.id_generator(15)}
+    return key_password_return(request.environ.get('beaker.session'))
 
 
 @app.route('/keys')

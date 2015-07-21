@@ -18,6 +18,7 @@ def gallery_redirect(user_key=None):
 
 @app.route('/gallery/', method="GET")
 @app.route('/gallery/<user_key>', method="GET")
+@view("gallery.tpl")
 def gallery_view(user_key=None):
     SESSION = request.environ.get('beaker.session')
 
@@ -172,7 +173,7 @@ def gallery_view(user_key=None):
 
             style = False  # rip new style, too much effort to maintain
 
-            return template("new_gallery.tpl" if style else "gallery.tpl", {
+            return {
                 "info": {
                     "key": user_key,
                     "id": user_id,
@@ -196,10 +197,10 @@ def gallery_view(user_key=None):
                 "error": error if error else False,
                 "types": config.file_type,
                 "hl": functools.partial(functions.hl, search=query)
-            })
+            }
         else:
             # The key the user specified doesn't exist, "raise" an error.
-            return template("gallery.tpl", {"error": "Specified key does not exist."})
+            return {"error": "Specified key does not exist."}
 
 
 @app.route('/gallery/auth/<user_key:re:[a-zA-Z0-9_-]+>', method="GET")
@@ -220,10 +221,13 @@ def gallery_auth_do(user_key):
 
 
 @app.route('/gallery/delete/advanced', method="GET")
+@view('delete_advanced.tpl')
 def gallery_delete_advanced_view():
     SESSION = request.environ.get('beaker.session')
 
-    return template('delete_advanced.tpl', key=SESSION.get('key', ''))
+    return {
+        "key": SESSION.get('key', '')
+    }
 
 
 @app.route('/gallery/delete/advanced', method="POST")

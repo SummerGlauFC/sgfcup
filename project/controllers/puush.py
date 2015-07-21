@@ -6,6 +6,9 @@ from .view import api_thumb
 from .upload import api_upload_file
 
 
+PUUSH_ERROR = '-1'
+
+
 def get_puush_user(hash):
     return config.db.fetchone(
         'SELECT * FROM `accounts` WHERE `hash`=%s', [hash])
@@ -43,7 +46,7 @@ def puush_auth():
 
         return "1,{},,0".format(hash)
 
-    return '-1'
+    return PUUSH_ERROR
 
 
 @app.route('/api/up', method='POST')
@@ -57,8 +60,7 @@ def puush_up():
             "file": request.files.get('f', '')
         }, puush=True)
 
-    print 'we fucked up'
-    return '-1'
+    return PUUSH_ERROR
 
 
 @app.route('/api/hist', method='POST')
@@ -80,7 +82,8 @@ def puush_hist():
         if res:
             for row in res:
                 formats = dict(
-                    id=row["id"], date=row["date"].strftime('%Y-%m-%d %H:%M:%S'),
+                    id=row["id"], date=row["date"].strftime(
+                        '%Y-%m-%d %H:%M:%S'),
                     url="{}://{}/{}".format(protocol, host, row["shorturl"]),
                     original=row["original"].replace(',', '_'), hits=row["hits"])
 
@@ -88,7 +91,8 @@ def puush_hist():
 
         return ret
 
-    return '-1'
+    return PUUSH_ERROR
+
 
 @app.route('/api/del', method='POST')
 def puush_del():
@@ -107,11 +111,11 @@ def puush_del():
             os.remove(config.Settings["directories"]
                       ["files"] + f["shorturl"] + f["ext"])
         except:
-            return '-1'
+            return PUUSH_ERROR
 
         return puush_hist()
 
-    return '-1'
+    return PUUSH_ERROR
 
 
 @app.route('/api/thumb', method='POST')
@@ -125,6 +129,6 @@ def puush_del():
         try:
             return api_thumb(f["shorturl"], temp=True, size=(100, 100))
         except:
-            return '-1'
+            return PUUSH_ERROR
 
-    return '-1'
+    return PUUSH_ERROR

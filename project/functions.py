@@ -86,6 +86,7 @@ def sizeof_fmt(num, short=None):
 
 
 class Pagination(object):
+
     ''' Useful pagination class '''
 
     def __init__(self, page, per_page, total_count):

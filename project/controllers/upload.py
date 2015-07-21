@@ -38,6 +38,7 @@ def api_upload_file(upload_type='file', form=None, puush=False):
     is_authed = False
     use_extensions = False
 
+    PUUSH_ERROR = '-1'
     errors = ''
 
     # Generate a random string for anon uploads
@@ -189,7 +190,7 @@ def api_upload_file(upload_type='file', form=None, puush=False):
                     return host + '/' + random_name
         else:
             if puush:
-                return '-1'
+                return PUUSH_ERROR
 
             return {
                 "success": False,
@@ -197,7 +198,7 @@ def api_upload_file(upload_type='file', form=None, puush=False):
             }
     else:
         if puush:
-            return '-1'
+            return PUUSH_ERROR
 
         return {
             "success": False,

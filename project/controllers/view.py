@@ -128,7 +128,8 @@ def paste_view(url, flag=None, ext=None):
 
         if not paste_row:
             print 'Deleting a paste that was not found...'
-            config.db.execute("DELETE FROM `files` WHERE `id` = %s", [results['id']])
+            config.db.execute(
+                "DELETE FROM `files` WHERE `id` = %s", [results['id']])
             abort(404, 'File not found.')
 
         # Select every revision for specified paste
