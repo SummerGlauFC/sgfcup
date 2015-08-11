@@ -88,7 +88,7 @@ def api_upload_file(upload_type='file', form=None, puush=False):
                     SESSION["password"] = password
                     SESSION["id"] = user_id
 
-                user_id = 1 if is_anon else SESSION["id"]
+                user_id = 0 if is_anon else SESSION["id"]
 
                 # Decide whether to return a https URL or not
                 protocol = 'https' if config.Settings[
