@@ -64,8 +64,9 @@ body.paste .allcode {
     width: 100%;
     overflow: auto;
     text-shadow: none;
-    font-family: 'InconsolataMedium',Consolas,"Liberation Mono",Courier,monospace;
-    font-size: 13px;
+    font: 12px/14px "Monaco",Courier,monospace;
+    font-size: 15px;
+    line-height: 20px;
 }
 
 body.paste pre {
