@@ -156,7 +156,7 @@
                                 url: url,
                                 data: $("form").serialize(),
                                 success: function (data) {
-                                    data = JSON.parse(data);
+                                    // data = JSON.parse(data);
                                     console.log(data);
                                     if (data.success) {
                                         $("#message").html('<a href="' + data.url + '">' + data.base + data.url + '</a>');
