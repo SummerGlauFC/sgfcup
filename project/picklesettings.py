@@ -58,6 +58,7 @@ class PickleSettings(object):
             "SELECT * FROM `settings` WHERE userid = %s", [user_id])
 
         if current_config:
+            # print current_config, dir(current_config)
             json = pickle.loads(current_config["json"])
 
             # make sure removed config values are ignored

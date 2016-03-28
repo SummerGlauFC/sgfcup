@@ -1,3 +1,4 @@
+# import pymysql as cymysql
 import cymysql
 
 
@@ -79,7 +80,7 @@ class DB(object):
         if cur.rowcount:
             return cur.fetchall()
         else:
-            return None
+            return []
 
     def insert(self, table, columns_pair):
         ''' build and execute an insert operation, as such:

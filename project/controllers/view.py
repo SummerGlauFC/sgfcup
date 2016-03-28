@@ -156,8 +156,9 @@ def paste_view(url, flag=None, ext=None):
         commits = ['base']
 
         # Append every commit which exists
-        for row in revisions_rows:
-            commits.append(row["commit"])
+        if revisions_rows:        
+            for row in revisions_rows:
+                commits.append(row["commit"])
 
         # Check if the commit exists in the commits list
         if commit in commits:
