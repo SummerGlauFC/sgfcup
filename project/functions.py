@@ -41,6 +41,9 @@ def is_image(path):
 
 def hl(text, search):
     ''' Use regex to highlight all occurances of a substring in a string '''
+    if not search:
+        return text
+
     output = ''
     i = 0
     text = markupsafe.escape(text)
