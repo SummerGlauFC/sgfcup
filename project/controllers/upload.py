@@ -1,12 +1,11 @@
 # -*- coding: utf-8 -*-
 from project import app, config, functions
-from bottle import template, request, response
+from bottle import request, response
 import random
 import re
 import os
 from mimetypes import guess_extension
 import magic
-import json
 import hashlib
 
 id_generator = functions.id_generator
@@ -33,21 +32,16 @@ def api_upload_file(upload_type='file', form=None, puush=False):
 
     # Generated random file name
     random_name = id_generator(random.SystemRandom().randint(4, 7))
-    # If the user is uploading anonymously
     is_anon = (not key and not password)
     is_authed = False
     use_extensions = False
 
-    PUUSH_ERROR = '-1'
     errors = ''
 
     # Generate a random string for anon uploads
     if is_anon:
         key = id_generator(15)
         password = id_generator(15)
-
-    # Returns JSON to the homepage/ShareX
-    # response.content_type = 'application/json; charset=utf-8'
 
     # Keys must only contain alphanumerics and underscores/hyphens
     if re.match("^[a-zA-Z0-9_-]+$", key):
@@ -56,8 +50,8 @@ def api_upload_file(upload_type='file', form=None, puush=False):
         if form["file"] or upload_type != "file":
             if not is_anon:
                 # Check if the specified account already exists.
-                user = config.db.fetchone(
-                    'SELECT * FROM `accounts` WHERE `key`=%s', [key])
+                user = config.db.select(
+                    'accounts', where={"key": key}, singular=True)
 
                 # If it does, check their password is correct.
                 if user:
@@ -77,10 +71,7 @@ def api_upload_file(upload_type='file', form=None, puush=False):
 
                 # Exit abruptly.
                 response.status = 500
-                return {
-                    "success": False,
-                    "error": errors
-                }
+                return functions.json_error(errors, puush=puush)
             else:
                 if not is_anon:
                     # Store the users credentials in a session cookie.
@@ -94,8 +85,6 @@ def api_upload_file(upload_type='file', form=None, puush=False):
                 protocol = 'https' if config.Settings[
                     "ssl"] and not puush else 'http'
 
-                # protocol = 'http'
-
                 if puush:
                     host = config.Settings['directories']['url']
                 else:
@@ -105,7 +94,6 @@ def api_upload_file(upload_type='file', form=None, puush=False):
                     protocol, host)
 
                 if upload_type == 'file':
-                    # Get filename of the upload, and split it for extension.
                     filename = form["file"].filename
                     name, ext = os.path.splitext(filename)
                     buff = None
@@ -124,15 +112,11 @@ def api_upload_file(upload_type='file', form=None, puush=False):
                     else:
                         form["file"].save(directory + random_name + ext)
 
-                    # Use the base user id if the user is uploading anonymously
-
                     file_id = config.db.insert(
                         'files', {"userid": user_id, "shorturl": random_name,
                                   "ext": ext, "original": filename,
                                   "size": os.path.getsize(directory + random_name + ext)}).lastrowid
 
-                    # Check if user has selected to show extensions
-                    # in their URLs.
                     if not is_anon:
                         use_extensions = config.user_settings.get(
                             user_id, "ext")
@@ -145,10 +129,7 @@ def api_upload_file(upload_type='file', form=None, puush=False):
                     if paste_body:
                         # Reject pastes longer than 65000 characters
                         if len(paste_body) > 65000:
-                            return {
-                                "success": False,
-                                "error": "Your paste exceeds the maximum character length of 65000"
-                            }
+                            return functions.json_error('Your paste exceeds the maximum character length of 65000')
 
                         paste_id = config.db.insert(
                             'pastes', {"userid": user_id,
@@ -165,10 +146,7 @@ def api_upload_file(upload_type='file', form=None, puush=False):
                                       "size": len(paste_body)}).lastrowid
                 else:
                     # The type the user provided doesn't exist.
-                    return {
-                        "success": False,
-                        "error": "This upload type does not exist."
-                    }
+                    return functions.json_error('This upload type does not exist')
 
                 # Use extensions if user has specified it in their settings.
                 if upload_type != 'paste' and use_extensions:
@@ -189,21 +167,9 @@ def api_upload_file(upload_type='file', form=None, puush=False):
                         return "0,{},{},0".format(host + '/' + random_name, file_id)
                     return host + '/' + random_name
         else:
-            if puush:
-                return PUUSH_ERROR
-
-            return {
-                "success": False,
-                "error": errors
-            }
+            return functions.json_error(errors, puush=puush)
     else:
-        if puush:
-            return PUUSH_ERROR
-
-        return {
-            "success": False,
-            "error": 'Invalid key given. (can only contain letters, numbers, underscores and hyphens)'
-        }
+        return functions.json_error('Invalid key given. (can only contain letters, numbers, underscores and hyphens)', puush=puush)
 
 
 @app.route('/api/edit/paste', method='POST')
@@ -229,14 +195,14 @@ def api_edit_paste():
     random_name = id_generator(random.SystemRandom().randint(4, 7))
 
     # Select the paste that is being edited
-    paste_row = config.db.fetchone(
-        'SELECT * FROM `pastes` WHERE `id` = %s', [form["id"]])
+    paste_row = config.db.select(
+        'pastes', where={"id": form["id"]}, singular=True)
 
     is_authed = True
     revision_row = False
 
-    user_row = config.db.fetchone(
-        'SELECT * FROM `accounts` WHERE `key`=%s', [form["key"]])
+    user_row = config.db.select(
+        'accounts', where={"key": form["key"]}, singular=True)
 
     # Check credentials for user if they exist, else make a new account.
     if not is_anon:
@@ -254,25 +220,15 @@ def api_edit_paste():
         # Generate a hash for the paste revision
         commit = hashlib.sha1(form["paste"]).hexdigest()[0:7]
 
-        # Try see if this revision already exists
-        try:
-            revision_row = config.db.fetchone(
-                'SELECT * FROM `revisions` WHERE `commit`=%s', [commit])
-        except:
-            revision_row = False
-
         # Check whether to fork or just edit the paste
         is_fork = True if not user_row else (
             user_row["id"] != paste_row["userid"])
 
         # Reject long pastes
         if len(form["paste"]) > 65000:
-            return {
-                "success": False,
-                "error": "Your paste exceeds the maximum character length of 65000"
-            }
+            return functions.json_error('Your paste exceeds the maximum character length of 65000')
         else:
-            if paste_row and user_row and not revision_row:
+            if paste_row and user_row:
                 # Set credentials for an account in case they changed
                 if not is_anon:
                     SESSION["key"] = form["key"]
@@ -313,6 +269,6 @@ def api_edit_paste():
                     "base": config.Settings["directories"]["url"]
                 }
             else:
-                return "An error has occured."
+                return functions.json_error("An error has occured.")
     else:
-        return "An error has occured."
+        return functions.json_error("You are not authorized.")

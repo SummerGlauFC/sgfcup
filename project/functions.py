@@ -59,8 +59,7 @@ def hl(text, search):
 
 def get_userid(key, return_row=False):
     ''' Gets a users ID from their `key` '''
-    userid = config.db.fetchone(
-        "SELECT * FROM `accounts` WHERE `key` = %s", [key])
+    userid = config.db.select('accounts', where={"key": key}, singular=True)
 
     if userid:
         return userid["id"] if not return_row else userid
@@ -210,3 +209,13 @@ def highlight(code, language, _preview=False, _linenos=True):
 def css(style='default', css_class='.syntax'):
     ''' Gets the CSS for pygments '''
     return HtmlFormatter(style='vs').get_style_defs(css_class)
+
+
+def json_error(error, puush=False):
+    if puush:
+        return config.PUUSH_ERROR
+
+    return {
+        "success": False,
+        "error": error
+    }

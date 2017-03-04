@@ -1,8 +1,7 @@
 from project import app, functions, config
-from bottle import static_file, request, response, redirect
+from bottle import request, response, redirect
 from bottle import jinja2_view as view, jinja2_template as template
 import os
-import datetime
 import urllib
 import functools
 import hashlib
@@ -22,20 +21,17 @@ def gallery_redirect(user_key=None):
 def gallery_view(user_key=None):
     SESSION = request.environ.get('beaker.session', {})
 
-    # If a user does not provide a gallery to view, redirect to their own.
-    if not user_key:
-        redirect('/redirect/gallery/%s' % SESSION.get('key', ''))
+    # If a user does not provide a gallery to view, redirect to their own
+    if not user_key and SESSION.get('key', '') != '':
+        redirect('/gallery/%s' % SESSION.get('key', ''))
     else:
-        # User provided a key, get the ID that corresponds to that key.
         user_id = functions.get_userid(user_key)
         if user_id:
             # Check the users settings to see if they have specified
-            # to have gallery access restricted.
+            # gallery access restrictions
             settings = config.user_settings.get_all_values(user_id)
 
             if settings["block"]["value"] and settings["gallery_password"]["value"]:
-                # Check the authentication cookie to see if viewer is
-                # permitted to view this gallery.
                 auth_cookie = request.get_cookie("auth+%s" % user_id)
                 if not auth_cookie:
                     redirect('/gallery/auth/' + user_key)
@@ -46,29 +42,27 @@ def gallery_view(user_key=None):
                     if not hex_pass == auth_cookie:
                         redirect('/gallery/auth/' + user_key)
 
-            files = []  # list to store all files that pertain to this gallery
-            error = ''  # simple error string, should be good enough.
+            files = []
+            error = ''
 
-            # Default values for gallery options like sort mode and searches.
+            # Default values for gallery options
             defaults = {
                 "sort": 0,
                 "in": 0,
                 "page": 1,
                 "case": 0,
-                # "beta": settings["gallery_style"]["value"]
             }
 
             # This function generates a url for a given page number,
             # including all GET queries and whatnot
             def url_for_page(page):
-                get_query = request.query
                 path = request.urlparts.path
-                get_query["page"] = page
+                request.query["page"] = page
                 new_query = {}
-                for key, value in get_query.iteritems():
+                for key, value in request.query.iteritems():
                     if key in defaults:
                         value = str(value)
-                        if value.isdigit() and get_query[key] != defaults[key]:
+                        if value.isdigit() and request.query[key] != defaults[key]:
                             new_query[key] = int(value)
                     else:
                         new_query[key] = value
@@ -78,7 +72,6 @@ def gallery_view(user_key=None):
             # shorthand assignments for oftenly used data
             page = int(request.query.get('page', defaults['page']))
             case = int(request.query.get('case', defaults['case']))
-            # style = int(request.query.get('beta', defaults['beta']))
             query_in = functions.get_inrange(
                 request.query.get('in'), defaults['in'], len(config.searchmodes))
             query = request.query.get('query', '')
@@ -123,16 +116,13 @@ def gallery_view(user_key=None):
                 else:
                     error += "This page does not exist. "
 
-            # there are results, and also no errors at this time
-            # so lets continue
             if results and error == '':
                 for row in results:
                     row_file = {}
 
-                    # Start building file information
                     if row["ext"] == "paste":
-                        paste_row = config.db.fetchone(
-                            'SELECT * FROM `pastes` WHERE `id` = %s', [row["original"]])
+                        paste_row = config.db.select(
+                            'pastes', where={"id": row["original"]}, singular=True)
 
                         row_file["type"] = 2
                         row_file["url"] = row["shorturl"]
@@ -171,8 +161,6 @@ def gallery_view(user_key=None):
 
                     files.append(row_file)
 
-            style = False  # rip new style, too much effort to maintain
-
             return {
                 "info": {
                     "key": user_key,
@@ -199,13 +187,11 @@ def gallery_view(user_key=None):
                 "hl": functools.partial(functions.hl, search=query)
             }
         else:
-            # The key the user specified doesn't exist, "raise" an error.
-            return {"error": "Specified key does not exist."}
+            return functions.json_error("Specified key does not exist.")
 
 
 @app.route('/gallery/auth/<user_key:re:[a-zA-Z0-9_-]+>', method="GET")
 def gallery_auth_view(user_key):
-    # Return the authentication page
     return template('gallery_auth.tpl')
 
 
@@ -230,8 +216,38 @@ def gallery_delete_advanced_view():
     }
 
 
+def delete_files(to_delete, messages):
+    size = 0
+    count = 0
+
+    for row in to_delete:
+        is_paste = (row["ext"] == "paste")
+        size += row["size"]
+        count += 1
+
+        config.db.delete(
+            'files', {"shorturl": row["shorturl"]})
+
+        # Special treatment for pastes as they don't physically exist
+        # on the disk
+        if is_paste:
+            config.db.delete(
+                'pastes', {"id": row["original"]})
+        else:
+            try:
+                os.remove(config.Settings["directories"]["files"]
+                          + row["shorturl"] + row["ext"])
+                messages.append('Removed file "%s" (%s)' %
+                                (row["original"], row["shorturl"]))
+            except OSError:
+                messages.append('Could not delete %s' %
+                                row["shorturl"])
+
+    return (size, count, messages)
+
+
 @app.route('/gallery/delete/advanced', method="POST")
-def gallery_delete_advanced_view():
+def gallery_delete_advanced():
     def build_sql_parts(form):
         mapping = {
             "less": '<=',
@@ -258,9 +274,11 @@ def gallery_delete_advanced_view():
                 "password": password}
 
     parts = build_sql_parts(request.forms)
+    user = None
 
-    user = config.db.fetchone(
-        'SELECT * FROM `accounts` WHERE `key`=%s AND `password`=%s', [parts['key'], parts['password']])
+    if parts:
+        user = config.db.select('accounts', where={"key": parts[
+                                'key'], "password": parts['password']}, singular=True)
 
     size = 0
     count = 0
@@ -271,27 +289,7 @@ def gallery_delete_advanced_view():
         sql = "SELECT * FROM `{table}` WHERE `userid` = %s AND `{type}` {operator} %s".format(
             **parts)
         files = config.db.fetchall(sql, [user_id, parts["threshold"]])
-        for f in files:
-            is_paste = (f["ext"] == "paste")
-            size += f["size"]
-            count += 1
-
-            delete_query = config.db.execute(
-                "DELETE FROM `files` WHERE `id` = %s", [f["id"]])
-
-            # Special treatment for pastes as they don't physically exist
-            # as files
-            if is_paste:
-                config.db.execute(
-                    'DELETE FROM `pastes` WHERE `id` = %s', [f["original"]])
-            else:
-                try:
-                    os.remove(config.Settings["directories"]["files"]
-                              + f["shorturl"] + f["ext"])
-                    messages.append('Removed file "%s" (%s)' %
-                                    (f["original"], f["shorturl"]))
-                except OSError:
-                    messages.append('Could not delete %s' % f["shorturl"])
+        size, count, messages = delete_files(files, messages)
 
         messages.append("{0} items deleted. {1} of disk space saved.".format(
             count, functions.sizeof_fmt(size)))
@@ -323,67 +321,15 @@ def gallery_delete():
             return template('general.tpl',
                             title='Error', content="No files were provided.")
 
-        keys_uploads = config.db.fetchall(
-            'SELECT * FROM `files` WHERE `userid` = %s', [userid["id"]])
-
-        file_rows = {}
-        for row in keys_uploads:
-            # Build a list of file uploads that belong to a user
-            file_rows[row["shorturl"]] = row
-
-        size = 0
-        count = 0
+        keys_uploads = config.db.select(
+            'files', where={"userid": userid["id"]})
 
         if del_type == "Delete Selected":
-            for short_url in files_to_delete:
-                if short_url not in file_rows:
-                    messages.append(
-                        'File "%s" does not belong to this user or does not exist.' %
-                        short_url)
-                else:
-                    file_row = file_rows[short_url]
-                    is_paste = (file_row["ext"] == "paste")
-                    size += file_row["size"]
-                    count += 1
-
-                    delete_query = config.db.execute(
-                        "DELETE FROM `files` WHERE `shorturl` = %s", [short_url])
-
-                    # Special treatment for pastes as they don't physically exist
-                    # as files
-                    if is_paste:
-                        config.db.execute(
-                            'DELETE FROM `pastes` WHERE `id` = %s', [file_row["original"]])
-                    else:
-                        try:
-                            os.remove(config.Settings["directories"]["files"]
-                                      + short_url + file_row["ext"])
-                            messages.append('Removed file "%s" (%s)' %
-                                            (file_row["original"], short_url))
-                        except OSError:
-                            messages.append('Could not delete %s' % short_url)
-
+            selected_only = [row for row in keys_uploads if row[
+                "shorturl"] in files_to_delete]
+            size, count, messages = delete_files(selected_only, messages)
         elif del_type == "Delete All":
-            for k, row in file_rows.iteritems():
-                is_paste = (row["ext"] == "paste")
-                size += row["size"]
-                count += 1
-
-                delete_query = config.db.execute(
-                    "DELETE FROM `files` WHERE `shorturl` = %s", [row["shorturl"]])
-
-                # Special treatment for pastes as they don't physically exist
-                # as files
-                if is_paste:
-                    config.db.execute(
-                        'DELETE FROM `pastes` WHERE `id` = %s', [row["original"]])
-                else:
-                    try:
-                        os.remove(config.Settings["directories"]["files"]
-                                  + row["shorturl"] + row["ext"])
-                    except OSError:
-                        messages.append('Could not delete %s' %
-                                        row["shorturl"])
+            size, count, messages = delete_files(keys_uploads, messages)
 
         messages.append("{0} items deleted. {1} of disk space saved.".format(
             count, functions.sizeof_fmt(size)))

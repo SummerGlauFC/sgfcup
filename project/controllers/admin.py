@@ -36,12 +36,12 @@ def delete_hits():
     # If admin has selected to delete from all keys
     if all_keys:
         # Select all files, where hits <= threshold.
-        deleteQueue = config.db.fetchall(
+        deleteQueue = db.fetchall(
             'SELECT * FROM `files` WHERE `hits` <= %s', [hit_threshold])
     else:
         # Select files from a user, where hits <= threshold
         user_id = functions.get_userid(key)
-        deleteQueue = config.db.fetchall(
+        deleteQueue = db.fetchall(
             'SELECT * FROM `files` WHERE `userid` = %s AND `hits` <= %s',
             [user_id, hit_threshold])
 
@@ -66,10 +66,7 @@ def delete_hits():
                     # "gracefully" handle any exceptions
                     print 'file', item['shorturl'], 'does not exist.'
             else:
-                # Just remove the paste from the database
-                config.db.execute(
-                    "DELETE FROM `pastes` WHERE `id` = %s",
-                    [item["original"]])
+                db.delete('pastes', {'id': item["original"]})
 
         # Actually remove rows now.
         if all_keys:
@@ -100,7 +97,7 @@ def do_login():
     user = request.forms.get('key')
     password = request.forms.get('password')
 
-    admin_dict = config.Settings['admin']
+    admin_dict = Settings['admin']
 
     if user in admin_dict and admin_dict[user] == password:
         # Allow for a persistent login

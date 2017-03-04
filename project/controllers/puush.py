@@ -1,31 +1,30 @@
-from project import app, config, functions
-from bottle import template, request, response
+from project import app, config
+from bottle import request
 import hashlib
 import os
 from .view import api_thumb
 from .upload import api_upload_file
 
 
-PUUSH_ERROR = '-1'
+PUUSH_ERROR = config.PUUSH_ERROR
 
 
-def get_puush_user(hash):
-    return config.db.fetchone(
-        'SELECT * FROM `accounts` WHERE `hash`=%s', [hash])
-
+def get_puush_user(apikey):
+    return config.db.select('accounts', where={"hash": apikey}, singular=True)
 
 # puush api integration
+
+
 @app.route('/api/auth', method='POST')
 def puush_auth():
     key = request.forms.get('e', '')
     password = request.forms.get('p', '')
-    hash = request.forms.get('k', '')
+    apikey = request.forms.get('k', '')
 
-    user = config.db.fetchone(
-        'SELECT * FROM `accounts` WHERE `key`=%s', [key])
+    user = config.db.select('accounts', where={"key": key}, singular=True)
 
-    if not hash:
-        hash = hashlib.md5(key + password).hexdigest()
+    if not apikey:
+        apikey = hashlib.md5(key + password).hexdigest()
 
     # If it does, check their password OR hash is correct.
     if not user:
@@ -33,18 +32,17 @@ def puush_auth():
         new_account = config.db.insert(
             'accounts', {"key": key,
                          "password": password,
-                         "hash": hash
+                         "hash": apikey
                          }
         )
-        user = config.db.fetchone(
-            'SELECT * FROM `accounts` WHERE `id`=%s', [new_account.lastrowid])
+        user = config.db.select(
+            'accounts', where={"id": new_account.lastrowid}, singular=True)
 
-    if (user["password"] == password or user["hash"] == hash):
+    if (user["password"] == password or user["hash"] == apikey):
         if user and not user["hash"]:
-            config.db.execute("UPDATE `accounts` SET `hash`=%s WHERE `id`=%s",
-                              [hash, user["id"]])
+            config.db.update('accounts', {"hash": apikey}, {"id": user["id"]})
 
-        return "1,{},,0".format(hash)
+        return "1,{},,0".format(apikey)
 
     return PUUSH_ERROR
 
@@ -87,7 +85,8 @@ def puush_hist():
                     url="{}://{}/{}".format(protocol, host, row["shorturl"]),
                     original=row["original"].replace(',', '_'), hits=row["hits"])
 
-                ret += "{id},{date},{url},{original},{hits},0\n".format(**formats)
+                ret += "{id},{date},{url},{original},{hits},0\n".format(
+                    **formats)
 
         return ret
 
@@ -100,13 +99,11 @@ def puush_del():
 
     user = get_puush_user(request.forms.get('k', ''))
 
-    f = config.db.fetchone(
-        'SELECT * FROM `files` WHERE `id`=%s', [i])
+    f = config.db.select('files', where={"id": i}, singular=True)
 
     if f["userid"] == user["id"]:
         try:
-            delete_query = config.db.execute(
-                "DELETE FROM `files` WHERE `id` = %s", [i])
+            config.db.delete('files', {"id": i})
 
             os.remove(config.Settings["directories"]
                       ["files"] + f["shorturl"] + f["ext"])
@@ -119,11 +116,11 @@ def puush_del():
 
 
 @app.route('/api/thumb', method='POST')
-def puush_del():
+def puush_thumb():
     user = get_puush_user(request.forms.get('k', ''))
 
-    f = config.db.fetchone(
-        'SELECT * FROM `files` WHERE `id`=%s', [request.forms.get('i', '')])
+    f = config.db.select(
+        'files', where={"id": request.forms.get('i', '')}, singular=True)
 
     if f["userid"] == user["id"]:
         try:

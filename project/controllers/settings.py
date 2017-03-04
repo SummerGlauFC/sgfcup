@@ -1,6 +1,6 @@
 from project import app, functions, config
-from bottle import static_file, request
-from bottle import jinja2_view as view, jinja2_template as template
+from bottle import request
+from bottle import jinja2_view as view
 
 
 @app.route('/settings', method='GET')
@@ -27,18 +27,15 @@ def settings_process():
     message = ''
     title = ''
 
-    # Make sure the user as entered their info for comfirmation
     if not confirm_key or not confirm_password:
         return {
             "message": "You didn't enter your key or password for confirmation.",
             "title": "Error"
         }
     else:
-        account = config.db.fetchone(
-            "SELECT * FROM `accounts` WHERE `key` = %s", [confirm_key])
+        account = config.db.select(
+            'accounts', where={"key": confirm_key}, singular=True)
 
-        # Check if the users provided details are right, and
-        # execute any password changes
         if account:
             key_password = account["password"]
             key_id = account["id"]
@@ -51,9 +48,11 @@ def settings_process():
 
                 if change_password:
                     if key_password != change_password:
-                        config.db.execute(
-                            "UPDATE `accounts` SET `password` = %s WHERE `key` = %s",
-                            [change_password, confirm_key])
+                        # config.db.execute(
+                        #     "UPDATE `accounts` SET `password` = %s WHERE `key` = %s",
+                        #     [change_password, confirm_key])
+                        config.db.update('accounts', {"password": change_password}, {
+                                         "key": confirm_key})
 
                         SESSION["id"] = account["id"]
                         SESSION["key"] = confirm_key

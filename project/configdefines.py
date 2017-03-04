@@ -1,5 +1,4 @@
 from db import DB
-import functions
 from picklesettings import PickleSettings
 
 # /-----------------------------------------------------------------\
@@ -28,3 +27,5 @@ file_type = {
     "file": 1,
     "paste": 2
 }
+
+PUUSH_ERROR = "-1"

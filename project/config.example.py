@@ -11,7 +11,7 @@ Settings = {
         "thumbs": base + "/img/t/",  # thumbnail location
         "url": "sgfc.co",  # URL for this script
         "base": base,
-        "template_base": "/path/to/base_folder_for_independant_templates"
+        "template_base": base
     },
     "database": {
         "user": "username",  # database user

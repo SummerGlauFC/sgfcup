@@ -2,7 +2,7 @@
 from project import app, config, functions
 from bottle import request, abort, redirect, response
 from bottle import static_file as bottle_static_file
-from bottle import jinja2_view as view, jinja2_template as template
+from bottle import jinja2_template as template
 import os
 from PIL import Image, ImageOps
 import magic
@@ -10,16 +10,20 @@ import ghdiff
 
 
 def static_file(path, root, filename=False):
+    file_path = root + path
+    mime = magic.from_file(file_path, mime=True)
+
+    def set_file_info(resp):
+        resp.set_header('Content-Type', mime)
+        if filename:
+            resp.set_header('Content-Disposition',
+                            'inline; filename="{0}"'.format(filename))
+        return resp
+
+    set_file_info(response)
+
     # Use the sendfile built into nginx if it's available
     if config.Settings["use_nginx_sendfile"]:
-        file_path = root + path
-        response.set_header(
-            'Content-Type', magic.from_file(file_path, mime=True))
-
-        if filename:
-            response.set_header('Content-Disposition',
-                                'inline; filename="{0}"'.format(filename))
-
         folder = 't' if root is config.Settings[
             'directories']['thumbs'] else 'p'
 
@@ -28,10 +32,7 @@ def static_file(path, root, filename=False):
 
         return 'This should be handled by nginx.'
     else:
-        # Or just use the default bottle file serve function
-        # path = results["shorturl"] + results["ext"]
-        # root = config.Settings["directories"]["files"]
-        return bottle_static_file(path, root=root)
+        return set_file_info(bottle_static_file(path, root=root, mimetype=mime))
 
 
 @app.route('/api/thumb/<url>')
@@ -64,7 +65,8 @@ def api_thumb(url, ext=None, temp=False, size=(400, 400)):
                     if base.mode not in ("L", "RGBA"):
                         base = base.convert("RGBA")
                     base = ImageOps.fit(base, size, Image.ANTIALIAS)
-                    save_dir = '/tmp/' if temp else config.Settings['directories']['thumbs']
+                    save_dir = '/tmp/' if temp else config.Settings[
+                        'directories']['thumbs']
                     base.save(save_dir + 'thumb_' + url + '.jpg', **image_info)
                     return static_file('thumb_' + url + '.jpg', root=save_dir)
                 else:
@@ -122,20 +124,19 @@ def paste_view(url, flag=None, ext=None):
         'SELECT * FROM `files` WHERE BINARY `shorturl` = %s', [url])
 
     if results:
-        # Select the paste row based on the file row
-        paste_row = config.db.fetchone(
-            'SELECT * FROM `pastes` WHERE `id` = %s', [results["original"]])
+        paste_row = config.db.select(
+            'pastes', where={"id": results["original"]}, singular=True)
 
         if not paste_row:
             print 'Deleting a paste that was not found...'
-            config.db.execute(
-                "DELETE FROM `files` WHERE `id` = %s", [results['id']])
+            # config.db.execute(
+            #     "DELETE FROM `files` WHERE `id` = %s", [results['id']])
+            config.db.delete('files', {"id": results['id']}, singular=True)
             abort(404, 'File not found.')
 
         # Select every revision for specified paste
-        revisions_rows = config.db.fetchall(
-            'SELECT * FROM `revisions` WHERE `pasteid` = %s AND `fork` = 0',
-            [paste_row["id"]])
+        revisions_rows = config.db.select(
+            'revisions', where={"pasteid": paste_row["id"], "fork": 0})
 
         # Add a hit to the paste
         config.db.execute(
@@ -146,9 +147,8 @@ def paste_view(url, flag=None, ext=None):
 
         # If a commit is provided, get the row for that revision
         if commit:
-            revisions_row = config.db.fetchone(
-                'SELECT * FROM `revisions` WHERE `commit`=%s',
-                [commit])
+            revisions_row = config.db.select(
+                'revisions', where={"commit": commit}, singular=True)
         else:
             revisions_row = None
 
@@ -156,7 +156,7 @@ def paste_view(url, flag=None, ext=None):
         commits = ['base']
 
         # Append every commit which exists
-        if revisions_rows:        
+        if revisions_rows:
             for row in revisions_rows:
                 commits.append(row["commit"])
 
@@ -174,7 +174,10 @@ def paste_view(url, flag=None, ext=None):
 
         # Function to get the previous commit from the database for diffs
         def previous_commit():
-            return config.db.fetchone('SELECT * FROM `revisions` WHERE `commit`=%s', [current_commit])["paste"] if current_commit != 'base' else config.db.fetchone('SELECT * FROM `pastes` WHERE `id`=%s', [paste_row["id"]])["content"]
+            if current_commit != 'base':
+                return config.db.select('revisions', where={"commit": current_commit}, singular=True)["paste"]
+            else:
+                return config.db.select('pastes', where={"id": paste_row["id"]}, singular=True)["content"]
 
         # If the user provided the raw flag, skip all HTML rendering
         if flag == "raw":
@@ -207,8 +210,8 @@ def paste_view(url, flag=None, ext=None):
                 revision = revisions_row
 
                 # Add the parent pastes URL to the revision's data.
-                revision["parent_url"] = config.db.fetchone(
-                    'SELECT * FROM `pastes` WHERE `id` = %s', [revision["parent"]])["shorturl"]
+                revision["parent_url"] = config.db.select(
+                    'pastes', where={"id": revision["parent"]}, singular=True)["shorturl"]
 
                 title += " (revision %s)" % revision["commit"]
 

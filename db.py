@@ -1,9 +1,8 @@
-# import pymysql as cymysql
 import cymysql
+import inspect
 
 
-class DB(object):
-
+class BaseDB(object):
     ''' a small database abstraction to eliminate lost connections '''
 
     conn = None
@@ -80,19 +79,116 @@ class DB(object):
         if cur.rowcount:
             return cur.fetchall()
         else:
-            return []
+            return None
+
+
+class DB(BaseDB):
+    ''' Wrapper around small DB abstraction to abstract further
+        this is art.
+    '''
+
+    def __init__(self, *args, **kwargs):
+        self.debug = kwargs.pop('debug', False)
+        super(DB, self).__init__(*args, **kwargs)
+
+    @staticmethod
+    def _debug_print(*args):
+        print(args)
+        (frame, filename, line_number, function_name, lines,
+         index) = inspect.getouterframes(inspect.currentframe())[2]
+        formatted = "\t{filename}:{line_number} in {function_name}\n\t-->\t{lines}".format(
+            filename=filename, line_number=line_number, function_name=function_name, lines='\n'.join([x.strip() for x in lines]))
+        print(formatted)
+        print("-" * 40)
+
+    def _pairs_generator(self, pairs, joiner=' AND ', brackets=False):
+        ''' builds a where template '''
+        base = '`{0}` = %s'
+        if brackets:
+            base = '({})'.format(base)
+        return joiner.join([base.format(key) for key in pairs])
+
+    def _columns_generator(self, columns):
+        return self._pairs_generator(columns, joiner=', ')
+
+    def select(self, table, what="*", where=None, singular=False):
+        ''' build and execute a select operation, usage:
+                select('rooms', what='*', where={"name": "#main"})
+            resulting in the query:
+                'SELECT * FROM `rooms` WHERE `name` = %s', ['#main']
+        '''
+        if type(what) is not list or type(what) is not tuple:
+            what = [what]
+        else:
+            _what = []
+            for item in what:
+                if item is not "*":
+                    _what.append("`{}`".format(item))
+                else:
+                    _what.append("*")
+            what = _what
+
+        query = 'SELECT {what} FROM `{table}`'
+        if where:
+            query += ' WHERE {where}'
+        else:
+            where = {}
+
+        query = query.format(
+            what=", ".join(what), table=table, where=self._pairs_generator(where, brackets=True))
+
+        if self.debug:
+            self._debug_print(query, where.values())
+
+        if singular:
+            return self.fetchone(query, where.values())
+        else:
+            return self.fetchall(query, where.values())
+
+    def update(self, table, set_pairs, where_pairs):
+        ''' build and execute an update operation, usage:
+                update('table', {"hidden": True, "other": "test"}, {"name": "#main", "me": "test again"})
+            resulting in the query:
+                'UPDATE `rooms` SET `hidden` = %s, `other` = %s WHERE `me` = %s AND `name` = %s', [True, 'test', 'test again', '#main'])
+        '''
+        query = 'UPDATE `{table}` SET {sets} WHERE {where}'.format(
+            table=table, sets=self._columns_generator(set_pairs), where=self._pairs_generator(where_pairs, brackets=True))
+
+        if self.debug:
+            self._debug_print(query, set_pairs.values() + where_pairs.values())
+
+        return self.execute(query, set_pairs.values() + where_pairs.values())
+
+    def delete(self, table, pairs):
+        ''' build and execute a delete operation, usage:
+                delete('table', {'c1': 'v1', 'c2': 'v2'})
+            resulting in the query:
+                'DELETE FROM `table` WHERE `c1` = %s AND `c2` = %s', ['v1', 'v2']
+        '''
+
+        where = self._pairs_generator(pairs, brackets=True)
+        query = 'DELETE FROM `{table}` WHERE {where}'.format(
+            table=table, where=where)
+
+        if self.debug:
+            self._debug_print(query, pairs.values())
+
+        return self.execute(query, pairs.values())
 
     def insert(self, table, columns_pair):
         ''' build and execute an insert operation, as such:
             insert('table_name', {'column1': 'value', 'column2': 'value2'}) '''
 
-        columns = ', '.join(['`{0}`'.format(key) for key in columns_pair])
-        values = ', '.join(['%s' for _ in range(len(columns_pair))])
+        columns = ', '.join(['`{}`'.format(_) for _ in columns_pair])
+        values = ', '.join(['%s' for _ in columns_pair])
 
         query = 'INSERT INTO `{table}` ({columns}) VALUES ({values})'.format(
             table=table, columns=columns, values=values)
 
-        return self.execute(query, [value for value in columns_pair.values()])
+        if self.debug:
+            self._debug_print(query, list(columns_pair.values()))
+
+        return self.execute(query, list(columns_pair.values()))
 
 
 class DBConnectionFailed(Exception):
