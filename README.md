@@ -34,7 +34,7 @@ The program is run like so:
 
 Notes
 -----
-The app also has the ability to serve a file through [nginx's XSendfile](http://wiki.nginx.org/XSendfile). To use this, nginx must have a location block for `/get_image/`, like so:
+The app also has the ability to serve a file through [nginx's X-Accel](https://www.nginx.com/resources/wiki/start/topics/examples/x-accel/). To use this, nginx must have a location block for `/get_image/`, like so:
 
     location /get_image/ {
         internal;
