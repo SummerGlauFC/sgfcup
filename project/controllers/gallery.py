@@ -161,11 +161,18 @@ def gallery_view(user_key=None):
 
                     files.append(row_file)
 
+            tally = config.db.fetchone('SELECT SUM(`size`) AS `total` FROM `files` WHERE `userid` = %s', [user_id])
+            if tally:
+                usage = functions.sizeof_fmt(float(tally['total']))
+            else:
+                usage = functions.sizeof_fmt(1.0)
+
             return {
                 "info": {
                     "key": user_key,
                     "id": user_id,
                     "pages": pagination,
+                    "usage": usage,
                     "file_types": config.file_types,
                     "sort": {
                         "current": current_sort,

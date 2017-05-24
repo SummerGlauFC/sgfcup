@@ -78,7 +78,8 @@
                     </header>
                     <div id="main">
     {% endif %}
-                        <h2 class="pages" style="position:relative;">
+                        <h2>{{ info.usage }} Used</h2>
+                        <h2 class="debug pages" style="position:relative;">
                             {{ render_pagination(info.pages) }}
                         </h2>
                         <script>

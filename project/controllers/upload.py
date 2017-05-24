@@ -125,6 +125,7 @@ def api_upload_file(upload_type='file', form=None, puush=False):
                     paste_body = request.forms.get('paste_body')
                     paste_lang = request.forms.get('lang', 'text')
                     paste_name = request.forms.get('paste_name', random_name)
+                    ext = 'paste'
 
                     if paste_body:
                         # Reject pastes longer than 65000 characters
@@ -141,7 +142,7 @@ def api_upload_file(upload_type='file', form=None, puush=False):
                         file_id = config.db.insert(
                             'files', {"userid": user_id,
                                       "shorturl": random_name,
-                                      "ext": 'paste',
+                                      "ext": ext,
                                       "original": paste_id,
                                       "size": len(paste_body)}).lastrowid
                 else:
@@ -159,7 +160,8 @@ def api_upload_file(upload_type='file', form=None, puush=False):
                         "error": False,
                         "url": '/' + ('' if upload_type == 'file' else upload_type + '/') + random_name,
                         "key": 'anon' if is_anon else key,
-                        "base": host
+                        "base": host,
+                        "type": ext
                     }
                 else:
                     response.content_type = 'text/html; charset=utf-8'
