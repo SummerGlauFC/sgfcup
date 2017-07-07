@@ -1,7 +1,7 @@
-# -*- coding: utf-8 -*-
+from __future__ import division, print_function, absolute_import
 from project import app, functions, config
 from bottle import static_file, request
-from bottle import jinja2_view as view, jinja2_template as template
+from bottle import jinja2_view as view
 
 # File to serve (mostly) static files, like the upload pages, the
 # user info page, the favicon and all stylesheets

@@ -1,4 +1,4 @@
-# -*- coding: utf-8 -*-
+from __future__ import division, print_function, absolute_import
 from project import app, config, functions
 from bottle import request, abort, redirect, response
 from bottle import static_file as bottle_static_file
@@ -7,6 +7,24 @@ import os
 from PIL import Image, ImageOps
 import magic
 import ghdiff
+
+# courtesy of Humphrey@stackoverflow
+# https://stackoverflow.com/a/35859141
+def remove_transparency(im, bg_colour=(255, 255, 255)):
+    # Only process if image has transparency
+    # (http://stackoverflow.com/a/1963146)
+    if im.mode in ('RGBA', 'LA') or (im.mode == 'P' and 'transparency' in im.info):
+
+        # Need to convert to RGBA if LA format due to a bug in PIL
+        # (http://stackoverflow.com/a/1963146)
+        alpha = im.convert('RGBA').split()[-1]
+
+        background = Image.new("RGB", im.size, bg_colour)
+        background.paste(im, mask=alpha) # 3 is the alpha channel
+        return background
+
+    else:
+        return im
 
 
 def static_file(path, root, filename=False):
@@ -62,11 +80,12 @@ def api_thumb(url, ext=None, temp=False, size=(400, 400)):
                     config.Settings['directories']['files'] + results["shorturl"] + results["ext"])
                 if size < base.size:
                     image_info = base.info
-                    if base.mode not in ("L", "RGBA"):
-                        base = base.convert("RGBA")
+                    # if base.mode not in ("L", "RGBA"):
+                    #     base = base.convert("RGBA")
                     base = ImageOps.fit(base, size, Image.ANTIALIAS)
                     save_dir = '/tmp/' if temp else config.Settings[
                         'directories']['thumbs']
+                    base = remove_transparency(base)
                     base.save(save_dir + 'thumb_' + url + '.jpg', **image_info)
                     return static_file('thumb_' + url + '.jpg', root=save_dir)
                 else:
@@ -77,7 +96,7 @@ def api_thumb(url, ext=None, temp=False, size=(400, 400)):
 
 @app.route('/<url>')
 @app.route('/<url>.<ext>')
-def image_view(url, ext=None, results=None):
+def image_view(url, ext=None, results=None, update_hits=True):
     # Check if the requested file exists
     # Also, use a passed-through results if it exists.
     if not results:
@@ -94,8 +113,9 @@ def image_view(url, ext=None, results=None):
                 redirect('/paste/%s' % url)
             else:
                 # Add one hit to the file
-                config.db.execute(
-                    'UPDATE `files` SET hits=hits+1 WHERE `id`=%s', [results["id"]])
+                if update_hits:
+                    config.db.execute(
+                        'UPDATE `files` SET hits=hits+1 WHERE `id`=%s', [results["id"]])
 
                 return static_file(
                     results["shorturl"] + results["ext"],
@@ -128,7 +148,7 @@ def paste_view(url, flag=None, ext=None):
             'pastes', where={"id": results["original"]}, singular=True)
 
         if not paste_row:
-            print 'Deleting a paste that was not found...'
+            print('Deleting a paste that was not found...')
             # config.db.execute(
             #     "DELETE FROM `files` WHERE `id` = %s", [results['id']])
             config.db.delete('files', {"id": results['id']}, singular=True)

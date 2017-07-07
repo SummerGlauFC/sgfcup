@@ -1,10 +1,14 @@
+from __future__ import division, print_function, absolute_import
 from project import app, functions, config
 from bottle import request, response, redirect
 from bottle import jinja2_view as view, jinja2_template as template
 import os
-import urllib
 import functools
 import hashlib
+
+from future.standard_library import install_aliases
+install_aliases()
+from urllib.parse import urlencode
 
 
 @app.route('/redirect/gallery/<user_key>')
@@ -37,7 +41,7 @@ def gallery_view(user_key=None):
                     redirect('/gallery/auth/' + user_key)
                 else:
                     hex_pass = hashlib.sha1(
-                        settings["gallery_password"]["value"]).hexdigest()
+                        settings["gallery_password"]["value"].encode('utf-8')).hexdigest()
 
                     if not hex_pass == auth_cookie:
                         redirect('/gallery/auth/' + user_key)
@@ -67,7 +71,7 @@ def gallery_view(user_key=None):
                     else:
                         new_query[key] = value
 
-                return path + '?' + urllib.urlencode(new_query)
+                return path + '?' + urlencode(new_query)
 
             # shorthand assignments for oftenly used data
             page = int(request.query.get('page', defaults['page']))
@@ -124,7 +128,7 @@ def gallery_view(user_key=None):
                         paste_row = config.db.select(
                             'pastes', where={"id": row["original"]}, singular=True)
 
-                        row_file["type"] = 2
+                        row_file["type"] = config.file_type.PASTE
                         row_file["url"] = row["shorturl"]
                         row_file["content"] = paste_row["content"]
                         row_file["hits"] = row["hits"]
@@ -137,10 +141,16 @@ def gallery_view(user_key=None):
                             "timestamp": row["date"].strftime('%d/%m/%Y @ %H:%M:%S')
                         }
                     else:
+                        # is either an image or a file
                         full_file_path = config.Settings["directories"][
                             "files"] + row["shorturl"] + row["ext"]
 
                         image = functions.is_image(full_file_path)
+                        if image:
+                            row_file["type"] = config.file_type.IMAGE
+                            row_file["resolution"] = image.size
+                        else:
+                            row_file["type"] = config.file_type.FILE
 
                         row_file["url"] = row["shorturl"]
                         row_file["ext"] = row["ext"]
@@ -153,19 +163,13 @@ def gallery_view(user_key=None):
                             "timestamp": row["date"].strftime('%d/%m/%Y @ %H:%M:%S')
                         }
 
-                        if image:
-                            row_file["type"] = 0
-                            row_file["resolution"] = image.size
-                        else:
-                            row_file["type"] = 1
-
                     files.append(row_file)
 
-            tally = config.db.fetchone('SELECT SUM(`size`) AS `total` FROM `files` WHERE `userid` = %s', [user_id])
-            if tally:
+            tally = config.db.fetchone(
+                'SELECT SUM(`size`) AS `total` FROM `files` WHERE `userid` = %s', [user_id])
+            usage = None
+            if tally and tally['total'] is not None:
                 usage = functions.sizeof_fmt(float(tally['total']))
-            else:
-                usage = functions.sizeof_fmt(1.0)
 
             return {
                 "info": {
@@ -209,7 +213,7 @@ def gallery_auth_do(user_key):
                12) if int(request.forms.get('remember', 0)) else None
     authcode = request.forms.get('authcode')
     response.set_cookie("auth+%s" % functions.get_userid(user_key),
-                        hashlib.sha1(authcode).hexdigest(), max_age=max_age, path="/")
+                        hashlib.sha1(authcode.encode('utf-8')).hexdigest(), max_age=max_age, path="/")
     redirect('/gallery/%s' % user_key)
 
 

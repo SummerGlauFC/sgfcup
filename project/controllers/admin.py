@@ -1,4 +1,4 @@
-# -*- coding: utf-8 -*-
+from __future__ import division, print_function, absolute_import
 from project import app, config, functions
 from bottle import request, redirect
 from bottle import jinja2_template as template
@@ -36,35 +36,33 @@ def delete_hits():
     # If admin has selected to delete from all keys
     if all_keys:
         # Select all files, where hits <= threshold.
-        deleteQueue = db.fetchall(
+        delete_queue = db.fetchall(
             'SELECT * FROM `files` WHERE `hits` <= %s', [hit_threshold])
     else:
         # Select files from a user, where hits <= threshold
         user_id = functions.get_userid(key)
-        deleteQueue = db.fetchall(
+        delete_queue = db.fetchall(
             'SELECT * FROM `files` WHERE `userid` = %s AND `hits` <= %s',
             [user_id, hit_threshold])
 
     size = 0  # total size tally
-    itemsDeleted = 0  # items deleted tally
+    items_deleted = 0  # items deleted tally
 
-    if deleteQueue:
-        for item in deleteQueue:
+    if delete_queue:
+        for item in delete_queue:
             # Check if item is a physical file
             if not item['ext'] == 'paste':
                 try:
-                    # Obtain file size and add to tally
                     size += os.stat(Settings["directories"]["files"]
                                     + item["shorturl"] + item["ext"]).st_size
 
-                    # Physically(?) remove the file
                     os.remove(
                         Settings["directories"]["files"] + item["shorturl"] + item["ext"])
 
-                    itemsDeleted += 1
+                    items_deleted += 1
                 except:
                     # "gracefully" handle any exceptions
-                    print 'file', item['shorturl'], 'does not exist.'
+                    print('file does not exist:', item['shorturl'])
             else:
                 db.delete('pastes', {'id': item["original"]})
 
@@ -77,9 +75,8 @@ def delete_hits():
                 'DELETE FROM `files` WHERE `userid` = %s and `hits` <= %s',
                 [user_id, hit_threshold])
 
-        # return the tallys.
         return "{0} items deleted. {1} of disk space saved.".format(
-            itemsDeleted, functions.sizeof_fmt(size))
+            items_deleted, functions.sizeof_fmt(size))
     else:
         return "nothing to delete."
 

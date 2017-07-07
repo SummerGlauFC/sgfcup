@@ -1,6 +1,5 @@
 #!/usr/bin/env python
-# -*- coding: utf-8 -*-
-import os
+from __future__ import division, print_function, absolute_import
 from project import app
 from bottle import debug, run
 from beaker.middleware import SessionMiddleware
@@ -18,7 +17,7 @@ debug(False)
 if __name__ == '__main__':
     try:
         port = int(sys.argv[1])
-        run(app, reloader=False, host='0.0.0.0', port=port, server='bjoern')
+        run(app, reloader=False, host='0.0.0.0', port=port, server='tornado')
     except Exception as e:
-        print e
-        print 'Port to run on not specified.'
+        print(e)
+        print('Port to run on not specified.')

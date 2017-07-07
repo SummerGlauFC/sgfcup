@@ -5,19 +5,28 @@ New codebase for the SGFC file uploader.
 Dependencies
 ------------
 * bottle (dev version): https://github.com/bottlepy/bottle
+* cymysql
 * jinja2
-* python-magic
+* python-magic (need libmagic on your system)
 * pillow
 * pygments
 * jsonmerge
-* bjoern
 * bottle-beaker
 * beaker
 * ghdiff
+* tornado (for serving the app)
 
-Dependencies can be installed via:
+Install these if you are using a version of Python below 3.4:
+* enum34
+* future (for python2/3 compatibility)
 
-    pip install git+https://github.com/bottlepy/bottle.git jinja2 python-magic pillow pygments jsonmerge bjoern bottle-beaker beaker ghdiff
+Dependencies for Python >= 3.4 can be installed via:
+
+    pip install git+https://github.com/bottlepy/bottle.git cymysql jinja2 python-magic pillow pygments jsonmerge tornado bottle-beaker beaker ghdiff
+
+Dependencies for Python < 3.4 can be installed via:
+
+    pip install git+https://github.com/bottlepy/bottle.git cymysql jinja2 python-magic pillow pygments jsonmerge tornado bottle-beaker beaker ghdiff enum34 future
 
 Please edit `project/config.example.py`, and rename it to `config.py`,
 then run `database.sql` on the database you've put in `config.py`.
@@ -40,6 +49,14 @@ The app also has the ability to serve a file through [nginx's X-Accel](https://w
         internal;
         alias /path/to/project/img/; # note the trailing slash
     }
+
+Then in `project/config.py`:
+
+    {
+        "use_nginx_sendfile": False,
+        ...
+    }
+
 
 LICENSE
 -------

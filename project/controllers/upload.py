@@ -1,4 +1,4 @@
-# -*- coding: utf-8 -*-
+from __future__ import division, print_function, absolute_import
 from project import app, config, functions
 from bottle import request, response
 import random
@@ -20,9 +20,9 @@ def api_upload_file(upload_type='file', form=None, puush=False):
     # All user submitted data
     if not form:
         form = {
-            "key": request.forms.get('key', False),
-            "password": request.forms.get('password', False),
-            "file": request.files.get('files')
+            "key": request.forms.key or False,
+            "password": request.forms.password or False,
+            "file": request.files.files
         }
 
     # Short references
@@ -38,13 +38,8 @@ def api_upload_file(upload_type='file', form=None, puush=False):
 
     errors = ''
 
-    # Generate a random string for anon uploads
-    if is_anon:
-        key = id_generator(15)
-        password = id_generator(15)
-
     # Keys must only contain alphanumerics and underscores/hyphens
-    if re.match("^[a-zA-Z0-9_-]+$", key):
+    if re.match("^[a-zA-Z0-9_-]+$", key) or is_anon:
         # Check if user has provided a file to upload or is not uploading a
         # file.
         if form["file"] or upload_type != "file":
@@ -70,7 +65,7 @@ def api_upload_file(upload_type='file', form=None, puush=False):
                 errors += 'Incorrect Key or password. '
 
                 # Exit abruptly.
-                response.status = 500
+                response.status = 403
                 return functions.json_error(errors, puush=puush)
             else:
                 if not is_anon:
@@ -122,9 +117,9 @@ def api_upload_file(upload_type='file', form=None, puush=False):
                             user_id, "ext")
 
                 elif upload_type == 'paste':
-                    paste_body = request.forms.get('paste_body')
-                    paste_lang = request.forms.get('lang', 'text')
-                    paste_name = request.forms.get('paste_name', random_name)
+                    paste_body = request.forms.paste_body
+                    paste_lang = request.forms.lang or 'text'
+                    paste_name = request.forms.paste_name or random_name
                     ext = 'paste'
 
                     if paste_body:
@@ -179,19 +174,14 @@ def api_edit_paste():
     SESSION = request.environ.get('beaker.session', {})
 
     form = {
-        "key": request.forms.get('key', False),
-        "password": request.forms.get('password', False),
-        "paste": request.forms.get('paste_edit_body', False),
-        "id": request.forms.get('id', False),
-        "commit": request.forms.get('commit', False)
+        "key": request.forms.key or False,
+        "password": request.forms.password or False,
+        "paste": request.forms.paste_edit_body or False,
+        "id": request.forms.id or False,
+        "commit": request.forms.commit or False
     }
 
     is_anon = (not form["key"] and not form["password"])
-
-    # Generate random credentials if user is uploading anonymously.
-    if is_anon:
-        form["key"] = id_generator(15)
-        form["password"] = id_generator(15)
 
     # Generate paste name
     random_name = id_generator(random.SystemRandom().randint(4, 7))
@@ -200,14 +190,15 @@ def api_edit_paste():
     paste_row = config.db.select(
         'pastes', where={"id": form["id"]}, singular=True)
 
-    is_authed = True
-    revision_row = False
-
-    user_row = config.db.select(
-        'accounts', where={"key": form["key"]}, singular=True)
-
     # Check credentials for user if they exist, else make a new account.
-    if not is_anon:
+    if is_anon:
+        is_authed = True
+        user_row = None
+        user_id = 0
+    else:
+        user_row = config.db.select(
+            'accounts', where={"key": form["key"]}, singular=True)
+
         if user_row:
             is_authed = (user_row["password"] == form["password"])
             user_id = user_row["id"]
@@ -215,39 +206,37 @@ def api_edit_paste():
             new_account = config.db.insert(
                 'accounts', {"key": form["key"], "password": form["password"]})
             user_id = new_account.lastrowid
-
-            user_row = {"id": user_id}
+            is_authed = True
 
     if is_authed:
         # Generate a hash for the paste revision
-        commit = hashlib.sha1(form["paste"]).hexdigest()[0:7]
+        commit = hashlib.sha1(form["paste"].encode('utf-8')).hexdigest()[0:7]
 
         # Check whether to fork or just edit the paste
-        is_fork = True if not user_row else (
-            user_row["id"] != paste_row["userid"])
+        is_fork = True if not user_row else (user_id != paste_row["userid"])
 
         # Reject long pastes
         if len(form["paste"]) > 65000:
             return functions.json_error('Your paste exceeds the maximum character length of 65000')
         else:
-            if paste_row and user_row:
+            if paste_row and (user_id or is_anon):
                 # Set credentials for an account in case they changed
                 if not is_anon:
                     SESSION["key"] = form["key"]
                     SESSION["password"] = form["password"]
-                    SESSION["id"] = user_row["id"]
+                    SESSION["id"] = user_id
 
                 if is_fork:
                     # Insert into pastes as well as the users gallery as a fork
                     paste_id = config.db.insert(
-                        'pastes', {"userid": user_row["id"],
+                        'pastes', {"userid": user_id,
                                    "shorturl": random_name,
                                    "name": paste_row["name"],
                                    "lang": paste_row["lang"],
                                    "content": form["paste"]}).lastrowid
 
                     config.db.insert(
-                        'files', {"userid": user_row["id"],
+                        'files', {"userid": user_id,
                                   "shorturl": random_name,
                                   "ext": 'paste',
                                   "original": paste_id})
@@ -255,7 +244,7 @@ def api_edit_paste():
                 # Insert as a revision regardless of being a fork or edit
                 config.db.insert(
                     'revisions', {"pasteid": paste_row["id"] if not is_fork else paste_id,
-                                  "userid": user_row["id"],
+                                  "userid": user_id,
                                   "commit": commit,
                                   "message": form["commit"],
                                   "paste": form["paste"],

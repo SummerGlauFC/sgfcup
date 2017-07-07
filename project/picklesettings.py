@@ -1,7 +1,7 @@
+from __future__ import division, print_function, absolute_import
 import json
 from jsonmerge import merge
-from db import DB
-import cPickle as pickle
+import pickle
 
 
 class PickleSettings(object):
@@ -19,14 +19,14 @@ class PickleSettings(object):
 
         self.db = db_instance
 
-    def _get_current_config(self, user_id):
+    def _get_config_blob(self, user_id):
         return self.db.select('settings', where={"userid": user_id}, singular=True)
 
-    def _do(self, user_id, new_json, current_config=None):
+    def _update(self, user_id, new_json, current_config=None):
         ''' handles the insertion of user info into the database '''
 
         if not current_config:
-            current_config = self._get_current_config(user_id)
+            current_config = self._get_config_blob(user_id)
 
         if current_config:
             if current_config["json"] != "0":
@@ -41,11 +41,11 @@ class PickleSettings(object):
             self.db.insert(
                 "settings", {"userid": user_id, "json": pickle.dumps(new_json, -1)})
 
-    def changeValues(self, values):
+    def change_values(self, values):
         ''' returns a dict which contains the users new value for an option '''
 
         temporary_json = {}
-        for key, value in values.iteritems():
+        for key, value in values.items():
             if key in self.json_file:
                 temporary_json[key] = {}
                 if "options" in self.json_file[key]:
@@ -57,7 +57,7 @@ class PickleSettings(object):
     def _get(self, user_id):
         ''' returns a users config, including defaults. '''
 
-        current_config = self._get_current_config(user_id)
+        current_config = self._get_config_blob(user_id)
 
         if current_config:
             # print current_config, dir(current_config)
@@ -94,9 +94,9 @@ class PickleSettings(object):
             and items is a dictionary of key: value
                 like: {"ext": 0, "gallery_password": "test"} '''
 
-        current_config = self._get_current_config(user_id)
+        current_config = self._get_config_blob(user_id)
 
-        self._do(user_id, self.changeValues(items),
+        self._update(user_id, self.change_values(items),
                  current_config)
 
     def get_all_values(self, user_id):

@@ -1,16 +1,16 @@
+from __future__ import division, print_function, absolute_import
+from builtins import range
 import random
 import string
 from PIL import Image
-import config
+from project import config
 from math import ceil
 import markupsafe
 import re
 import pygments
 from pygments.util import ClassNotFound
 from pygments.lexers import get_lexer_by_name, get_lexer_for_filename, \
-    get_lexer_for_mimetype, PhpLexer, TextLexer, get_all_lexers, \
-    guess_lexer, guess_lexer_for_filename
-from pygments.styles import get_all_styles
+    get_lexer_for_mimetype, PhpLexer, TextLexer, get_all_lexers, guess_lexer
 from pygments.formatters import HtmlFormatter
 
 
@@ -123,7 +123,7 @@ class Pagination(object):
     def iter_pages(self, left_edge=2, left_current=2,
                    right_current=3, right_edge=2):
         last = 0
-        for num in xrange(1, self.pages + 1):
+        for num in range(1, self.pages + 1):
             if num <= left_edge or \
                (num > self.page - left_current - 1 and
                 num < self.page + right_current) or \

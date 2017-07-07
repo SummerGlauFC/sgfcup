@@ -1,5 +1,6 @@
 from db import DB
-from picklesettings import PickleSettings
+from project.picklesettings import PickleSettings
+from enum import Enum
 
 # /-----------------------------------------------------------------\
 # |  Please try not to adjust any of the below without good reason. |
@@ -22,10 +23,9 @@ searchmodes = [
 
 # File type definitions used by the gallery
 file_types = ["image", "file", "paste"]
-file_type = {
-    "image": 0,
-    "file": 1,
-    "paste": 2
-}
+class file_type(Enum):
+    IMAGE = 0
+    FILE = 1
+    PASTE = 2
 
 PUUSH_ERROR = "-1"

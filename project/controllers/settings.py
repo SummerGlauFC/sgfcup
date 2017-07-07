@@ -1,3 +1,4 @@
+from __future__ import division, print_function, absolute_import
 from project import app, functions, config
 from bottle import request
 from bottle import jinja2_view as view

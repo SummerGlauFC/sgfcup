@@ -56,7 +56,7 @@
                         <h2>Change key details</h2>
                         <label for="password">New Password:</label><span class="rightcol"><input type="text" class="textbox" value="" name="password"></span>
                         <br />
-                        {% for key, val in settings.groups.iteritems() %}
+                        {% for key, val in settings.groups.items() %}
                             <h2>{{ key }}</h2>
                             {% for item in val %}
                                 {% set value = settings[item] %}

@@ -119,14 +119,14 @@
                             <input type="hidden" name="key" value="{{ info.key }}" />
                             {% for file in info.files %}
                                 <div class="wrapper">
-                                    <div class="img" {% if file.type == types.image -%} style="background-image: url('/api/thumb/{{ file.url }}')" {%- endif %}>
-                                        {% if file.type == types.file %}
+                                    <div class="img" {% if file.type == types.IMAGE -%} style="background-image: url('/api/thumb/{{ file.url }}')" {%- endif %}>
+                                        {% if file.type == types.FILE %}
                                             <a title="{{ file.original|e }}" href="/{{ write_ext(file) }}" style="height: 200px; position: absolute; width: 200px;font-size:92px;line-height:200px">
                                                 FILE
-                                        {% elif file.type == types.image %}
+                                        {% elif file.type == types.IMAGE %}
                                             <a target="_blank" title="{{ file.original|e }}" href="/{{ write_ext(file) }}" style="height: 200px; position: absolute; width: 200px;">
                                                 <img width="100%" height="100%" src="data:image/gif;base64,R0lGODlhAQABAID/AMDAwAAAACH5BAEAAAAALAAAAAABAAEAAAICRAEAOw==" style="opacity: 0">
-                                        {% elif file.type == types.paste %}
+                                        {% elif file.type == types.PASTE %}
                                             <a title="{{ file.name }}" href="/paste/{{ file.url }}" style="height: 200px; position: absolute; width: 200px;">
                                                 <span class="paste">
                                                     {{ file.content|truncate(1000, True)|e }}
@@ -136,8 +136,8 @@
                                             </a>
                                             <span class="info">
                                                 <input type="checkbox" name="delete_this" value="{{ file.url }}" class="checkbawks" />
-                                                {% if file.type == types.file %}File:{% elif file.type == types.paste %}Paste:{%  endif %}
-                                                {% if file.type != types.paste %}
+                                                {% if file.type == types.FILE %}File:{% elif file.type == types.PASTE %}Paste:{%  endif %}
+                                                {% if file.type != types.PASTE %}
                                                     <a title="{{ file.url }}" href="/{{ write_ext(file) }}">{{ hl(file.original|e) }}</a>
                                                 {% else %}
                                                     <a title="{{ file.url }}" href="/paste/{{ file.url }}">{{ hl(file.name|e) }} {% if file.name != file.url %}({{ file.url }}){% endif %}</a>
@@ -145,7 +145,7 @@
                                                 <br />
                                             </span>
                                             <span class="info details">
-                                                <span style="color:rgba(0, 0, 0, 0.5);">Size:</span> {% if file.type == types.image %}{{ file.size }} ({{ file.resolution[0] }}x{{ file.resolution[1] }}){% elif file.type == types.paste %}{{ file.size }} lines{% else %}{{ file.size }}{% endif %}
+                                                <span style="color:rgba(0, 0, 0, 0.5);">Size:</span> {% if file.type == types.IMAGE %}{{ file.size }} ({{ file.resolution[0] }}x{{ file.resolution[1] }}){% elif file.type == types.PASTE %}{{ file.size }} lines{% else %}{{ file.size }}{% endif %}
                                                 <br />
                                                 <span style="color:rgba(0, 0, 0, 0.5);">Uploaded:</span> {{ file.time.timestamp }}
                                                 <br />

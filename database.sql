@@ -1,28 +1,33 @@
--- --------------------------------------------------------
--- Server version:               5.5.5-10.0.12-MariaDB - MariaDB Server
--- Server OS:                    Linux
--- HeidiSQL Version:             8.2.0.4675
--- --------------------------------------------------------
-
 /*!40101 SET @OLD_CHARACTER_SET_CLIENT=@@CHARACTER_SET_CLIENT */;
+/*!40101 SET @OLD_CHARACTER_SET_RESULTS=@@CHARACTER_SET_RESULTS */;
+/*!40101 SET @OLD_COLLATION_CONNECTION=@@COLLATION_CONNECTION */;
 /*!40101 SET NAMES utf8 */;
 /*!40014 SET @OLD_FOREIGN_KEY_CHECKS=@@FOREIGN_KEY_CHECKS, FOREIGN_KEY_CHECKS=0 */;
 /*!40101 SET @OLD_SQL_MODE=@@SQL_MODE, SQL_MODE='NO_AUTO_VALUE_ON_ZERO' */;
+/*!40111 SET @OLD_SQL_NOTES=@@SQL_NOTES, SQL_NOTES=0 */;
 
--- Dumping structure for table sgfcup.accounts
-CREATE TABLE IF NOT EXISTS `accounts` (
+
+# Dump of table accounts
+# ------------------------------------------------------------
+
+DROP TABLE IF EXISTS `accounts`;
+
+CREATE TABLE `accounts` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `key` varchar(30) NOT NULL,
   `password` varchar(30) NOT NULL,
-  `hash` varchar(50) NOT NULL,
+  `hash` varchar(50) DEFAULT NULL,
   PRIMARY KEY (`id`)
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8;
 
--- Data exporting was unselected.
 
 
--- Dumping structure for table sgfcup.files
-CREATE TABLE IF NOT EXISTS `files` (
+# Dump of table files
+# ------------------------------------------------------------
+
+DROP TABLE IF EXISTS `files`;
+
+CREATE TABLE `files` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `userid` int(11) NOT NULL,
   `shorturl` tinytext NOT NULL,
@@ -34,11 +39,14 @@ CREATE TABLE IF NOT EXISTS `files` (
   PRIMARY KEY (`id`)
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8;
 
--- Data exporting was unselected.
 
 
--- Dumping structure for table sgfcup.pastes
-CREATE TABLE IF NOT EXISTS `pastes` (
+# Dump of table pastes
+# ------------------------------------------------------------
+
+DROP TABLE IF EXISTS `pastes`;
+
+CREATE TABLE `pastes` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `userid` int(11) NOT NULL,
   `shorturl` tinytext NOT NULL,
@@ -48,18 +56,45 @@ CREATE TABLE IF NOT EXISTS `pastes` (
   PRIMARY KEY (`id`)
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8 ROW_FORMAT=DYNAMIC;
 
--- Data exporting was unselected.
 
 
--- Dumping structure for table sgfcup.settings
-CREATE TABLE IF NOT EXISTS `settings` (
+# Dump of table revisions
+# ------------------------------------------------------------
+
+DROP TABLE IF EXISTS `revisions`;
+
+CREATE TABLE `revisions` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `pasteid` int(11) NOT NULL,
+  `userid` int(11) NOT NULL,
+  `commit` tinytext,
+  `message` tinytext NOT NULL,
+  `paste` longtext NOT NULL,
+  `fork` tinyint(1) NOT NULL DEFAULT '0',
+  `parent` int(11) NOT NULL,
+  PRIMARY KEY (`id`)
+) ENGINE=MyISAM DEFAULT CHARSET=utf8 ROW_FORMAT=DYNAMIC;
+
+
+
+# Dump of table settings
+# ------------------------------------------------------------
+
+DROP TABLE IF EXISTS `settings`;
+
+CREATE TABLE `settings` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `userid` int(11) NOT NULL,
   `json` longblob NOT NULL,
   PRIMARY KEY (`id`)
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8;
 
--- Data exporting was unselected.
-/*!40101 SET SQL_MODE=IFNULL(@OLD_SQL_MODE, '') */;
-/*!40014 SET FOREIGN_KEY_CHECKS=IF(@OLD_FOREIGN_KEY_CHECKS IS NULL, 1, @OLD_FOREIGN_KEY_CHECKS) */;
+
+
+
+/*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
+/*!40101 SET SQL_MODE=@OLD_SQL_MODE */;
+/*!40014 SET FOREIGN_KEY_CHECKS=@OLD_FOREIGN_KEY_CHECKS */;
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
+/*!40101 SET CHARACTER_SET_RESULTS=@OLD_CHARACTER_SET_RESULTS */;
+/*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;

@@ -1,3 +1,4 @@
+from __future__ import division, print_function, absolute_import
 import cymysql
 import inspect
 
@@ -36,7 +37,7 @@ class BaseDB(object):
             self.cur = self.conn.cursor(cymysql.cursors.DictCursor)
         except:
             self.retries -= 1
-            print "WARNING: MySQL connection died, trying to reinit..."
+            print("WARNING: MySQL connection died, trying to reinit...")
             self._init_connection()
 
     def escape(self, obj):
@@ -48,7 +49,7 @@ class BaseDB(object):
             else:
                 return obj
         except cymysql.OperationalError:
-            print "WARNING: MySQL connection died, trying to reinit..."
+            print("WARNING: MySQL connection died, trying to reinit...")
             self._init_connection()
             return self.escape(obj)
 
@@ -59,7 +60,7 @@ class BaseDB(object):
                 sql, args) if args is not None else self.cur.execute(sql)
             return self.cur
         except cymysql.OperationalError:
-            print "WARNING: MySQL connection died, trying to reinit..."
+            print("WARNING: MySQL connection died, trying to reinit...")
             self._init_connection()
             return self.execute(sql, args)
 
@@ -138,12 +139,12 @@ class DB(BaseDB):
             what=", ".join(what), table=table, where=self._pairs_generator(where, brackets=True))
 
         if self.debug:
-            self._debug_print(query, where.values())
+            self._debug_print(query, list(where.values()))
 
         if singular:
-            return self.fetchone(query, where.values())
+            return self.fetchone(query, list(where.values()))
         else:
-            return self.fetchall(query, where.values())
+            return self.fetchall(query, list(where.values()))
 
     def update(self, table, set_pairs, where_pairs):
         ''' build and execute an update operation, usage:
@@ -155,9 +156,9 @@ class DB(BaseDB):
             table=table, sets=self._columns_generator(set_pairs), where=self._pairs_generator(where_pairs, brackets=True))
 
         if self.debug:
-            self._debug_print(query, set_pairs.values() + where_pairs.values())
+            self._debug_print(query, list(set_pairs.values()) + list(where_pairs.values()))
 
-        return self.execute(query, set_pairs.values() + where_pairs.values())
+        return self.execute(query, list(set_pairs.values()) + list(where_pairs.values()))
 
     def delete(self, table, pairs):
         ''' build and execute a delete operation, usage:
@@ -171,9 +172,9 @@ class DB(BaseDB):
             table=table, where=where)
 
         if self.debug:
-            self._debug_print(query, pairs.values())
+            self._debug_print(query, list(pairs.values()))
 
-        return self.execute(query, pairs.values())
+        return self.execute(query, list(pairs.values()))
 
     def insert(self, table, columns_pair):
         ''' build and execute an insert operation, as such:
