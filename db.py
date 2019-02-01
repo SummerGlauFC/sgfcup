@@ -6,14 +6,14 @@ import inspect
 class BaseDB(object):
     ''' a small database abstraction to eliminate lost connections '''
 
+    # the cymysql connection instance
     conn = None
-    ''' the cymysql connection instance '''
 
+    # the cymysql cursor instance
     cur = None
-    ''' the cymysql cursor instance '''
 
+    # number of retries for a failed operation
     retries = 3
-    ''' number of retries for a failed operation '''
 
     def __init__(self, host='localhost', user='root', password='', database=''):
         ''' initialize the object '''
@@ -46,8 +46,7 @@ class BaseDB(object):
         try:
             if isinstance(obj, str):
                 return self.conn.escape(obj)
-            else:
-                return obj
+            return obj
         except cymysql.OperationalError:
             print("WARNING: MySQL connection died, trying to reinit...")
             self._init_connection()
@@ -59,7 +58,7 @@ class BaseDB(object):
             self.cur.execute(
                 sql, args) if args is not None else self.cur.execute(sql)
             return self.cur
-        except cymysql.OperationalError:
+        except (cymysql.OperationalError, BrokenPipeError):
             print("WARNING: MySQL connection died, trying to reinit...")
             self._init_connection()
             return self.execute(sql, args)
@@ -70,8 +69,7 @@ class BaseDB(object):
         cur = self.execute(sql, args)
         if cur.rowcount:
             return cur.fetchone()
-        else:
-            return None
+        return None
 
     def fetchall(self, sql, args=None):
         ''' execute the SQL statement and return one row if there's a result, return None if there's no result '''
@@ -79,8 +77,7 @@ class BaseDB(object):
         cur = self.execute(sql, args)
         if cur.rowcount:
             return cur.fetchall()
-        else:
-            return None
+        return None
 
 
 class DB(BaseDB):
@@ -156,7 +153,8 @@ class DB(BaseDB):
             table=table, sets=self._columns_generator(set_pairs), where=self._pairs_generator(where_pairs, brackets=True))
 
         if self.debug:
-            self._debug_print(query, list(set_pairs.values()) + list(where_pairs.values()))
+            self._debug_print(query, list(set_pairs.values()
+                                          ) + list(where_pairs.values()))
 
         return self.execute(query, list(set_pairs.values()) + list(where_pairs.values()))
 
