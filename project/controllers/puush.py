@@ -1,11 +1,14 @@
-from __future__ import division, print_function, absolute_import
-from project import app, config
-from bottle import request
+from __future__ import absolute_import, division, print_function
+
 import hashlib
 import os
-from .view import api_thumb
-from .upload import api_upload_file
 
+from bottle import request
+
+from project import app, config
+
+from .upload import api_upload_file
+from .view import api_thumb
 
 PUUSH_ERROR = config.PUUSH_ERROR
 

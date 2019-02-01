@@ -1,12 +1,17 @@
-from __future__ import division, print_function, absolute_import
-from project import app, config, functions
-from bottle import request, abort, redirect, response
-from bottle import static_file as bottle_static_file
-from bottle import jinja2_template as template
+from __future__ import absolute_import, division, print_function
+
 import os
-from PIL import Image, ImageOps
-import magic
+
 import ghdiff
+import magic
+from bottle import abort
+from bottle import jinja2_template as template
+from bottle import redirect, request, response
+from bottle import static_file as bottle_static_file
+from PIL import Image, ImageOps
+
+from project import app, config, functions
+
 
 # courtesy of Humphrey@stackoverflow
 # https://stackoverflow.com/a/35859141
@@ -20,7 +25,7 @@ def remove_transparency(im, bg_colour=(255, 255, 255)):
         alpha = im.convert('RGBA').split()[-1]
 
         background = Image.new("RGB", im.size, bg_colour)
-        background.paste(im, mask=alpha) # 3 is the alpha channel
+        background.paste(im, mask=alpha)  # 3 is the alpha channel
         return background
 
     else:

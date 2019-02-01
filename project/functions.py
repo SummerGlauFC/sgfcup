@@ -1,17 +1,22 @@
-from __future__ import division, print_function, absolute_import
-from builtins import range
+from __future__ import absolute_import, division, print_function
+
+import functools
 import random
-import string
-from PIL import Image
-from project import config
-from math import ceil
-import markupsafe
 import re
+import string
+from builtins import range
+from math import ceil
+
+import markupsafe
 import pygments
-from pygments.util import ClassNotFound
-from pygments.lexers import get_lexer_by_name, get_lexer_for_filename, \
-    get_lexer_for_mimetype, PhpLexer, TextLexer, get_all_lexers, guess_lexer
+from PIL import Image
 from pygments.formatters import HtmlFormatter
+from pygments.lexers import (PhpLexer, TextLexer, get_all_lexers,
+                             get_lexer_by_name, get_lexer_for_filename,
+                             get_lexer_for_mimetype, guess_lexer)
+from pygments.util import ClassNotFound
+
+from project import config
 
 
 def id_generator(size=6, chars=string.ascii_letters + string.digits):
@@ -219,3 +224,9 @@ def json_error(error, puush=False):
         "success": False,
         "error": error
     }
+
+
+# from https://stackoverflow.com/a/36131992
+def nested_dict_get(dictionary, dotted_key):
+    keys = dotted_key.split('.')
+    return functools.reduce(lambda d, key: d.get(key) if d else None, keys, dictionary)

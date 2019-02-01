@@ -19,6 +19,17 @@ Settings = {
     },
     "admin": {
         "username": "password"  # admin login details
+    },
+    "sessions": {  # cookie encryption keys
+        "validate_key": "validation-key-goes-here",
+        "encrypt_key": "encryption-key-goes-here"
+    },
+    "debug": {  # safe to ignore, only for development
+        "enabled": False,  # enable debug mode
+        "sentry": {  # enable sentry bug tracking
+            "enabled": False,
+            "url": "https://sentry-url:goes-here@app.gensentry.com/00000"
+        }
     }
 }
 

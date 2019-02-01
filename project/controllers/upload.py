@@ -1,12 +1,15 @@
-from __future__ import division, print_function, absolute_import
-from project import app, config, functions
-from bottle import request, response
+from __future__ import absolute_import, division, print_function
+
+import hashlib
+import os
 import random
 import re
-import os
 from mimetypes import guess_extension
+
 import magic
-import hashlib
+from bottle import request, response
+
+from project import app, config, functions
 
 id_generator = functions.id_generator
 

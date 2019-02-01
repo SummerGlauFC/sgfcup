@@ -1,14 +1,15 @@
-from __future__ import division, print_function, absolute_import
-from project import app, functions, config
-from bottle import request, response, redirect
-from bottle import jinja2_view as view, jinja2_template as template
-import os
+from __future__ import absolute_import, division, print_function
+
 import functools
 import hashlib
-
-from future.standard_library import install_aliases
-install_aliases()
+import os
 from urllib.parse import urlencode
+
+from bottle import jinja2_template as template
+from bottle import jinja2_view as view
+from bottle import redirect, request, response
+
+from project import app, config, functions
 
 
 @app.route('/redirect/gallery/<user_key>')

@@ -1,8 +1,11 @@
-from __future__ import division, print_function, absolute_import
-from project import app, config, functions
-from bottle import request, redirect
-from bottle import jinja2_template as template
+from __future__ import absolute_import, division, print_function
+
 import os
+
+from bottle import jinja2_template as template
+from bottle import redirect, request
+
+from project import app, config, functions
 
 # Set up short references to common variables.
 db = config.db

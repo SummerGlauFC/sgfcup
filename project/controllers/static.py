@@ -1,7 +1,9 @@
-from __future__ import division, print_function, absolute_import
-from project import app, functions, config
-from bottle import static_file, request
+from __future__ import absolute_import, division, print_function
+
 from bottle import jinja2_view as view
+from bottle import request, static_file
+
+from project import app, config, functions
 
 # File to serve (mostly) static files, like the upload pages, the
 # user info page, the favicon and all stylesheets
