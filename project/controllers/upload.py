@@ -32,14 +32,14 @@ def api_upload_file(upload_type='file', form=None, puush=False):
 
     # Generated random file name
     random_name = id_generator(random.SystemRandom().randint(4, 7))
-    is_anon = (not key and not password)
+    is_anon = (not key)
     is_authed = False
     use_extensions = False
 
     errors = ''
 
     # Keys must only contain alphanumerics and underscores/hyphens
-    if re.match("^[a-zA-Z0-9_-]+$", key) or is_anon:
+    if is_anon or re.match("^[a-zA-Z0-9_-]+$", key):
         # Check if user has provided a file to upload or is not uploading a
         # file.
         if form["file"] or upload_type != "file":
