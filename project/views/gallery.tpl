@@ -33,42 +33,6 @@
                 <title>SGFC >> {{ info.key }}'{% if info.key[-1] != "s" %}s{% endif %} Gallery</title>
                 <script src="//ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
                 <script src="//browserstate.github.io/history.js/scripts/bundled/html4+html5/jquery.history.js"></script>
-                <style type="text/css">
-                    #error { padding: 20px; }
-                    .highlight { background: yellow; }
-                </style>
-                <style>
-                    html,
-                    body {
-                        background: url("//sgfc.co/SAgXV") repeat fixed 0 0%, linear-gradient(to bottom, #485563 0%, #29323c 100%) repeat fixed 0 0 rgba(0, 0, 0, 0);
-                    }
-                    .info
-                    {
-                        background: none repeat scroll 0 0 #FFFFFF;
-                        box-shadow: 0 0 1px rgba(0, 0, 0, 0.8) inset, 0 2px 0 rgba(255, 255, 255, 0.5) inset, 0 -1px 0 rgba(0, 0, 0, 0.4) inset;
-                        color: #000000;
-                        display: inline-block;
-                        font-size: 75%;
-                        margin-top: 2px;
-                        overflow: hidden;
-                        padding: 2px 4px;
-                        text-align: right;
-                        text-overflow: ellipsis;
-                        white-space: nowrap;
-                        width: 192px;
-                        position: relative;
-                        top: 201px;
-                    }
-
-                    body.gallery .wrapper {
-                        margin-bottom: 60px;
-                        height: 240px;
-                    }
-
-                    body.gallery h2.debug.top { margin-bottom: 20px }
-
-                    .hl {background:yellow; font-weight:bold}
-                </style>
             </head>
 
             <body class="gallery">
@@ -78,12 +42,12 @@
                     </header>
                     <div id="main">
     {% endif %}
-                        <h2>{{ info.usage }} Used</h2>
+                        <h2>{{ info.usage }} used ({{ info.entries }} items)</h2>
                         <h2 class="debug pages" style="position:relative;">
                             {{ render_pagination(info.pages) }}
                         </h2>
                         <script>
-                            var current_page = {{ info.pages.page }};
+                            window.current_page = {{ info.pages.page }};
                         </script>
                         <h2 class="debug top">
                             <form class="sorty" action="" method="get" style="display: block;margin-top: 3px;text-align: center;">
@@ -173,43 +137,7 @@
     {% if not info.pjax %}
                     </div>
                 </div>
-                <script>
-                     var current_page;
-                     History.Adapter.bind(window,'statechange',function(){
-                        var State = History.getState();
-                        History.log('statechange:', State.data, State.title, State.url);
-                        $('.main_form').fadeOut(100);
-                        $('.loader').fadeIn(100);
-                        $.ajax({
-                            url: State.url,
-                            beforeSend: function(jqXHR, settings) {
-                                jqXHR.setRequestHeader('X-AJAX', 'true');
-                            },
-                            success: function(result) {
-                                $('.loader').hide();
-                                $("#main").html(result);
-                            }
-                        });
-                        current_page = State.data.state;
-                        console.log(current_page);
-                    });
-
-                    $(document).ready(function() {
-                        $(document).on('click','.pages a',function(e){
-                            e.preventDefault();
-                            console.log('prevented click' + e);
-                            if($(this).attr('data-page') !== undefined) {
-                                console.log($(this).attr('data-page') + ' != ' + current_page);
-
-                                a_this = $(this)
-
-                                if($(this).attr('data-page') != current_page) {
-                                    History.pushState({state:$(this).attr('data-page')}, $(document).attr('title'), $(this).attr('href'));
-                                }
-                            }
-                        })
-                    });
-                </script>
+                <script src="/static/js/gallery.js"></script>
             </body>
         </html>
     {% endif %}

@@ -19,10 +19,11 @@ Python >= 3.4 is needed.
 - tornado (for serving the app)
 - raven (debug dependency)
 - future
+- pycrypto
 
 Dependencies can be installed via:
 
-    pip install git+https://github.com/bottlepy/bottle.git cymysql jinja2 python-magic pillow pygments jsonmerge tornado bottle-beaker beaker ghdiff future raven
+    pip install git+https://github.com/bottlepy/bottle.git cymysql jinja2 python-magic pillow pygments jsonmerge tornado bottle-beaker beaker ghdiff future raven pycrypto
 
 Please edit `project/config.example.py`, and rename it to `config.py`,
 then run `database.sql` on the database you've put in `config.py`.

@@ -6,7 +6,7 @@
     <link href="/favicon.ico" rel="icon" type="image/x-icon" />
     <link href="//cdnjs.cloudflare.com/ajax/libs/normalize/3.0.2/normalize.min.css" rel="stylesheet">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    {% include "main.css" %}
+    <link href='/static/css/main.css' rel='stylesheet' type='text/css'>
     <style type="text/css">
         h2, #identification {
             margin-bottom: 1em;
@@ -111,47 +111,7 @@
             </tr>
         </table>
     <script src="//ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js" type="text/javascript"></script>
-    <script>
-        $.fn.equalHeight = function () {
-            var max = 0;
-            return this.children()
-                .each(function () {
-                    var height = $(this).height();
-                    max = height > max ? height : max;
-                })
-                .height(max);
-        };
-        $(window).resize(function () {
-            $('#wrapper').equalHeight();
-        });
-        $(document).ready(function () {
-            $('#wrapper').equalHeight();
-        });
-    </script>
-    <script>
-        $('#clear-fields').on('click', function () {
-            $('#key').get(0).setAttribute('value', '');
-            $('#password').get(0).setAttribute('value', '');
-        });
-        $("form").submit(function () {
-            var url = "/api/upload/paste";
-            $("textarea").hide();
-            $.ajax({
-                type: "POST",
-                url: url,
-                data: $("form").serialize(),
-                success: function (data) {
-                    if (data.success) {
-                        $("#message").html('<a href="' + data.url + '">' + data.base + data.url + '</a>');
-                    } else {
-                        $("#message").html(data.error);
-                    }
-                    $("#message").fadeIn(250);
-                }
-            });
-            return false;
-        });
-    </script>
+    <script src="/static/js/pastebin.js" type="text/javascript"></script>
 </body>
 
 </html>

@@ -15,11 +15,10 @@ def key_password_return(SESSION):
 
     # Check if the user has got their key and password stored, else
     # generate a mostly secure key for them.
-    if SESSION:
-        if SESSION.get('id'):
-            return {"key": SESSION.get('key'), "password": SESSION.get('password')}
+    if SESSION.get('id'):
+        return {'key': SESSION.get('key'), 'password': SESSION.get('password')}
 
-    return {"key": functions.id_generator(15), "password": functions.id_generator(15)}
+    return {'key': functions.id_generator(15), 'password': functions.id_generator(15)}
 
 
 @app.route('/')
@@ -41,24 +40,27 @@ def keys():
 
     settings = config.user_settings.get_all_values(SESSION.get('id', 0))
 
+    key = SESSION.get('key', 'Not set.')
+    password = SESSION.get('password', 'Not set.')
+    gallery_password = settings['gallery_password']['value']
+    br = '<br />'
+
     # Provide the user with their details.
     return {
-        "title": 'Keys',
-        "message": 'Key: ' + SESSION.get('key', 'Not set.') +
-        '<br />Password: ' + SESSION.get('password', 'Not set.') +
-        '<br />Gallery view password: ' + settings["gallery_password"]["value"]
+        'title': 'Keys',
+        'message': f'Key: {key}{br}Password: {password}{br}Gallery view password: {gallery_password}'
     }
 
 
-@app.route('/:file#(favicon.ico)#')
-def favicon(file):
+@app.route('/favicon.ico')
+def favicon():
     # Serve the favicon
-    return static_file(file, root='project/static/misc')
+    return static_file('favicon.ico', root='project/static/misc')
 
 
-@app.route('/static/css/<file>')
-def server_static(file):
+@app.route('/static/<filepath:path>')
+def server_static(filepath):
     # Serve css and flush the cache when serving it with bottle.
-    response = static_file(file, root='project/static/css')
-    response.set_header("Cache-Control", "no-cache")
+    response = static_file(filepath, root='project/static')
+    response.set_header('Cache-Control', 'no-cache')
     return response

@@ -6,6 +6,7 @@ from bottle import jinja2_template as template
 from bottle import redirect, request
 
 from project import app, config, functions
+from project.functions import get_setting
 
 # Set up short references to common variables.
 db = config.db
@@ -16,17 +17,17 @@ def auth_session(fn):
     def check_session(**kwargs):
         SESSION = request.environ.get('beaker.session', {})
 
-        if SESSION.get("admin", False):
+        if SESSION.get('admin'):
             return fn(**kwargs)
-        else:
-            redirect("/admin/login")
+
+        redirect('/admin/login')
 
     return check_session
 
 
 @app.get('/admin', apply=[auth_session])
 def route():
-    return template("admin")  # User is authed, continue to admin page
+    return template('admin')  # User is authed, continue to admin page
 
 
 @app.post('/admin/deletehits', apply=[auth_session])
@@ -56,18 +57,18 @@ def delete_hits():
             # Check if item is a physical file
             if not item['ext'] == 'paste':
                 try:
-                    size += os.stat(Settings["directories"]["files"]
-                                    + item["shorturl"] + item["ext"]).st_size
+                    size += os.stat(get_setting('directories.files')
+                                    + item['shorturl'] + item['ext']).st_size
 
-                    os.remove(
-                        Settings["directories"]["files"] + item["shorturl"] + item["ext"])
+                    os.remove(get_setting('directories.files') +
+                              item['shorturl'] + item['ext'])
 
                     items_deleted += 1
                 except:
-                    # "gracefully" handle any exceptions
+                    # 'gracefully' handle any exceptions
                     print('file does not exist:', item['shorturl'])
             else:
-                db.delete('pastes', {'id': item["original"]})
+                db.delete('pastes', {'id': item['original']})
 
         # Actually remove rows now.
         if all_keys:
@@ -78,10 +79,9 @@ def delete_hits():
                 'DELETE FROM `files` WHERE `userid` = %s and `hits` <= %s',
                 [user_id, hit_threshold])
 
-        return "{0} items deleted. {1} of disk space saved.".format(
-            items_deleted, functions.sizeof_fmt(size))
+        return f'{items_deleted} items deleted. {functions.sizeof_fmt(size)} of disk space saved.'
     else:
-        return "nothing to delete."
+        return 'nothing to delete.'
 
 
 @app.get('/admin/login')
@@ -97,12 +97,12 @@ def do_login():
     user = request.forms.get('key')
     password = request.forms.get('password')
 
-    admin_dict = Settings['admin']
+    admin_dict = get_setting('admin')
 
-    if user in admin_dict and admin_dict[user] == password:
+    if admin_dict.get(user, None) == password:
         # Allow for a persistent login
-        SESSION["admin"] = True
-        redirect("/admin")
+        SESSION['admin'] = True
+        redirect('/admin')
 
     # If user provided incorrect details, just redirect back to login page
-    redirect("/admin/login")
+    redirect('/admin/login')

@@ -1,102 +1,167 @@
 body.paste #container {
-    width: 98%;
-    margin: 20px auto;
-    text-align: center;
-    color: #EEEEEE;
+  width: 98%;
+  margin: 20px auto;
+  text-align: center;
+  color: #eeeeee;
 }
 
 body.paste header {
-    margin-bottom: 10px;
-    font-family: 'Open Sans','Helvetica Neue',Segoe UI,Helvetica,Arial,sans-serif;
-    font-size: 2.5em;
-    letter-spacing: 0;
-    color: #EEEEEE;
+  margin-bottom: 10px;
+  font-family: "Open Sans", "Helvetica Neue", Segoe UI, Helvetica, Arial,
+    sans-serif;
+  font-size: 2.5em;
+  letter-spacing: 0;
+  color: #eeeeee;
 }
 
 body.paste #main {
-    width: 90%;
-    margin: 0 auto;
-    padding: 20px 10px;
-    border: 1px solid #999999;
-    text-align: left;
-    font-size: 13px;
-    color: #222233;
-    background: none repeat scroll 0 0 #EEEEEE;
-    box-shadow: 0 1px 5px 0 rgba(0,0,0,0.4) inset;
-    transition: all 215ms linear 0s;
+  width: 90%;
+  margin: 0 auto;
+  padding: 20px 10px;
+  border: 1px solid #999999;
+  text-align: left;
+  font-size: 13px;
+  color: #222233;
+  background: none repeat scroll 0 0 #eeeeee;
+  box-shadow: 0 1px 5px 0 rgba(0, 0, 0, 0.4) inset;
+  transition: all 215ms linear 0s;
 }
 
 body.paste .rules {
-    width: 90%;
-    margin: 10px auto 0;
-    padding: 10px;
-    text-align: center;
-    font-size: 13px;
-    color: #000000;
-    background: none repeat scroll 0 0 #EEEEEE;
-    box-shadow: 0 1px 5px 0 rgba(0,0,0,0.4) inset;
+  width: 90%;
+  margin: 10px auto 0;
+  padding: 10px;
+  text-align: center;
+  font-size: 13px;
+  color: #000000;
+  background: none repeat scroll 0 0 #eeeeee;
+  box-shadow: 0 1px 5px 0 rgba(0, 0, 0, 0.4) inset;
 }
 
 body.paste header div {
-    width: 90%;
-    margin: 20px auto 0;
-    padding: 14px 11px;
-    text-align: center;
-    font-size: 13px;
-    font-weight: 400;
-    color: #000000;
-    background: none repeat scroll 0 0 #EEEEEE;
-    box-shadow: 0 1px 5px 0 rgba(0,0,0,0.4) inset;
+  width: 90%;
+  margin: 20px auto 0;
+  padding: 14px 11px;
+  text-align: center;
+  font-size: 13px;
+  font-weight: 400;
+  color: #000000;
+  background: none repeat scroll 0 0 #eeeeee;
+  box-shadow: 0 1px 5px 0 rgba(0, 0, 0, 0.4) inset;
 }
 
 body.paste .linenos {
-    width: 14px;
-    padding-right: 10px;
-    border-right: 1px solid black;
-    text-align: right;
+  width: 14px;
+  padding-right: 10px;
+  border-right: 1px solid black;
+  text-align: right;
 }
 
 body.paste .code {
-    padding-left: 5px;
+  padding-left: 5px;
 }
 
 body.paste .allcode {
-    width: 100%;
-    overflow: auto;
-    text-shadow: none;
-    font: 12px/14px "Monaco",Courier,monospace;
-    font-size: 15px;
-    line-height: 20px;
+  width: 100%;
+  overflow: auto;
+  text-shadow: none;
+  font: 12px/14px "Monaco", Courier, monospace;
+  font-size: 15px;
+  line-height: 20px;
 }
 
 body.paste pre {
-    font-family: 'InconsolataMedium',Consolas,Monaco,"Liberation Mono",Courier,monospace;
+  font-family: "InconsolataMedium", Consolas, Monaco, "Liberation Mono", Courier,
+    monospace;
 }
 
 body.paste .filename {
-    margin: 0;
-    padding: 7px 9px;
-    font-family: Arial;
-    font-size: 16px;
-    background: none repeat scroll 0 0 #DDDDDD;
+  margin: 0;
+  padding: 7px 9px;
+  font-family: Arial;
+  font-size: 16px;
+  background: none repeat scroll 0 0 #dddddd;
 }
 
 body.paste div.boardlist {
-    display: inline-block;
-    margin-top: 3px;
-    margin-bottom: 10px;
-    padding: 3px 3px 3px 10px;
-    font-size: 9pt;
-    color: #000;
+  display: inline-block;
+  margin-top: 3px;
+  margin-bottom: 10px;
+  padding: 3px 3px 3px 10px;
+  font-size: 9pt;
+  color: #000;
 }
 
 body.paste a:link,
 body.paste a:visited {
-    text-decoration: none;
-    color: #34345C;
+  text-decoration: none;
+  color: #34345c;
 }
 
 body.paste div.boardlist a:link:hover,
 body.paste div.boardlist a:visited:hover {
-    color: #FF0000;
+  color: #ff0000;
+}
+
+html,
+body {
+  width: 100%;
+  height: 100%;
+  background: url("//sgfc.co/SAgXV") repeat fixed 0 0%,
+    linear-gradient(to bottom, #485563 0%, #29323c 100%) repeat fixed 0 0
+      rgba(0, 0, 0, 0);
+}
+#main {
+  background: url("//sgfc.co/TQUet") repeat fixed 0 0 #ffffff !important;
+  box-shadow: none !important;
+  border: none !important;
+}
+
+textarea,
+#commit {
+  width: 100%;
+}
+
+#commit {
+  padding: 4px 3px;
+}
+
+.diff {
+  border: 1px solid #cccccc;
+  font-family: "InconsolataMedium", Consolas, Monaco, "Liberation Mono", Courier,
+    monospace;
+  font-size: 13px;
+  line-height: 1.2;
+  white-space: normal;
+  background: none repeat scroll 0 0 #f8f8f8;
+  word-wrap: break-word;
+}
+
+.diff div:hover {
+  background-color: #ffc;
+}
+
+.diff .control {
+  color: #999999;
+  background-color: #eaf2f5;
+}
+
+.diff .insert {
+  color: #000000;
+  background-color: #ddffdd;
+}
+
+.diff .insert .highlight {
+  color: #000000;
+  background-color: #aaffaa;
+}
+
+.diff .delete {
+  color: #000000;
+  background-color: #ffdddd;
+}
+
+.diff .delete .highlight {
+  color: #000000;
+  background-color: #ffaaaa;
 }

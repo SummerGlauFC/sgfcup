@@ -6,7 +6,7 @@
     <link href="/favicon.ico" rel="icon" type="image/x-icon" />
     <link href="//cdnjs.cloudflare.com/ajax/libs/normalize/3.0.2/normalize.min.css" rel="stylesheet">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    {% include "main.css" %}
+    <link href='/static/css/main.css' rel='stylesheet' type='text/css'>
     <style>{% block css %}{% endblock %}</style>
     {% block head %}{% endblock %}
 </head>
@@ -43,23 +43,7 @@
         </tr>
     </table>
     <script src="//ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js" type="text/javascript"></script>
-    <script>
-        $.fn.equalHeight = function () {
-            var max = 0;
-            return this.children()
-                .each(function () {
-                    var height = $(this).height();
-                    max = height > max ? height : max;
-                })
-                .height(max);
-        };
-        $(window).resize(function () {
-            $('#wrapper').equalHeight();
-        });
-        $(document).ready(function () {
-            $('#wrapper').equalHeight();
-        });
-    </script>
+    <script src="/static/js/base.js"></script>
     {% block script %}{% endblock %}
 </body>
 
