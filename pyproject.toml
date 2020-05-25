@@ -5,7 +5,7 @@ description = ""
 authors = ["russelg <isaac.drew@icloud.com>"]
 
 [tool.poetry.dependencies]
-python = "^3.5"
+python = "^3.6"
 jinja2 = "^2.11.2"
 cymysql = "^0.9.14"
 bottle = {git = "https://github.com/bottlepy/bottle.git"}
