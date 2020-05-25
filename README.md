@@ -21,10 +21,10 @@ Python >= 3.4 is needed.
 - future
 - pycrypto
 
-Dependencies can be installed via:
+Dependencies can be installed using Poetry:
 
-    pip install git+https://github.com/bottlepy/bottle.git cymysql jinja2 python-magic pillow pygments jsonmerge tornado bottle-beaker beaker ghdiff future raven pycrypto
-
+    poetry install
+    
 Please edit `project/config.example.py`, and rename it to `config.py`,
 then run `database.sql` on the database you've put in `config.py`.
 
