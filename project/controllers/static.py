@@ -5,6 +5,7 @@ from bottle import request, static_file
 
 from project import app, config, functions
 
+
 # File to serve (mostly) static files, like the upload pages, the
 # user info page, the favicon and all stylesheets
 # (provided their HTTP server doesn't serve the stylesheets/favicon)
@@ -40,15 +41,22 @@ def keys():
 
     settings = config.user_settings.get_all_values(SESSION.get('id', 0))
 
-    key = SESSION.get('key', 'Not set.')
-    password = SESSION.get('password', 'Not set.')
-    gallery_password = settings['gallery_password']['value']
-    br = '<br />'
+    key = SESSION.get('key', None)
+    password = SESSION.get('password', None)
+    gallery_password = settings['gallery_password']['value'] or None
+
+    message = ""
+    if key:
+        message += f"Key: {key}"
+    if password:
+        message += f"<br />Password: {password}"
+    if gallery_password:
+        message += f"<br />Gallery view password: {gallery_password}"
 
     # Provide the user with their details.
     return {
         'title': 'Keys',
-        'message': f'Key: {key}{br}Password: {password}{br}Gallery view password: {gallery_password}'
+        'message': message
     }
 
 

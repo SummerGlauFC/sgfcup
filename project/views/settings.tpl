@@ -54,9 +54,11 @@
                                     {% else %}
                                         <span class="rightcol">
                                             <input class="textbox" type="{{ value.type }}" name="{{ item }}" value="{{ value.value }}" />
-                                            {% if value.notes %}
-                                                <p>{{ value.notes }}</p>
-                                            {% endif %}
+                                        </span>
+                                    {% endif %}
+                                    {% if value.notes %}
+                                        <span class="rightcol">
+                                            <p>{{ value.notes }}</p>
                                         </span>
                                     {% endif %}
                                 {% if not loop.last %}<br />{% endif %}

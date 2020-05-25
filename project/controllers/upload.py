@@ -39,7 +39,7 @@ def api_upload_file(upload_type='file', form=None):
     random_name = id_generator(random.SystemRandom().randint(4, 7))
     is_anon = (not key)
     is_authed = False
-    use_extensions = False
+    use_extensions = 0
 
     errors = ''
 
@@ -92,14 +92,15 @@ def api_upload_file(upload_type='file', form=None):
 
                     # Guess the file extension if none is provided.
                     if not ext:
-                        buff = files.file.read()
-                        ext = guess_extension(
-                            magic.from_buffer(buff, mime=True))
+                        # buff = files.file.read()
+                        # ext = guess_extension(
+                        #     magic.from_buffer(buff, mime=True))
+                        ext = ""
 
                     # If a buffer is used, write directly to a file
                     # else use bottle's method to save a file
                     if buff:
-                        with open(directory + random_name + ext, 'w') as fout:
+                        with open(directory + random_name + ext, 'wb') as fout:
                             fout.write(buff)
                     else:
                         files.save(directory + random_name + ext)
@@ -142,8 +143,11 @@ def api_upload_file(upload_type='file', form=None):
                     return functions.json_error('This upload type does not exist')
 
                 # Use extensions if user has specified it in their settings.
-                if upload_type != 'paste' and use_extensions:
-                    random_name = random_name + ext
+                if upload_type == 'file' and use_extensions > 0:
+                    if use_extensions == 1:
+                        random_name = random_name + ext
+                    elif use_extensions == 2:
+                        random_name = "{}/{}".format(random_name, filename)
 
                 # Only return JSON if it was requested by javascript.
                 if request.headers.get('X-Requested-With') == 'XMLHttpRequest':

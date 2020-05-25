@@ -4,11 +4,11 @@ import os
 
 import ghdiff
 import magic
+from PIL import Image, ImageOps
 from bottle import abort
 from bottle import jinja2_template as template
 from bottle import redirect, request, response
 from bottle import static_file as bottle_static_file
-from PIL import Image, ImageOps
 
 from project import app, config, functions
 from project.functions import get_setting
@@ -97,37 +97,6 @@ def api_thumb(url, ext=None, temp=False, size=(400, 400)):
                 return image_view(url, ext, results=results)
         else:
             abort(404, 'File not found.')
-
-
-@app.route('/<url>')
-@app.route('/<url>.<ext>')
-def image_view(url, ext=None, results=None, update_hits=True):
-    # Check if the requested file exists
-    # Also, use a passed-through results if it exists.
-    if not results:
-        results = config.db.fetchone(
-            'SELECT * FROM `files` WHERE BINARY `shorturl` = %s', [url])
-
-    if results:
-        # Check if extension matches the one in the database (if provided)
-        if ext and ('.' + ext != results['ext']):
-            abort(404, 'File not found.')
-        else:
-            # If the file is a paste, redirect to the pastebin
-            if results['ext'] == 'paste':
-                redirect(f'/paste/{url}')
-            else:
-                # Add one hit to the file
-                if update_hits:
-                    config.db.execute(
-                        'UPDATE `files` SET hits=hits+1 WHERE `id`=%s', [results['id']])
-
-                return static_file(
-                    results['shorturl'] + results['ext'],
-                    root=get_setting('directories.files'),
-                    filename=results['original'])
-
-    abort(404, 'File not found.')
 
 
 @app.route('/paste/<url>')
@@ -279,3 +248,63 @@ def paste_view(url, flag=None, ext=None):
                             use_wrapper=use_wrapper)
     else:
         abort(404, 'File not found.')
+
+
+@app.route('/<url>')
+@app.route('/<url>.<ext>')
+@app.route('/<url>/<filename>')
+@app.route('/<url>/<filename>.<ext>')
+def image_view(url, filename=None, ext=None, results=None, update_hits=True):
+    # Check if the requested file exists
+    # Also, use a passed-through results if it exists.
+    if not results:
+        results = config.db.fetchone(
+            'SELECT * FROM `files` WHERE BINARY `shorturl` = %s', [url])
+
+    if results:
+        use_extensions = config.user_settings.get(results['userid'], 'ext')
+        print(results, use_extensions)
+        # Check if extension matches the one in the database (if provided)
+        # don't resolve if longer filenames selected
+        # if ext and (('.%s' % ext != results['ext']) or use_extensions == 2):
+        #     abort(404, 'File not found.')
+        # # Check for extensionless files first (e.g. Dockerfile)
+        # elif filename and not ext and filename != results['original']:
+        #     abort(404, 'File not found.')
+        # # Check if filename matches if provided (with ext)
+        # elif filename and ext and ('%s.%s' % (filename, ext)) != results['original']:
+        #     abort(404, 'File not found.')
+        #
+
+        should_abort = False
+        if filename:
+            # Check for extensionless files first (e.g. Dockerfile)
+            if not ext and filename != results['original']:
+                should_abort = True
+            if ext and '{}.{}'.format(filename, ext) != results['original']:
+                should_abort = True
+        else:
+            # don't resolve if longer filename setting set, and the filename is not included.
+            if use_extensions == 2:
+                should_abort = True
+            if ext and '.{}'.format(ext) != results['ext']:
+                should_abort = True
+
+        if should_abort:
+            abort(404, 'File not found.')
+
+        # If the file is a paste, redirect to the pastebin
+        if results['ext'] == 'paste':
+            redirect(f'/paste/{url}')
+        else:
+            # Add one hit to the file
+            if update_hits:
+                config.db.execute(
+                    'UPDATE `files` SET hits=hits+1 WHERE `id`=%s', [results['id']])
+
+            return static_file(
+                results['shorturl'] + results['ext'],
+                root=get_setting('directories.files'),
+                filename=results['original'])
+
+    abort(404, 'File not found.')

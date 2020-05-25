@@ -69,7 +69,7 @@ def gallery_view(user_key=None):
             path = request.urlparts.path
             request.query['page'] = page
             new_query = {}
-            for key, value in request.query.iteritems():
+            for (key, value) in request.query.items():
                 if key in defaults:
                     value = str(value)
                     if value.isdigit() and request.query[key] != defaults[key]:
@@ -79,7 +79,7 @@ def gallery_view(user_key=None):
 
             return path + '?' + urlencode(new_query)
 
-        # shorthand assignments for oftenly used data
+        # shorthand assignments for often used data
         page = int(request.query.get('page', defaults['page']))
         case = int(request.query.get('case', defaults['case']))
         query_in = functions.get_inrange(
@@ -155,6 +155,7 @@ def gallery_view(user_key=None):
                     if image:
                         row_file['type'] = config.file_type.IMAGE
                         row_file['resolution'] = image.size
+                        image.close()
                     else:
                         row_file['type'] = config.file_type.FILE
 

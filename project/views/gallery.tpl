@@ -20,7 +20,7 @@
         <a href="{{ url_for_page(pagination.page + 1) }}" data-page="{{ page }}">&raquo;</a>
     {% endif %}
 {% endmacro %}
-{% macro write_ext(file) %}{% if info.show_ext %}{{ file.url }}{{ file.ext }}{% else %}{{ file.url }}{% endif %}{% endmacro %}
+{% macro write_ext(file) %}{% if info.show_ext == 1 %}{{ file.url }}{{ file.ext }}{% elif info.show_ext == 2 %}{{ file.url }}/{{ file.original }}{% else %}{{ file.url }}{% endif %}{% endmacro %}
 {% if not error %}
     {% if not info.pjax %}
         <!DOCTYPE html>

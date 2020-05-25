@@ -3,10 +3,12 @@
         "name": "URL format",
         "type": "radio",
         "options": [
-            "Short URL (e.g. https://sgfc.co/filename)",
-            "Full URL (e.g. https://sgfc.co/filename.png)"
+            "Short URL (e.g. https://sgfc.co/code)",
+            "Full URL (e.g. https://sgfc.co/code.png)",
+            "Fuller URL (e.g. https://sgfc.co/code/original_filename.png)"
         ],
-        "default": 0
+        "default": 0,
+        "notes": "Setting this to \"Fuller URL\" will stop Short and Full URLs from resolving."
     },
     "block": {
         "name": "Access options",
