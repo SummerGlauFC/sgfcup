@@ -1,4 +1,6 @@
-from __future__ import absolute_import, division, print_function
+from __future__ import absolute_import
+from __future__ import division
+from __future__ import print_function
 
 import functools
 import hashlib
@@ -8,9 +10,16 @@ from urllib.parse import urlencode
 
 from bottle import jinja2_template as template
 from bottle import jinja2_view as view
-from bottle import redirect, request, response
-from project import app, config, functions
-from project.functions import get_dict, get_setting
+from bottle import redirect
+from bottle import request
+from bottle import response
+
+from project import app
+from project import config
+from project import configdefines
+from project import functions
+from project.functions import get_dict
+from project.functions import get_setting
 
 
 @app.route("/redirect/gallery/<user_key>")
@@ -85,11 +94,11 @@ def gallery_view(user_key=None):
         page = int(request.query.get("page", defaults["page"]))
         case = int(request.query.get("case", defaults["case"]))
         query_in = functions.get_inrange(
-            request.query.get("in"), defaults["in"], len(config.searchmodes)
+            request.query.get("in"), defaults["in"], len(configdefines.searchmodes)
         )
         query = request.query.get("query", "")
         current_sort = functions.get_inrange(
-            request.query.get("sort"), defaults["sort"], len(config.sortmodes)
+            request.query.get("sort"), defaults["sort"], len(configdefines.sortmodes)
         )
 
         # Start organising the SQL search ability
@@ -104,11 +113,11 @@ def gallery_view(user_key=None):
         # i don't have the effort to make it better
         if query:
             sql_search = "`%s`%sLIKE %%s AND " % (
-                config.searchmodes[query_in][1],
+                configdefines.searchmodes[query_in][1],
                 collate,
             )
 
-        sort_array = config.sortmodes[current_sort]
+        sort_array = configdefines.sortmodes[current_sort]
         sql_query = (
             "SELECT * FROM `files` WHERE %s `userid` = %%s ORDER BY `%s` %s LIMIT {}"
             % (sql_search, sort_array[1], sort_array[2])
@@ -146,7 +155,7 @@ def gallery_view(user_key=None):
                         "pastes", where={"id": row["original"]}, singular=True
                     )
 
-                    row_file["type"] = config.file_type.PASTE
+                    row_file["type"] = configdefines.file_type.PASTE
                     row_file["url"] = row["shorturl"]
                     row_file["content"] = paste_row["content"]
                     row_file["hits"] = row["hits"]
@@ -165,11 +174,11 @@ def gallery_view(user_key=None):
 
                     image = functions.is_image(full_file_path)
                     if image:
-                        row_file["type"] = config.file_type.IMAGE
+                        row_file["type"] = configdefines.file_type.IMAGE
                         row_file["resolution"] = image.size
                         image.close()
                     else:
-                        row_file["type"] = config.file_type.FILE
+                        row_file["type"] = configdefines.file_type.FILE
 
                     row_file["url"] = row["shorturl"]
                     row_file["ext"] = row["ext"]
@@ -201,12 +210,12 @@ def gallery_view(user_key=None):
                 "pages": pagination,
                 "usage": usage,
                 "entries": total_entries,
-                "file_types": config.file_types,
-                "sort": {"current": current_sort, "list": config.sortmodes},
+                "file_types": configdefines.file_types,
+                "sort": {"current": current_sort, "list": configdefines.sortmodes},
                 "search": {
                     "query": query,
                     "in": query_in,
-                    "modes": config.searchmodes,
+                    "modes": configdefines.searchmodes,
                     "case": case,
                 },
                 "files": files,
@@ -215,11 +224,11 @@ def gallery_view(user_key=None):
             },
             "url_for_page": url_for_page,
             "error": error if error else False,
-            "types": config.file_type,
+            "types": configdefines.file_type,
             "hl": functools.partial(functions.hl, search=query),
         }
 
-    return functions.json_error("Specified key does not exist.")
+    return {"error": "Specified key does not exist."}
 
 
 @app.route("/gallery/auth/<user_key:re:[a-zA-Z0-9_-]+>", method="GET")
@@ -276,7 +285,7 @@ def delete_files(to_delete, messages):
             except OSError:
                 messages.append(f"Could not delete {shorturl}")
 
-    return (size, count, messages)
+    return size, count, messages
 
 
 @app.route("/gallery/delete/advanced", method="POST")

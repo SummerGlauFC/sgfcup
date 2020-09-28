@@ -4,33 +4,20 @@ New codebase for the SGFC file uploader.
 
 ## Dependencies
 
-Python >= 3.4 is needed.
+Requires Python >= 3.6
 
-- bottle (dev version): https://github.com/bottlepy/bottle
-- cymysql
-- jinja2
-- python-magic (need libmagic on your system)
-- pillow
-- pygments
-- jsonmerge
-- bottle-beaker
-- beaker
-- ghdiff
-- tornado (for serving the app)
-- raven (debug dependency)
-- future
-- pycrypto
-
-Dependencies can be installed using Poetry:
+Dependencies can be installed using [Poetry](https://python-poetry.org):
 
     poetry install
-    
-Please edit `project/config.example.py`, and rename it to `config.py`,
-then run `database.sql` on the database you've put in `config.py`.
 
-The directories `img/p/` and `img/t/` have to be created in the root of the project.
+## Setup
 
-## Running the app
+Please edit `project/config.example.py`, and rename it to `config.py`, then run `database.sql` on the database you've
+put in `config.py`.
+
+The specified directories for images and thumbnails must exist, as they will not be automatically created.
+
+# Running the app
 
 The program is run like so:
 
@@ -38,17 +25,24 @@ The program is run like so:
 
 ## Notes
 
-The app also has the ability to serve a file through [nginx's X-Accel](https://www.nginx.com/resources/wiki/start/topics/examples/x-accel/). To use this, nginx must have a location block for `/get_image/`, like so:
+The app also has the ability to serve a file
+through [nginx's X-Accel](https://www.nginx.com/resources/wiki/start/topics/examples/x-accel/). To use this, nginx must
+have a location block for `/get_image/`, like so:
 
     location /get_image/ {
         internal;
-        alias /path/to/project/img/; # note the trailing slash
+        
+        # keep the trailing slash!
+        alias /path/to/base/image/directory/; 
+        
+        # this may need to be customised based on your
+        # chosen directory structure.
     }
 
 Then in `project/config.py`:
 
     {
-        "use_nginx_sendfile": False,
+        "use_nginx_sendfile": True,
         ...
     }
 

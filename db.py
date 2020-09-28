@@ -1,4 +1,6 @@
-from __future__ import absolute_import, division, print_function
+from __future__ import absolute_import
+from __future__ import division
+from __future__ import print_function
 
 import logging
 from functools import wraps
@@ -200,5 +202,4 @@ class DB(BaseDB):
 
 
 class DBConnectionFailed(Exception):
-
     """ happens when a database operation continually fails """

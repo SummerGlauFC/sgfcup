@@ -1,313 +1,314 @@
 body.gallery #container {
-  width: 100%;
-  margin: 20px 0 0;
-  text-align: center;
-  color: #eeeeee;
+    width: 100%;
+    margin: 20px 0 0;
+    text-align: center;
+    color: #eeeeee;
 }
 
 body.gallery header {
-  margin-bottom: 10px;
-  font-family: "Open Sans", "Helvetica Neue", Segoe UI, Helvetica, Arial,
+    margin-bottom: 10px;
+    font-family: "Open Sans", "Helvetica Neue", Segoe UI, Helvetica, Arial,
     sans-serif;
-  font-size: 2.5em;
-  letter-spacing: 0;
-  color: #eeeeee;
+    font-size: 2.5em;
+    letter-spacing: 0;
+    color: #eeeeee;
 }
 
 body.gallery #main {
-  width: 100%;
-  margin: 0 auto;
-  padding: 0;
-  border: 0 solid #999999;
-  text-align: center;
-  font-size: 16px;
-  color: #222233;
-  background: none repeat scroll 0 0 #eeeeee;
-  box-shadow: 0 1px 5px 0 rgba(0, 0, 0, 0.4) inset;
-  transition: all 215ms linear 0s;
+    width: 100%;
+    margin: 0 auto;
+    padding: 0;
+    border: 0 solid #999999;
+    text-align: center;
+    font-size: 16px;
+    color: #222233;
+    background: none repeat scroll 0 0 #eeeeee;
+    box-shadow: 0 1px 5px 0 rgba(0, 0, 0, 0.4) inset;
+    transition: all 215ms linear 0s;
 }
 
 body.gallery .rules {
-  width: 90%;
-  margin: 10px auto 0;
-  padding: 10px;
-  text-align: center;
-  font-size: 13px;
-  color: #000000;
-  background: none repeat scroll 0 0 #eeeeee;
-  box-shadow: 0 1px 5px 0 rgba(0, 0, 0, 0.4) inset;
+    width: 90%;
+    margin: 10px auto 0;
+    padding: 10px;
+    text-align: center;
+    font-size: 13px;
+    color: #000000;
+    background: none repeat scroll 0 0 #eeeeee;
+    box-shadow: 0 1px 5px 0 rgba(0, 0, 0, 0.4) inset;
 }
 
 body.gallery header div {
-  width: 90%;
-  margin: 20px auto 0;
-  padding: 14px 11px;
-  text-align: center;
-  font-size: 13px;
-  font-weight: 400;
-  color: #000000;
-  background: none repeat scroll 0 0 #eeeeee;
-  box-shadow: 0 1px 5px 0 rgba(0, 0, 0, 0.4) inset;
+    width: 90%;
+    margin: 20px auto 0;
+    padding: 14px 11px;
+    text-align: center;
+    font-size: 13px;
+    font-weight: 400;
+    color: #000000;
+    background: none repeat scroll 0 0 #eeeeee;
+    box-shadow: 0 1px 5px 0 rgba(0, 0, 0, 0.4) inset;
 }
 
 body.gallery .left {
-  text-align: left;
+    text-align: left;
 }
 
 body.gallery .sorty div {
-  display: block;
-  margin-top: 3px;
-  font-size: 0.8em;
-  color: rgba(0, 0, 0, 0.5);
+    display: block;
+    margin-top: 3px;
+    font-size: 0.8em;
+    color: rgba(0, 0, 0, 0.5);
 }
 
 body.gallery a {
-  text-decoration: none;
-  font-weight: 400;
+    text-decoration: none;
+    font-weight: 400;
 }
 
 body.gallery .sorty div a {
-  text-decoration: underline !important;
+    text-decoration: underline !important;
 }
 
 body.gallery h2 {
-  margin: 0 0 0;
-  padding: 7px 9px;
-  text-align: center;
-  font-family: Arial;
-  font-size: 16px;
-  background: none repeat scroll 0 0 #dddddd;
+    margin: 0 0 0;
+    padding: 7px 9px;
+    text-align: center;
+    font-family: Arial;
+    font-size: 16px;
+    background: none repeat scroll 0 0 #dddddd;
 }
 
 body.gallery .group {
-  padding: 10px 0;
-  background: #ffffff;
+    padding: 10px 0;
+    background: #ffffff;
 }
 
 body.gallery .pages {
-  font-weight: 400 !important;
+    font-weight: 400 !important;
 }
 
 body.gallery .pages.bottom {
-  border-top: 1px solid rgba(0, 0, 0, 0.3);
+    border-top: 1px solid rgba(0, 0, 0, 0.3);
 }
 
 body.gallery .debug.top {
-  border-bottom: 1px solid rgba(0, 0, 0, 0.3);
-  font-size: 16px;
-  font-weight: 400;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.3);
+    font-size: 16px;
+    font-weight: 400;
 }
 
 body.gallery .debug {
-  margin: 0;
-  border-top: 1px solid rgba(0, 0, 0, 0.3);
-  font-size: 9pt;
+    margin: 0;
+    border-top: 1px solid rgba(0, 0, 0, 0.3);
+    font-size: 9pt;
 }
 
 body.gallery p {
-  margin-bottom: 12px;
-  font-size: 12px;
+    margin-bottom: 12px;
+    font-size: 12px;
 }
 
 body.gallery .submit {
-  text-align: center;
+    text-align: center;
 }
 
 body.gallery .wrapper {
-  display: inline-block;
-  width: 200px;
-  height: 200px;
-  margin-bottom: 40px;
-  margin-left: 5px;
+    display: inline-block;
+    width: 200px;
+    height: 200px;
+    margin-bottom: 40px;
+    margin-left: 5px;
 }
 
 body.gallery .img {
-  z-index: 2;
-  width: 200px;
-  height: 200px;
-  background-color: #ffffff;
-  background-position: center center;
-  background-size: cover;
-  -webkit-box-shadow: inset 0 0 1px rgba(0, 0, 0, 0.8),
+    z-index: 2;
+    width: 200px;
+    height: 200px;
+    background-color: #ffffff;
+    background-position: center center;
+    background-size: cover;
+    -webkit-box-shadow: inset 0 0 1px rgba(0, 0, 0, 0.8),
     inset 0 2px 0 rgba(255, 255, 255, 0.5), inset 0 -1px 0 rgba(0, 0, 0, 0.4);
-  -moz-box-shadow: inset 0 0 1px rgba(0, 0, 0, 0.8),
+    -moz-box-shadow: inset 0 0 1px rgba(0, 0, 0, 0.8),
     inset 0 2px 0 rgba(255, 255, 255, 0.5), inset 0 -1px 0 rgba(0, 0, 0, 0.4);
-  box-shadow: inset 0 0 1px rgba(0, 0, 0, 0.8),
+    box-shadow: inset 0 0 1px rgba(0, 0, 0, 0.8),
     inset 0 2px 0 rgba(255, 255, 255, 0.5), inset 0 -1px 0 rgba(0, 0, 0, 0.4);
 }
 
 body.gallery img {
-  border: 0 none;
+    border: 0 none;
 }
 
 body.gallery hr {
-  clear: both;
+    clear: both;
 }
 
 body.gallery .disabled {
-  text-decoration: line-through;
-  color: #444;
+    text-decoration: line-through;
+    color: #444;
 }
 
 body.gallery .checkbawks {
-  float: left;
-  margin: 1px 3px 1px 1px;
-  vertical-align: bottom;
+    float: left;
+    margin: 1px 3px 1px 1px;
+    vertical-align: bottom;
 }
 
 body.gallery .paste {
-  display: inline-block;
-  position: relative;
-  top: 1px;
-  width: 200px;
-  height: 199px;
-  overflow-y: scroll;
-  font-size: 8pt;
+    display: inline-block;
+    position: relative;
+    top: 1px;
+    width: 200px;
+    height: 199px;
+    overflow-y: scroll;
+    font-size: 8pt;
 }
 
 body.gallery.gc .wrapper {
-  display: block;
-  float: none;
-  clear: both;
-  -moz-box-sizing: border-box;
-  box-sizing: border-box;
-  width: 100%;
-  height: auto;
-  margin-bottom: 0;
-  margin-left: 0;
-  padding: 15px;
-  border-bottom: 1px solid rgba(0, 0, 0, 0.3);
+    display: block;
+    float: none;
+    clear: both;
+    -moz-box-sizing: border-box;
+    box-sizing: border-box;
+    width: 100%;
+    height: auto;
+    margin-bottom: 0;
+    margin-left: 0;
+    padding: 15px;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.3);
 }
 
 body.gallery.gc .wrapper:nth-last-child(2) {
 }
 
 body.gallery.gc .img {
-  float: left;
-  position: relative;
-  width: 80px;
-  height: 80px;
+    float: left;
+    position: relative;
+    width: 80px;
+    height: 80px;
 }
 
 body.gallery.gc .img a {
-  top: 0;
-  left: 0;
+    top: 0;
+    left: 0;
 }
 
 body.gallery.gc .paste {
-  display: block;
-  z-index: 2;
-  position: relative;
-  top: 1px;
-  width: 80px;
-  height: 79px;
-  overflow-y: auto;
-  text-align: center;
-  font-size: 8pt;
+    display: block;
+    z-index: 2;
+    position: relative;
+    top: 1px;
+    width: 80px;
+    height: 79px;
+    overflow-y: auto;
+    text-align: center;
+    font-size: 8pt;
 }
 
 body.gallery.gc h2 {
-  margin: 0;
+    margin: 0;
 }
 
 body.gallery.gc .checkbawks {
-  float: none;
-  margin: 1px 0;
-  vertical-align: middle;
+    float: none;
+    margin: 1px 0;
+    vertical-align: middle;
 }
 
 body.gallery.gc .info {
-  display: block;
-  float: left;
-  -moz-box-sizing: border-box;
-  box-sizing: border-box;
-  width: 40%;
-  margin-left: 0;
-  padding: 0 11px;
-  overflow: hidden;
-  text-align: left !important;
-  text-overflow: ellipsis;
-  font-size: 150%;
-  line-height: 80px;
-  white-space: nowrap;
-  color: #000000;
-  box-shadow: none;
+    display: block;
+    float: left;
+    -moz-box-sizing: border-box;
+    box-sizing: border-box;
+    width: 40%;
+    margin-left: 0;
+    padding: 0 11px;
+    overflow: hidden;
+    text-align: left !important;
+    text-overflow: ellipsis;
+    font-size: 150%;
+    line-height: 80px;
+    white-space: nowrap;
+    color: #000000;
+    box-shadow: none;
 }
 
 body.gallery.gc .info.details {
-  display: table-cell;
-  width: 25%;
-  margin-top: 21px;
-  padding: 0;
-  font-size: 14px;
-  line-height: 19px !important;
-  vertical-align: middle;
-  color: rgba(0, 0, 0, 0.5);
+    display: table-cell;
+    width: 25%;
+    margin-top: 21px;
+    padding: 0;
+    font-size: 14px;
+    line-height: 19px !important;
+    vertical-align: middle;
+    color: rgba(0, 0, 0, 0.5);
 }
 
 body.gallery.gc .info.details span {
-  color: #000;
+    color: #000;
 }
 
 body.gallery h2.pages {
-  padding: 15px;
+    padding: 15px;
 }
 
 body.gallery h2.pages a {
-  display: inline-block;
-  width: 20px;
-  margin: 1px 1px 4px;
-  padding: 5px;
-  border: 1px dashed #aaaaaa;
-  font-size: 16px !important;
-  background: none repeat scroll 0 0 #cccccc;
+    display: inline-block;
+    width: 20px;
+    margin: 1px 1px 4px;
+    padding: 5px;
+    border: 1px dashed #aaaaaa;
+    font-size: 16px !important;
+    background: none repeat scroll 0 0 #cccccc;
 }
 
 body.gallery h2.pages a:last-child {
-  padding: 5px;
+    padding: 5px;
 }
 
 html,
 body {
-  background: url("//sgfc.co/SAgXV") repeat fixed 0 0%,
-    linear-gradient(to bottom, #485563 0%, #29323c 100%) repeat fixed 0 0
-      rgba(0, 0, 0, 0);
+    background: url("//sgfc.co/SAgXV") repeat fixed 0 0%,
+    linear-gradient(to bottom, #485563 0%, #29323c 100%) repeat fixed 0 0 rgba(0, 0, 0, 0);
 }
+
 .info {
-  background: none repeat scroll 0 0 #ffffff;
-  box-shadow: 0 0 1px rgba(0, 0, 0, 0.8) inset,
+    background: none repeat scroll 0 0 #ffffff;
+    box-shadow: 0 0 1px rgba(0, 0, 0, 0.8) inset,
     0 2px 0 rgba(255, 255, 255, 0.5) inset, 0 -1px 0 rgba(0, 0, 0, 0.4) inset;
-  color: #000000;
-  display: inline-block;
-  font-size: 75%;
-  margin-top: 2px;
-  overflow: hidden;
-  padding: 2px 4px;
-  text-align: right;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-  width: 192px;
-  position: relative;
-  top: 201px;
+    color: #000000;
+    display: inline-block;
+    font-size: 75%;
+    margin-top: 2px;
+    overflow: hidden;
+    padding: 2px 4px;
+    text-align: right;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    width: 192px;
+    position: relative;
+    top: 201px;
 }
 
 body.gallery .wrapper {
-  margin-bottom: 60px;
-  height: 240px;
+    margin-bottom: 60px;
+    height: 240px;
 }
 
 body.gallery h2.debug.top {
-  margin-bottom: 20px;
+    margin-bottom: 20px;
 }
 
 .hl {
-  background: yellow;
-  font-weight: bold;
+    background: yellow;
+    font-weight: bold;
 }
 
 #error {
-  padding: 20px;
+    padding: 20px;
 }
+
 .highlight {
-  background: yellow;
+    background: yellow;
 }

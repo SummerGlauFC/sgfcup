@@ -1,8 +1,13 @@
-from __future__ import absolute_import, division, print_function
+from __future__ import absolute_import
+from __future__ import division
+from __future__ import print_function
 
 from bottle import jinja2_view as view
 from bottle import request
-from project import app, config, functions
+
+from project import app
+from project import config
+from project import functions
 
 
 @app.route("/settings", method="GET")

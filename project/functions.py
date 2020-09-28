@@ -1,4 +1,6 @@
-from __future__ import absolute_import, division, print_function
+from __future__ import absolute_import
+from __future__ import division
+from __future__ import print_function
 
 import functools
 import inspect
@@ -12,18 +14,19 @@ from math import ceil
 import markupsafe
 import pygments
 from PIL import Image
-from project import config
+from bottle import HTTPResponse
+from bottle import abort
 from pygments.formatters import HtmlFormatter
-from pygments.lexers import (
-    PhpLexer,
-    TextLexer,
-    get_all_lexers,
-    get_lexer_by_name,
-    get_lexer_for_filename,
-    get_lexer_for_mimetype,
-    guess_lexer,
-)
+from pygments.lexers import PhpLexer
+from pygments.lexers import TextLexer
+from pygments.lexers import get_all_lexers
+from pygments.lexers import get_lexer_by_name
+from pygments.lexers import get_lexer_for_filename
+from pygments.lexers import get_lexer_for_mimetype
+from pygments.lexers import guess_lexer
 from pygments.util import ClassNotFound
+
+from project import config
 
 
 def id_generator(size=6, chars=string.ascii_letters + string.digits):
@@ -63,9 +66,9 @@ def hl(text, search):
     for m in regex.finditer(text):
         output += "".join(
             [
-                text[i : m.start()],
+                text[i: m.start()],
                 '<span class="hl">',
-                text[m.start() : m.end()],
+                text[m.start(): m.end()],
                 "</span>",
             ]
         )
@@ -104,7 +107,6 @@ def sizeof_fmt(num, short=None):
 
 
 class Pagination(object):
-
     """ Useful pagination class """
 
     def __init__(self, page, per_page, total_count):
@@ -142,9 +144,9 @@ class Pagination(object):
             if (
                 num <= left_edge
                 or (
-                    num > self.page - left_current - 1
-                    and num < self.page + right_current
-                )
+                num > self.page - left_current - 1
+                and num < self.page + right_current
+            )
                 or num > self.pages - right_edge
             ):
                 if last + 1 != num:
@@ -228,8 +230,12 @@ def css(style="vs", css_class=".syntax"):
     return HtmlFormatter(style=style).get_style_defs(css_class)
 
 
-def json_error(error):
-    return {"success": False, "error": error}
+def json_response(success=True, error=False, status=200, **body):
+    return HTTPResponse(body={"success": success, "error": error, "status_code": status, **body}, status=status)
+
+
+def json_error(error, status=400):
+    return json_response(success=False, error=error, status=status)
 
 
 # from https://stackoverflow.com/a/36131992
@@ -256,3 +262,66 @@ def debug_print(*args, trace=True):
         lines = "\n".join([x.strip() for x in lines])
         print(f"\t{filename}:{line_number} in {function_name}\n\t-->\t{lines}")
     print("-" * 40)
+
+
+def get_or_create_account(key, password):
+    if not key:
+        # if no key is provided, anonymous upload
+        return True, 0
+
+    # Keys must only contain alphanumerics and underscores/hyphens
+    if not re.match("^[a-zA-Z0-9_-]+$", key):
+        raise json_error(
+            "Invalid key given. (can only contain letters, numbers, underscores and hyphens)"
+        )
+
+    # Check if the specified account already exists.
+    user = config.db.select("accounts", where={"key": key}, singular=True)
+
+    # If it does, check their password is correct.
+    if user:
+        is_authed = user["password"] == password
+        user_id = user["id"]
+    else:
+        # If the account doesn't exist, make a new account.
+        new_account = config.db.insert("accounts", {"key": key, "password": password})
+        user_id = new_account.lastrowid
+        is_authed = True
+
+    return is_authed, user_id
+
+
+def remove_transparency(im, bg_colour=(255, 255, 255)):
+    # courtesy of Humphrey@stackoverflow
+    # https://stackoverflow.com/a/35859141
+
+    # Only process if image has transparency
+    # (http://stackoverflow.com/a/1963146)
+    if im.mode in ("RGBA", "LA") or (im.mode == "P" and "transparency" in im.info):
+        # Need to convert to RGBA if LA format due to a bug in PIL
+        # (http://stackoverflow.com/a/1963146)
+        alpha = im.convert("RGBA").split()[-1]
+        background = Image.new("RGB", im.size, bg_colour)
+        background.paste(im, mask=alpha)  # 3 is the alpha channel
+        return background
+    else:
+        return im
+
+
+def abort_if_invalid_image_url(file, filename, ext):
+    use_extensions = config.user_settings.get(file["userid"], "ext")
+    should_abort = False
+    if filename:
+        # Check for extensionless files first (e.g. Dockerfile)
+        if not ext and filename != file["original"]:
+            should_abort = True
+        if ext and "{}.{}".format(filename, ext) != file["original"]:
+            should_abort = True
+    else:
+        # don't resolve if longer filename setting set, and the filename is not included.
+        if use_extensions == 2:
+            should_abort = True
+        if ext and ".{}".format(ext) != file["ext"]:
+            should_abort = True
+    if should_abort:
+        abort(404, "File not found.")

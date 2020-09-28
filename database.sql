@@ -7,8 +7,6 @@
 /*!40111 SET @OLD_SQL_NOTES=@@SQL_NOTES, SQL_NOTES=0 */;
 
 
-# Dump of table accounts
-# ------------------------------------------------------------
 
 DROP TABLE IF EXISTS `accounts`;
 
@@ -22,8 +20,6 @@ CREATE TABLE `accounts` (
 
 
 
-# Dump of table files
-# ------------------------------------------------------------
 
 DROP TABLE IF EXISTS `files`;
 
@@ -41,8 +37,6 @@ CREATE TABLE `files` (
 
 
 
-# Dump of table pastes
-# ------------------------------------------------------------
 
 DROP TABLE IF EXISTS `pastes`;
 
@@ -58,8 +52,6 @@ CREATE TABLE `pastes` (
 
 
 
-# Dump of table revisions
-# ------------------------------------------------------------
 
 DROP TABLE IF EXISTS `revisions`;
 
@@ -77,8 +69,6 @@ CREATE TABLE `revisions` (
 
 
 
-# Dump of table settings
-# ------------------------------------------------------------
 
 DROP TABLE IF EXISTS `settings`;
 

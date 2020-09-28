@@ -1,5 +1,4 @@
 from db import DB
-from project.configdefines import file_type, file_types, searchmodes, sortmodes
 from project.picklesettings import PickleSettings
 
 base = "/path/to/base/folder"  # base folder

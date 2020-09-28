@@ -8,7 +8,7 @@ authors = ["russelg <isaac.drew@icloud.com>"]
 python = "^3.6"
 jinja2 = "^2.11.2"
 cymysql = "^0.9.14"
-bottle = {git = "https://github.com/bottlepy/bottle.git"}
+bottle = { git = "https://github.com/bottlepy/bottle.git" }
 python-magic = "^0.4.18"
 pillow = "^7.1.2"
 pygments = "^2.6.1"

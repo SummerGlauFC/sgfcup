@@ -1,10 +1,14 @@
 #!/usr/bin/env python
-from __future__ import absolute_import, division, print_function
+from __future__ import absolute_import
+from __future__ import division
+from __future__ import print_function
 
 import sys
 
 from beaker.middleware import SessionMiddleware
-from bottle import debug, run
+from bottle import debug
+from bottle import run
+
 from project import app
 from project.functions import get_setting
 
@@ -13,7 +17,6 @@ sentry_enabled = bool(get_setting("debug.sentry.enabled"))
 if sentry_enabled:
     from raven import Client
     from raven.contrib.bottle import Sentry
-
 
 session_opts = {
     "session.type": "cookie",
@@ -36,7 +39,7 @@ debug(debug_enabled)
 if __name__ == "__main__":
     try:
         port = int(sys.argv[1])
-        run(app, reloader=False, host="0.0.0.0", port=port, server="tornado")
+        run(app, reloader=debug_enabled, host="0.0.0.0", port=port, server="tornado")
     except Exception as e:
         print(e)
         print("Port to run on not specified.")

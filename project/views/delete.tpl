@@ -1,17 +1,17 @@
 {% extends "base.tpl" %}
 {% block title %}Delete Files{% endblock %}
 {% block css %}
-    ul { text-align: left; }
+  ul { text-align: left; }
 {% endblock %}
 {% block extra %}
-    <a href="/gallery/{{ key }}">Return to your gallery...</a>
-    <br />
-    <a href="/">Return to the homepage...</a>
+  <a href="/gallery/{{ key }}">Return to your gallery...</a>
+  <br />
+  <a href="/">Return to the homepage...</a>
 {% endblock %}
 {% block content %}
-    <ul>
+  <ul>
     {% for message in messages %}
-        <li>{{ message }}</li>
+      <li>{{ message }}</li>
     {% endfor %}
-    </ul>
+  </ul>
 {% endblock %}

@@ -1,32 +1,37 @@
 {
-    "ext": {
-        "name": "URL format",
-        "type": "radio",
-        "options": [
-            "Short URL (e.g. https://sgfc.co/code)",
-            "Full URL (e.g. https://sgfc.co/code.png)",
-            "Fuller URL (e.g. https://sgfc.co/code/original_filename.png)"
-        ],
-        "default": 0,
-        "notes": "Setting this to \"Fuller URL\" will stop Short and Full URLs from resolving."
-    },
-    "block": {
-        "name": "Access options",
-        "type": "radio",
-        "options": [
-            "Allow anyone to view your gallery",
-            "Require password to view your gallery"
-        ],
-        "default": 0
-    },
-    "gallery_password": {
-        "name": "Viewing password",
-        "type": "text",
-        "default": "",
-        "notes": "This is only needed if \"Require password to view your gallery\" is set.<br />This password is for logging into the gallery, and does not change your key password."
-    },
-    "groups": {
-        "Image link settings": ["ext"],
-        "Gallery settings": ["block", "gallery_password"]
-    }
+  "ext": {
+    "name": "URL format",
+    "type": "radio",
+    "options": [
+      "Short URL (e.g. https://sgfc.co/code)",
+      "Full URL (e.g. https://sgfc.co/code.png)",
+      "Fuller URL (e.g. https://sgfc.co/code/original_filename.png)"
+    ],
+    "default": 0,
+    "notes": "Setting this to \"Fuller URL\" will stop Short and Full URLs from resolving."
+  },
+  "block": {
+    "name": "Access options",
+    "type": "radio",
+    "options": [
+      "Allow anyone to view your gallery",
+      "Require password to view your gallery"
+    ],
+    "default": 0
+  },
+  "gallery_password": {
+    "name": "Viewing password",
+    "type": "text",
+    "default": "",
+    "notes": "This is only needed if \"Require password to view your gallery\" is set.<br />This password is for logging into the gallery, and does not change your key password."
+  },
+  "groups": {
+    "Image link settings": [
+      "ext"
+    ],
+    "Gallery settings": [
+      "block",
+      "gallery_password"
+    ]
+  }
 }

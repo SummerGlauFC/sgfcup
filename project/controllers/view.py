@@ -1,35 +1,26 @@
-from __future__ import absolute_import, division, print_function
+from __future__ import absolute_import
+from __future__ import division
+from __future__ import print_function
 
 import os
 
 import ghdiff
 import magic
+from PIL import Image
+from PIL import ImageOps
 from bottle import abort
 from bottle import jinja2_template as template
-from bottle import redirect, request, response
+from bottle import redirect
+from bottle import request
+from bottle import response
 from bottle import static_file as bottle_static_file
-from PIL import Image, ImageOps
-from project import app, config, functions
+
+from project import app
+from project import config
+from project import functions
+from project.functions import abort_if_invalid_image_url
 from project.functions import get_setting
-
-
-# courtesy of Humphrey@stackoverflow
-# https://stackoverflow.com/a/35859141
-def remove_transparency(im, bg_colour=(255, 255, 255)):
-    # Only process if image has transparency
-    # (http://stackoverflow.com/a/1963146)
-    if im.mode in ("RGBA", "LA") or (im.mode == "P" and "transparency" in im.info):
-
-        # Need to convert to RGBA if LA format due to a bug in PIL
-        # (http://stackoverflow.com/a/1963146)
-        alpha = im.convert("RGBA").split()[-1]
-
-        background = Image.new("RGB", im.size, bg_colour)
-        background.paste(im, mask=alpha)  # 3 is the alpha channel
-        return background
-
-    else:
-        return im
+from project.functions import remove_transparency
 
 
 def static_file(path, root, filename=False):
@@ -46,6 +37,7 @@ def static_file(path, root, filename=False):
 
     # Use the sendfile built into nginx if it's available
     if config.Settings["use_nginx_sendfile"]:
+        # TODO: use paths from settings
         folder = "t" if root is get_setting("directories.thumbs") else "p"
 
         response.set_header("X-Accel-Redirect", f"/get_image/{folder}/{path}")
@@ -57,15 +49,18 @@ def static_file(path, root, filename=False):
 
 @app.route("/api/thumb/<url>")
 @app.route("/api/thumb/<url>.<ext>")
-def api_thumb(url, ext=None, temp=False, size=(400, 400)):
+@app.route("/api/thumb/<url>/<filename>")
+@app.route("/api/thumb/<url>/<filename>.<ext>")
+def api_thumb(url, filename=None, ext=None, temp=False, size=(400, 400)):
     # Thumbnailer route
     # Generated for the gallery
 
     # Return the currently saved thumbnail if it exists
     thumb_file = f"thumb_{url}.jpg"
-    if thumb_file in os.listdir(get_setting("directories.thumbs")) and not temp:
-        return static_file(thumb_file, root=get_setting("directories.thumbs"))
-    elif thumb_file in os.listdir("/tmp") and temp:
+    thumb_dir = get_setting("directories.thumbs")
+    if os.path.exists(os.path.join(thumb_dir, thumb_file)) and not temp:
+        return static_file(thumb_file, root=thumb_dir)
+    elif os.path.exists(os.path.join("/tmp", thumb_file)) and temp:
         return static_file(thumb_file, root="/tmp/")
     else:
         # Select the full file from the database
@@ -74,27 +69,21 @@ def api_thumb(url, ext=None, temp=False, size=(400, 400)):
         )
 
         if results:
-            # Check if extension matches the one in the database (if provided)
-            if ext and ("." + ext != results["ext"]):
-                abort(404, "File not found.")
-            else:
-                # Generate a 400x400 (by default) JPEG thumbnail
-                base = Image.open(
-                    get_setting("directories.files")
-                    + results["shorturl"]
-                    + results["ext"]
-                )
-                if size < base.size:
-                    image_info = base.info
-                    # if base.mode not in ('L', 'RGBA'):
-                    #     base = base.convert('RGBA')
-                    base = ImageOps.fit(base, size, Image.ANTIALIAS)
-                    save_dir = "/tmp/" if temp else get_setting("directories.thumbs")
-                    base = remove_transparency(base)
-                    base.save(save_dir + thumb_file, **image_info)
-                    return static_file(thumb_file, root=save_dir)
-
-                return image_view(url, ext, results=results)
+            abort_if_invalid_image_url(results, filename, ext)
+            # Generate a 400x400 (by default) JPEG thumbnail
+            base = Image.open(
+                os.path.join(get_setting("directories.files"), results["shorturl"] + results["ext"])
+            )
+            if size < base.size:
+                image_info = base.info
+                # if base.mode not in ('L', 'RGBA'):
+                #     base = base.convert('RGBA')
+                base = ImageOps.fit(base, size, Image.ANTIALIAS)
+                save_dir = "/tmp/" if temp else thumb_dir
+                base = remove_transparency(base)
+                base.save(os.path.join(save_dir, thumb_file), **image_info)
+                return static_file(thumb_file, root=save_dir)
+            return image_view(url, filename, ext, results=results, update_hits=False)
         else:
             abort(404, "File not found.")
 
@@ -289,24 +278,7 @@ def image_view(url, filename=None, ext=None, results=None, update_hits=True):
         )
 
     if results:
-        use_extensions = config.user_settings.get(results["userid"], "ext")
-
-        should_abort = False
-        if filename:
-            # Check for extensionless files first (e.g. Dockerfile)
-            if not ext and filename != results["original"]:
-                should_abort = True
-            if ext and "{}.{}".format(filename, ext) != results["original"]:
-                should_abort = True
-        else:
-            # don't resolve if longer filename setting set, and the filename is not included.
-            if use_extensions == 2:
-                should_abort = True
-            if ext and ".{}".format(ext) != results["ext"]:
-                should_abort = True
-
-        if should_abort:
-            abort(404, "File not found.")
+        abort_if_invalid_image_url(results, filename, ext)
 
         # If the file is a paste, redirect to the pastebin
         if results["ext"] == "paste":

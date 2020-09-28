@@ -1,8 +1,11 @@
-from __future__ import absolute_import, division, print_function
+from __future__ import absolute_import
+from __future__ import division
+from __future__ import print_function
 
 import logging
 
-from bottle import TEMPLATE_PATH, Bottle
+from bottle import Bottle
+from bottle import TEMPLATE_PATH
 
 from project import config
 
