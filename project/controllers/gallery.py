@@ -26,7 +26,6 @@ from project.functions import get_setting
 def gallery_redirect(user_key=None):
     if not user_key:
         redirect("/")
-
     redirect(f"/gallery/{user_key}")
 
 
@@ -239,16 +238,14 @@ def gallery_auth_view(user_key):
 @app.route("/gallery/auth/<user_key:re:[a-zA-Z0-9_-]+>", method="POST")
 def gallery_auth_do(user_key):
     # Set a long cookie to grant a user access to a gallery
-    max_age = (
-        (3600 * 24 * 7 * 30 * 12) if int(request.forms.get("remember", 0)) else None
-    )
+    remember = request.forms.get("remember")
     authcode = request.forms.get("authcode")
-    response.set_cookie(
-        f"auth+{functions.get_userid(user_key)}",
-        hashlib.sha1(authcode.encode("utf-8")).hexdigest(),
-        max_age=max_age,
-        path="/",
-    )
+    name = f"auth+{functions.get_userid(user_key)}"
+    value = hashlib.sha1(authcode.encode("utf-8")).hexdigest()
+    if remember:
+        response.set_cookie(name, value, max_age=3600 * 24 * 7 * 30 * 12, path="/")
+    else:
+        response.set_cookie(name, value, path="/")
     redirect(f"/gallery/{user_key}")
 
 

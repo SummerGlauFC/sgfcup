@@ -72,7 +72,10 @@ def api_thumb(url, filename=None, ext=None, temp=False, size=(400, 400)):
             abort_if_invalid_image_url(results, filename, ext)
             # Generate a 400x400 (by default) JPEG thumbnail
             base = Image.open(
-                os.path.join(get_setting("directories.files"), results["shorturl"] + results["ext"])
+                os.path.join(
+                    get_setting("directories.files"),
+                    results["shorturl"] + results["ext"],
+                )
             )
             if size < base.size:
                 image_info = base.info
