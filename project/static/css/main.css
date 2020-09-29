@@ -25,6 +25,10 @@ body {
     linear-gradient(to bottom, #485563 0, #29323c 100%) repeat fixed 0 0 rgba(0, 0, 0, 0);
 }
 
+#wrapper {
+    background: url("//sgfc.co/TQUet") repeat scroll 0 0 #ffffff;
+}
+
 #maintb {
     width: 750px;
     height: 100%;
@@ -41,43 +45,20 @@ body {
     margin: 0 auto;
 }
 
-a {
-    text-decoration: underline !important;
-}
-
-.rules {
-    margin-bottom: 19px;
-    text-align: center;
-}
-
-header div span {
-    display: inline-block;
-    width: auto;
-    height: 68px;
-    margin: 0 10px 7px;
-}
-
-h6 {
-    margin: 0 0 3px;
-    font-size: 11px;
-    font-weight: 400;
-}
-
-.rules-hidden {
+#rules-hidden {
     display: none;
     padding: 0 10px;
     text-align: center;
     font-size: 11px;
 }
 
-.rules-hidden > button {
-    margin-top: 20px;
-    padding: 5px 16px;
+#rules-hidden > button {
+    margin-top: 1em;
+    padding: 0.5em 1em;
     font-size: 1.5em;
 }
 
 pre {
-    -moz-box-sizing: border-box;
     box-sizing: border-box;
     width: 600px;
     margin: 0 auto;
@@ -86,65 +67,71 @@ pre {
     overflow-x: auto;
     text-align: left;
     white-space: pre-wrap;
-    white-space: -moz-pre-wrap;
-    white-space: -pre-wrap;
-    white-space: -o-pre-wrap;
     background: #fff;
-    webkit-box-sizing: border-box;
     word-wrap: break-word;
 }
 
-header div span a {
+span.button-icon {
+    display: inline-block;
+    width: auto;
+}
+
+span.button-icon a {
     display: inline-block;
     position: relative;
-    width: 50px;
-    height: 50px;
-    border-radius: 100%;
+    width: 72px;
+    height: 72px;
+    border-radius: 10px;
     text-decoration: none !important;
-    font-size: 32px;
+    font-size: 38px;
     vertical-align: middle;
-    color: #8f8f8f !important;
+    color: #000;
+    background: #bbb;
+    border: 1px solid #999;
+    text-align: center;
+    margin: 10px;
+}
+
+span.button-icon a[data-icon]:before {
+    position: absolute;
+    top: 10px;
+    width: 100%;
+    height: auto;
+    left: 0;
+}
+
+span.button-icon a:hover {
+    background: #ddd;
+}
+
+span.button-icon .types {
+    position: absolute;
+    bottom: 0;
+    width: 100%;
+    left: 0;
+    padding: 3px 0;
+    font-size: 13px;
+    font-weight: normal;
+    color: #111;
     background: 0;
+    text-align: center;
 }
 
-header div span a:hover,
-header div span a:hover .types {
-    color: #000 !important;
-}
-
-header div span a:hover .locks {
-    text-shadow: -1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000,
-    1px 1px 0 #000;
-    color: #fff !important;
-}
-
-.locks {
+span.button-icon .locks {
     display: block;
-    margin-top: -25px;
-    margin-top: -moz-calc(-25px + 2px);
-    margin-right: 12px;
-    text-align: right;
+    position: absolute;
+    top: 35%;
+    right: 30%;
+    text-align: center;
     text-decoration: none !important;
     font-size: 13px;
     line-height: 19px;
-    color: black;
+    color: white;
+    text-shadow: -1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000, 1px 1px 0 #000;
 }
 
-.types {
-    display: inline;
-    position: absolute;
-    top: 38px;
-    left: -10px;
-    width: 50px;
-    height: auto;
-    padding: 0 0 3px;
-    font-size: 13px;
-    font-weight: normal;
-    color: #8f8f8f;
-    background: 0;
-}
 
-@media only screen and (max-width: 720px) {
+@media only screen and (max-width: 750px) {
     #main,
     header {
         float: none !important;
@@ -162,10 +149,6 @@ header div span a:hover .locks {
         border-bottom: 1px solid black;
     }
 
-    .rules {
-        margin-top: 19px !important;
-    }
-
     #maintb {
         width: 99% !important;
     }
@@ -175,15 +158,13 @@ header div span a:hover .locks {
     }
 }
 
-.clearfix > span {
-    clear: both;
-}
 
 header {
     display: block;
     float: left;
-    width: 319px;
+    width: 320px;
     border-right: 1px solid #0b0b0b;
+    box-sizing: border-box;
     text-align: center;
     position: relative;
 }
@@ -216,16 +197,6 @@ input[type="radio"] {
     margin-left: 15px;
 }
 
-label[for="file"],
-label[for="urls"] {
-    margin-right: 11px;
-}
-
-.clearfix > span:last-child {
-    clear: both;
-    margin-top: 10px;
-}
-
 #overlay {
     display: none;
     z-index: 1000;
@@ -252,61 +223,21 @@ label[for="urls"] {
     *zoom: 1;
 }
 
-header div span:last-child h6 {
-    margin-top: 8px;
-}
-
-#wrapper {
-    background: url("//sgfc.co/TQUet") repeat scroll 0 0 #ffffff;
-}
-
 .unimportant {
     font-size: 80%;
 }
 
-#filess {
+#files {
     cursor: pointer;
 }
 
-.dz-drag-hover #dropped {
-    display: table;
-}
-
-#dropped {
-    display: none;
-    position: absolute;
-    top: -2px;
-    left: 0;
-    width: 100%;
-    height: 270px;
-    font-size: 2em;
-    font-weight: bold;
-    color: #fff;
-    background: none repeat scroll 0 0 rgba(0, 0, 0, 0.9);
-}
-
-#dropped div {
-    display: table-cell;
-    height: 99%;
-    vertical-align: middle;
-}
-
 h2 {
-    margin-bottom: 2em;
-}
-
-#overlaytb td {
-    padding: 1em;
-}
-
-.toggle-rules {
-    display: block;
-    margin: 0 auto;
+    margin-bottom: 1em;
 }
 
 .bottom {
     bottom: 0;
-    box-sizing: padding-box;
+    box-sizing: content-box;
     line-height: 1.6em;
     margin: 0 auto;
     padding: 1em 0em;

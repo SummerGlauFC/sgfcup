@@ -1,24 +1,37 @@
-const wrapper = $("#wrapper");
-$.fn.equalHeight = function () {
-    let max = 0;
-    return this.children()
-        .each(function () {
-            const height = $(this).height();
-            max = height > max ? height : max;
-        })
-        .height(max);
-};
-$(window).resize(function () {
-    wrapper.equalHeight();
-});
-$(document).ready(function () {
-    wrapper.equalHeight();
-});
-$("#clear-fields").on("click", function () {
-    $("#key")
-        .get(0)
-        .setAttribute("value", "");
-    $("#password")
-        .get(0)
-        .setAttribute("value", "");
-});
+function ready(fn) {
+  if (document.readyState !== "loading") {
+    fn()
+  } else {
+    document.addEventListener("DOMContentLoaded", fn)
+  }
+}
+
+function equalHeight(el) {
+  let max = 0
+  Array.prototype.forEach.call(el.children, child => {
+    const height = child.clientHeight
+    max = height > max ? height : max
+  })
+  Array.prototype.forEach.call(el.children, child => {
+    child.style.height = `${max}px`
+  })
+}
+
+ready(() => {
+  const key = document.getElementById("key")
+  const password = document.getElementById("password")
+  const clearFieldsBtn = document.getElementById("clear-fields")
+  if (clearFieldsBtn) {
+    clearFieldsBtn.addEventListener("click", () => {
+      key.value = ""
+      password.value = ""
+    })
+  }
+
+  const wrapper = document.getElementById("wrapper")
+  if (wrapper) {
+    window.addEventListener("resize", () => equalHeight(wrapper))
+    equalHeight(wrapper)
+  }
+})
+
