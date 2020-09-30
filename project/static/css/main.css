@@ -31,6 +31,7 @@ body {
 #wrapper {
     background: url("/static/tex.png") repeat scroll 0 0 #ffffff;
     border: 1px solid #000;
+    box-shadow: 0 10px 10px rgba(0,0,0,0.35);
 }
 
 a:link,
@@ -118,12 +119,14 @@ h2 {
     font-weight: bold;
     font-size: 11px;
     color: #424242;
-    background: rgb(233, 233, 233);
-    background: linear-gradient(0deg, rgba(233, 233, 233, 1) 25%, rgba(252, 252, 252, 1) 100%);
+    background: #e9e9e9;
+    background: linear-gradient(0deg, #e9e9e9 25%, #fcfcfc 100%);
     cursor: pointer;
+    box-shadow: 0 3px 6px rgba(0, 0, 0, 0.15);
+    transition: box-shadow 200ms;
 }
 
 .button:hover, button:hover, input[type="button"]:hover, input[type="submit"]:hover {
-    background: #d9d9d9;
+    box-shadow: 0 3px 8px rgba(0, 0, 0, 0.25);
 }
 
