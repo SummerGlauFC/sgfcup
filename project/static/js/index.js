@@ -1,20 +1,3 @@
-function isVisible(el) {
-  const {opacity, display} = el.ownerDocument.defaultView.getComputedStyle(el, null)
-  return opacity === "1" && display !== "none"
-}
-
-function fadeToggle(el, s) {
-  el.style.transition = `opacity ${s}ms`
-  if (isVisible(el)) {
-    el.style.opacity = "0"
-    setTimeout(() => el.style.display = "none", s)
-  } else {
-    el.style.opacity = "0"
-    setTimeout(() => el.style.opacity = "1", s)
-    el.style.display = "block"
-  }
-}
-
 Dropzone.options.myAwesomeDropzone = {
   url: "/api/upload/file",
   autoProcessQueue: false,

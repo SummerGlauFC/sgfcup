@@ -1,21 +1,29 @@
-body.gallery #container {
+#container {
     width: 100%;
     margin: 20px 0 0;
     text-align: center;
     color: #eeeeee;
 }
 
-body.gallery header {
-    margin-bottom: 10px;
-    font-family: "Open Sans", "Helvetica Neue", Segoe UI, Helvetica, Arial,
-    sans-serif;
+header {
+    float: none;
+    font-family: "Open Sans", "Helvetica Neue", Segoe UI, Helvetica, Arial, sans-serif;
     font-size: 2.5em;
     letter-spacing: 0;
     color: #eeeeee;
+    text-align: center;
+    margin: 0 auto 10px;
+    border: 0px;
 }
 
-body.gallery #main {
+header a:link, header a:visited {
+    color: #ddd;
+}
+
+#main {
+    float: none;
     width: 100%;
+    height: auto;
     margin: 0 auto;
     padding: 0;
     border: 0 solid #999999;
@@ -27,18 +35,7 @@ body.gallery #main {
     transition: all 215ms linear 0s;
 }
 
-body.gallery .rules {
-    width: 90%;
-    margin: 10px auto 0;
-    padding: 10px;
-    text-align: center;
-    font-size: 13px;
-    color: #000000;
-    background: none repeat scroll 0 0 #eeeeee;
-    box-shadow: 0 1px 5px 0 rgba(0, 0, 0, 0.4) inset;
-}
-
-body.gallery header div {
+header div {
     width: 90%;
     margin: 20px auto 0;
     padding: 14px 11px;
@@ -50,27 +47,27 @@ body.gallery header div {
     box-shadow: 0 1px 5px 0 rgba(0, 0, 0, 0.4) inset;
 }
 
-body.gallery .left {
+.left {
     text-align: left;
 }
 
-body.gallery .sorty div {
+.sorty div {
     display: block;
     margin-top: 3px;
     font-size: 0.8em;
     color: rgba(0, 0, 0, 0.5);
 }
 
-body.gallery a {
+a {
     text-decoration: none;
     font-weight: 400;
 }
 
-body.gallery .sorty div a {
+.sorty div a {
     text-decoration: underline !important;
 }
 
-body.gallery h2 {
+h2 {
     margin: 0 0 0;
     padding: 7px 9px;
     text-align: center;
@@ -79,41 +76,41 @@ body.gallery h2 {
     background: none repeat scroll 0 0 #dddddd;
 }
 
-body.gallery .group {
+.group {
     padding: 10px 0;
     background: #ffffff;
 }
 
-body.gallery .pages {
+.pages {
     font-weight: 400 !important;
 }
 
-body.gallery .pages.bottom {
+.pages.bottom {
     border-top: 1px solid rgba(0, 0, 0, 0.3);
 }
 
-body.gallery .debug.top {
+.debug.top {
     border-bottom: 1px solid rgba(0, 0, 0, 0.3);
     font-size: 16px;
     font-weight: 400;
 }
 
-body.gallery .debug {
+.debug {
     margin: 0;
     border-top: 1px solid rgba(0, 0, 0, 0.3);
     font-size: 9pt;
 }
 
-body.gallery p {
+p {
     margin-bottom: 12px;
     font-size: 12px;
 }
 
-body.gallery .submit {
+.submit {
     text-align: center;
 }
 
-body.gallery .wrapper {
+.wrapper {
     display: inline-block;
     width: 200px;
     height: 200px;
@@ -121,7 +118,7 @@ body.gallery .wrapper {
     margin-left: 5px;
 }
 
-body.gallery .img {
+.img {
     z-index: 2;
     width: 200px;
     height: 200px;
@@ -136,36 +133,40 @@ body.gallery .img {
     inset 0 2px 0 rgba(255, 255, 255, 0.5), inset 0 -1px 0 rgba(0, 0, 0, 0.4);
 }
 
-body.gallery img {
+img {
     border: 0 none;
 }
 
-body.gallery hr {
+hr {
     clear: both;
 }
 
-body.gallery .disabled {
+.disabled {
     text-decoration: line-through;
     color: #444;
 }
 
-body.gallery .checkbawks {
+.checkbawks {
     float: left;
     margin: 1px 3px 1px 1px;
     vertical-align: bottom;
 }
 
-body.gallery .paste {
+.paste {
+    color: #666;
     display: inline-block;
-    position: relative;
+    position: absolute;
     top: 1px;
-    width: 200px;
+    left: 0;
+    width: 196px;
     height: 199px;
-    overflow-y: scroll;
+    overflow-y: auto;
     font-size: 8pt;
+    text-align: left;
+    margin: 0 0 0 3px;
 }
 
-body.gallery.gc .wrapper {
+.gc .wrapper {
     display: block;
     float: none;
     clear: both;
@@ -179,22 +180,22 @@ body.gallery.gc .wrapper {
     border-bottom: 1px solid rgba(0, 0, 0, 0.3);
 }
 
-body.gallery.gc .wrapper:nth-last-child(2) {
+.gc .wrapper:nth-last-child(2) {
 }
 
-body.gallery.gc .img {
+.gc .img {
     float: left;
     position: relative;
     width: 80px;
     height: 80px;
 }
 
-body.gallery.gc .img a {
+.gc .img a {
     top: 0;
     left: 0;
 }
 
-body.gallery.gc .paste {
+.gc .paste {
     display: block;
     z-index: 2;
     position: relative;
@@ -206,17 +207,17 @@ body.gallery.gc .paste {
     font-size: 8pt;
 }
 
-body.gallery.gc h2 {
+.gc h2 {
     margin: 0;
 }
 
-body.gallery.gc .checkbawks {
+.gc .checkbawks {
     float: none;
     margin: 1px 0;
     vertical-align: middle;
 }
 
-body.gallery.gc .info {
+.gc .info {
     display: block;
     float: left;
     -moz-box-sizing: border-box;
@@ -234,7 +235,7 @@ body.gallery.gc .info {
     box-shadow: none;
 }
 
-body.gallery.gc .info.details {
+.gc .info.details {
     display: table-cell;
     width: 25%;
     margin-top: 21px;
@@ -245,15 +246,15 @@ body.gallery.gc .info.details {
     color: rgba(0, 0, 0, 0.5);
 }
 
-body.gallery.gc .info.details span {
+.gc .info.details span {
     color: #000;
 }
 
-body.gallery h2.pages {
+h2.pages {
     padding: 15px;
 }
 
-body.gallery h2.pages a {
+h2.pages a {
     display: inline-block;
     width: 20px;
     margin: 1px 1px 4px;
@@ -263,14 +264,8 @@ body.gallery h2.pages a {
     background: none repeat scroll 0 0 #cccccc;
 }
 
-body.gallery h2.pages a:last-child {
+h2.pages a:last-child {
     padding: 5px;
-}
-
-html,
-body {
-    background: url("//sgfc.co/SAgXV") repeat fixed 0 0%,
-    linear-gradient(to bottom, #485563 0%, #29323c 100%) repeat fixed 0 0 rgba(0, 0, 0, 0);
 }
 
 .info {
@@ -291,12 +286,12 @@ body {
     top: 201px;
 }
 
-body.gallery .wrapper {
+.wrapper {
     margin-bottom: 60px;
     height: 240px;
 }
 
-body.gallery h2.debug.top {
+h2.debug.top {
     margin-bottom: 20px;
 }
 

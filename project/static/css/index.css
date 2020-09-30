@@ -1,0 +1,171 @@
+header {
+    margin: 0;
+    display: block;
+    float: left;
+    width: 320px;
+    border-right: 1px solid #aaa;
+    box-sizing: border-box;
+    text-align: center;
+    position: relative;
+    font-size: inherit;
+    color: inherit;
+}
+
+@media only screen and (max-width: 750px) {
+    header {
+        float: none !important;
+        clear: both;
+        width: 90% !important;
+        max-width: 90%;
+        min-width: 90%;
+        margin: 0 auto 10px;
+        padding: 0;
+        border-right: 0 !important;
+        border-bottom: 1px solid #aaa;
+    }
+}
+
+#main {
+    display: block;
+    float: right;
+    width: 430px;
+    height: 340px;
+    padding: 0;
+    overflow-y: auto;
+    text-align: center;
+}
+
+#identification {
+    display: block;
+    margin-top: 3em;
+    text-align: center;
+}
+
+#identification label {
+    display: inline-block;
+    width: 80px;
+    margin: 5px 10px 5px 0;
+    text-align: right;
+}
+
+#files {
+    cursor: pointer;
+    font-size: 1.5rem;
+}
+
+.bottom {
+    bottom: 0;
+    box-sizing: content-box;
+    line-height: 1.6em;
+    margin: 0 auto;
+    padding: 1em 0;
+    position: absolute;
+    width: 100%;
+}
+
+input[type="radio"] {
+    margin-right: 5px;
+    margin-left: 15px;
+}
+
+#overlay {
+    display: none;
+    z-index: 1000;
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    text-align: center;
+    background: rgba(0, 0, 0, 0.95);
+}
+
+#rules-hidden {
+    display: none;
+    padding: 0 10px;
+    text-align: center;
+    font-size: 11px;
+}
+
+#rules-hidden > button {
+    margin-top: 1em;
+    padding: 0.5em 1em;
+    font-size: 1.5em;
+}
+
+pre {
+    box-sizing: border-box;
+    width: 600px;
+    margin: 0 auto;
+    padding: 10px 20px;
+    border: 1px dashed #8f8f8f;
+    overflow-x: auto;
+    text-align: left;
+    white-space: pre-wrap;
+    background: #fff;
+    word-wrap: break-word;
+    font-size: 1rem;
+}
+
+span.button-icon {
+    display: inline-block;
+    width: auto;
+}
+
+span.button-icon a {
+    display: inline-block;
+    position: relative;
+    width: 72px;
+    height: 72px;
+    border-radius: 10px;
+    text-decoration: none !important;
+    font-size: 38px;
+    vertical-align: middle;
+    color: #000;
+    background: #bbb;
+    border: 1px solid #999;
+    text-align: center;
+    margin: 10px;
+}
+
+span.button-icon a[data-icon]:before {
+    position: absolute;
+    top: 10px;
+    width: 100%;
+    height: auto;
+    left: 0;
+}
+
+span.button-icon a:hover {
+    background: #ddd;
+}
+
+span.button-icon .types {
+    position: absolute;
+    bottom: 0;
+    width: 100%;
+    left: 0;
+    padding: 3px 0;
+    font-size: 13px;
+    font-weight: normal;
+    color: #111;
+    background: 0;
+    text-align: center;
+}
+
+span.button-icon .locks {
+    display: block;
+    position: absolute;
+    top: 35%;
+    right: 30%;
+    text-align: center;
+    text-decoration: none !important;
+    font-size: 13px;
+    line-height: 19px;
+    color: white;
+    text-shadow: -1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000, 1px 1px 0 #000;
+}
+
+button, input[type="button"], input[type="submit"] {
+    font-size: 14px;
+}

@@ -33,15 +33,13 @@
     <!DOCTYPE html>
     <html>
     <head>
-      <link
-          href="data:image/x-icon;base64,AAABAAEAEBAQAAAAAAAoAQAAFgAAACgAAAAQAAAAIAAAAAEABAAAAAAAgAAAAAAAAAAAAAAAEAAAAAAAAAAAAAAA//36AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAREREREQAAABERERERAAAAAAAAAAAAAAAAABEAAAAAAAABERAAAAAAABEREQAAAAABEREREAAAABERERERAAAAAAEREAAAAAAAAREQAAAAAAABERAAAAAAAAEREAAAAAAAAREQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"
-          rel="icon" type="image/x-icon" />
-      <link href='/static/css/style.css' rel='stylesheet' type='text/css'>
+      <link rel="icon" type="image/x-icon"
+            href="data:image/x-icon;base64,AAABAAEAEBAQAAAAAAAoAQAAFgAAACgAAAAQAAAAIAAAAAEABAAAAAAAgAAAAAAAAAAAAAAAEAAAAAAAAAAAAAAA//36AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAREREREQAAABERERERAAAAAAAAAAAAAAAAABEAAAAAAAABERAAAAAAABEREQAAAAABEREREAAAABERERERAAAAAAEREAAAAAAAAREQAAAAAAABERAAAAAAAAEREAAAAAAAAREQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA" />
+      <link href='/static/css/main.css' rel='stylesheet' type='text/css'>
       <link href='/static/css/gallery.css' rel='stylesheet' type='text/css'>
+      <link href="/static/css/loader.css" rel="stylesheet" type='text/css' />
       <meta name="viewport" content="width=device-width, initial-scale=1">
       <title>SGFC >> {{ info.key }}'{% if info.key[-1] != "s" %}s{% endif %} Gallery</title>
-      <script src="//ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
-      <script src="//browserstate.github.io/history.js/scripts/bundled/html4+html5/jquery.history.js"></script>
     </head>
 
     <body class="gallery">
@@ -56,7 +54,7 @@
   {{ render_pagination(info.pages) }}
 </h2>
 <script>
-    window.current_page = {{ info.pages.page }};
+  window.current_page = {{ info.pages.page }};
 </script>
 <h2 class="debug top">
   <form class="sorty" action="" method="get" style="display: block;margin-top: 3px;text-align: center;">
@@ -91,9 +89,23 @@
     </div>
   </form>
 </h2>
-<div class='loader' style="display:none;">
+<div id='loader' style="display:none;">
+  <div class="lds-spinner">
+    <div></div>
+    <div></div>
+    <div></div>
+    <div></div>
+    <div></div>
+    <div></div>
+    <div></div>
+    <div></div>
+    <div></div>
+    <div></div>
+    <div></div>
+    <div></div>
+  </div>
 </div>
-<form action="/gallery/delete" method="post" class="main_form"
+<form action="/gallery/delete" method="post" id="main_form"
       onsubmit="return confirm('Do you really want to delete your files?');">
   <input type="hidden" name="key" value="{{ info.key }}" />
   {% for file in info.files %}
@@ -116,12 +128,12 @@
         {% elif file.type == types.PASTE %}
           <a title="{{ file.name }}" href="/paste/{{ file.url }}"
              style="height: 200px; position: absolute; width: 200px;">
-          <span class="paste">
-            {{ file.content|truncate(1000, True)|e }}
-          </span>
+          {% set split_paste = file.content.split("\n") %}
+          <pre class="paste">{{ "\n".join(split_paste[0:16])|e }}{% if split_paste|length >= 16 -%}
+            ... Only 16 lines shown here{% endif %}</pre>
           <img width="100%" height="100%"
                src="data:image/gif;base64,R0lGODlhAQABAID/AMDAwAAAACH5BAEAAAAALAAAAAABAAEAAAICRAEAOw=="
-               style="opacity: 0;position: relative;top: -203px;">
+               style="opacity:0;position:absolute;top:0;left:0;">
         {% endif %}
         </a>
         <span class="info">
@@ -130,8 +142,9 @@
           {% if file.type != types.PASTE %}
             <a title="{{ file.url }}" href="/{{ write_ext(file) }}">{{ hl(file.original|e) }}</a>
           {% else %}
-            <a title="{{ file.url }}" href="/paste/{{ file.url }}">{{ hl(file.name|e) }} {% if file.name != file.url %}(
-              {{ file.url }}){% endif %}</a>
+            <a title="{{ file.url }}" href="/paste/{{ file.url }}">{{ hl(file.name|e) }}
+              {% if file.name != file.url %}(
+                {{ file.url }}){% endif %}</a>
           {% endif %}
           <br />
         </span>
@@ -157,10 +170,13 @@
     {{ render_pagination(info.pages) }}
   </h2>
   <h2 class="debug">
-    password:
-    <input type="password" value="" name="password" placeholder="key password" />
-    <input type="submit" name="type" value="Delete Selected" />
-    <input type="submit" name="type" value="Delete All" />
+    <p>password:
+      <input type="password" value="" name="password" placeholder="key password" />
+    </p>
+    <p>
+      <input type="submit" name="type" value="Delete Selected" />
+      <input type="submit" name="type" value="Delete All" />
+    </p>
   </h2>
 </form>
 <h2 class="debug">
@@ -171,6 +187,7 @@
 {% if not info.pjax %}
   </div>
   </div>
+  <script src="/static/js/base.js"></script>
   <script src="/static/js/gallery.js"></script>
   </body>
   </html>

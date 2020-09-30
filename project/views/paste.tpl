@@ -3,7 +3,7 @@
 <head>
   <title>SGFC >> {{ title }}</title>
   <link rel="icon" type="image/ico" href="/favicon.ico" />
-  <link href='/static/css/style.css' rel='stylesheet' type='text/css'>
+  <link href='/static/css/main.css' rel='stylesheet' type='text/css'>
   <link href='/static/css/paste.css' rel='stylesheet' type='text/css'>
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <style type="text/css">{{ css }}</style>
@@ -14,8 +14,9 @@
   <header>
     {{ title }}
   </header>
-  <div id="main">
-    <div class="boardlist">[ Characters: {{ length }} | Lines: {{ lines }} | Hits: {{ hits }} | Language: {{ lang }} ]
+  <div id="wrapper">
+    <div class="boardlist">[ Characters: {{ length }} | Lines: {{ lines }} | Hits: {{ hits }} | Language: {{ lang }}
+      ]
       <br />[ Revisions:
       {% if revisions -%}
         {%- for _revision in revisions[-5:]|reverse -%}
@@ -24,28 +25,31 @@
         {{ _revision.commit }}
         {% if _revision.commit != revision.commit -%}</a>{%- endif -%}
           {%- if not loop.last %}
-                           /
+            /
           {% else -%}
-                           / {% if revision.commit %}<a href="/paste/{{ url }}">{% endif %}base{% if revision.commit %}
+            / {% if revision.commit %}<a href="/paste/{{ url }}">{% endif %}base{% if revision.commit %}
             </a>{% endif %}
           {%- endif -%}
         {%- endfor -%}
       {%- else -%}
-                           base
+        base
       {%- endif -%}
       {% if revision.parent != revision.pasteid %}| Parent:
         <a href="/paste/{{ revision.parent_url }}">{{ revision.parent_url }}</a>{% endif %} ]
     </div>
     {% if not edit %}
       <div class="boardlist" style="float: right; text-align: right;">[
-        <a href="/paste/{{ url }}{% if revision.commit %}.{{ revision.commit }}{% endif %}/raw">View raw paste</a> |
-        <a href="/paste/{{ url }}{% if revision.commit %}.{{ revision.commit }}{% endif %}/edit">{%- if is_owner %}
-          Edit{% else %}Fork{% endif %} paste</a>
-                                                                      ]
+        <a href="/paste/{{ url }}{% if revision.commit %}.{{ revision.commit }}{% endif %}/raw">View raw
+          paste</a> |
+        <a href="/paste/{{ url }}{% if revision.commit %}.{{ revision.commit }}{% endif %}/edit">
+          {%- if is_owner %}
+            Edit{% else %}Fork{% endif %} paste</a>
+        ]
         {% if revision.commit %}
           <br />
-                                                                      [ View: {% if flag != "diff" %}
-          <a href="/paste/{{ url }}.{{ revision.commit }}/diff">{% endif %}Diff{% if flag != "diff" %}</a>{% endif %} /
+          [ View: {% if flag != "diff" %}
+          <a href="/paste/{{ url }}.{{ revision.commit }}/diff">{% endif %}Diff{% if flag != "diff" %}</a>
+        {% endif %} /
           {% if flag == "diff" %}<a href="/paste/{{ url }}.{{ revision.commit }}">{% endif %}Normal
         {% if flag == "diff" %}</a>{% endif %} ]
         {% endif %}
@@ -72,8 +76,8 @@
         <div style="text-align:center; margin-top:15px">
           <div id="message" style="display: none">Uploading...</div>
           <div id="identification">
-            <p class="unimportant">You do not have to change these values.
-              <br>Clear the fields to upload anonymously.
+            <p><small>You do not have to change these values.
+              <br>Clear the fields to upload anonymously.</small>
               <br>
               <br>
               <button id="clear-fields" type="button">Clear Fields</button>
@@ -90,7 +94,6 @@
                             {%- if is_owner %}Edit{% else %}Fork{% endif -%}" />
         </div>
       </form>
-      <script src="//ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js" type="text/javascript"></script>
       <script src="/static/js/pastebin.js" type="text/javascript"></script>
     {% endif %}
   </div>

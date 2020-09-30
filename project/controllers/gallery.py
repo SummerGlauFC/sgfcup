@@ -339,7 +339,8 @@ def gallery_delete_advanced():
             f"{count} items deleted. {functions.sizeof_fmt(size)} of disk space saved."
         )
     else:
-        return "Not authed or malformed request."
+        # return "Not authed or malformed request."
+        return template("delete.tpl", messages=["Not authed or malformed request"])
 
     return template("delete.tpl", messages=messages, key=parts["key"])
 

@@ -1,34 +1,77 @@
-window.current_page = window.current_page || "1";
-History.Adapter.bind(window, "statechange", function () {
-    const State = History.getState();
-    History.log("statechange:", State.data, State.title, State.url);
-    $(".main_form").fadeOut(100);
-    $(".loader").fadeIn(100);
-    $.ajax({
-        url: State.url,
-        beforeSend: function (jqXHR, settings) {
-            jqXHR.setRequestHeader("X-AJAX", "true");
-        },
-        success: function (result) {
-            $(".loader").hide();
-            $("#main").html(result);
-        }
-    });
-    window.current_page = State.data.state;
-    console.log(window.current_page);
-});
+window.current_page = window.current_page || "1"
 
-$(document).ready(function () {
-    $(document).on("click", ".pages a", function (e) {
-        e.preventDefault();
-        console.log("prevented click" + e);
-        const page = $(this).attr("data-page");
-        if (page !== undefined && page !== window.current_page.toString()) {
-            History.pushState(
-                {state: page},
-                $(document).attr("title"),
-                $(this).attr("href")
-            );
-        }
-    });
-});
+function _wr(type) {
+  const orig = history[type]
+  return function () {
+    const rv = orig.apply(this, arguments)
+    const e = new Event(type)
+    e.arguments = arguments
+    e.state = arguments[0]
+    window.dispatchEvent(e)
+    return rv
+  }
+}
+
+// patch history to fire pushState events
+history.pushState = _wr("pushState")
+
+function addLinkHandlers(el) {
+  const links = el.querySelectorAll(".pages a")
+  Array.prototype.forEach.call(links, (link) => {
+    link.addEventListener("click", (e) => {
+      e.preventDefault()
+      const {page} = e.target.dataset
+      const url = e.target.href
+      if (page !== undefined && page !== window.current_page) {
+        history.pushState({page, url}, document.title, url)
+      }
+    })
+  })
+}
+
+function load_page(page, url) {
+  const mainForm = document.getElementById("main_form")
+  const main = document.getElementById("main")
+  const loader = document.getElementById("loader")
+
+  fadeOut(mainForm, 100, true)
+  fadeIn(loader, 100)
+
+  // disable clicking on the hidden contents while it loads
+  mainForm.style.pointerEvents = "none"
+
+  fetch(url, {
+    headers: {
+      "X-AJAX": "true"
+    }
+  }).then(res => res.text())
+    .then(data => {
+      // delay so we don't flash the content too fast
+      setTimeout(() => {
+        fadeOut(loader, 100)
+        setTimeout(() => {
+          mainForm.style.pointerEvents = "inherit"
+          main.innerHTML = data
+          if (page)
+            window.current_page = page
+          addLinkHandlers(document)
+          fadeOut(mainForm, 0)
+          fadeIn(mainForm, 1000)
+        }, 100)
+      }, 200)
+    })
+}
+
+ready(() => {
+  const handleEvent = (e) => {
+    console.log(e)
+    const {page, url} = e.state || {page: "1", url: "."}
+    if (page !== window.current_page) {
+      load_page(page, url)
+    }
+  }
+
+  window.addEventListener("popstate", handleEvent)
+  window.addEventListener("pushState", handleEvent)
+  addLinkHandlers(document)
+})

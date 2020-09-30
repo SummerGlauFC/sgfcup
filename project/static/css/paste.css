@@ -14,17 +14,13 @@ body.paste header {
     color: #eeeeee;
 }
 
-body.paste #main {
+body.paste #wrapper {
     width: 90%;
     margin: 0 auto;
-    padding: 20px 10px;
-    border: 1px solid #999999;
+    padding: 1em;
     text-align: left;
     font-size: 13px;
     color: #222233;
-    background: none repeat scroll 0 0 #eeeeee;
-    box-shadow: 0 1px 5px 0 rgba(0, 0, 0, 0.4) inset;
-    transition: all 215ms linear 0s;
 }
 
 body.paste .rules {
@@ -109,12 +105,6 @@ body {
     height: 100%;
     background: url("//sgfc.co/SAgXV") repeat fixed 0 0%,
     linear-gradient(to bottom, #485563 0%, #29323c 100%) repeat fixed 0 0 rgba(0, 0, 0, 0);
-}
-
-#main {
-    background: url("//sgfc.co/TQUet") repeat fixed 0 0 #ffffff !important;
-    box-shadow: none !important;
-    border: none !important;
 }
 
 textarea,

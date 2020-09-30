@@ -1,33 +1,18 @@
-body.settings label {
-    display: inline-block;
-    width: auto;
-    text-align: right;
-}
-
-body.settings label {
+label {
     display: block;
     float: left;
     width: 165px;
-    padding: 4.5px 5px 4.5px 15px;
+    padding: 5px 5px 4px 15px;
     text-align: left;
 }
 
-body.settings #container {
+#container {
     width: 900px;
     text-align: center;
     color: #eeeeee;
 }
 
-body.settings header {
-    margin-bottom: 10px;
-    font-family: "Open Sans", "Helvetica Neue", Segoe UI, Helvetica, Arial,
-    sans-serif;
-    font-size: 2.5em;
-    letter-spacing: 0;
-    color: #eeeeee;
-}
-
-body.settings header div {
+header div {
     width: 70%;
     margin: 20px auto 0;
     padding: 14px 10px;
@@ -39,71 +24,57 @@ body.settings header div {
     box-shadow: 0 1px 5px 0 rgba(0, 0, 0, 0.4) inset;
 }
 
-body.settings #main {
-    width: 70%;
+#wrapper {
+    width: 80%;
     margin: 0 auto;
-    padding: 20px 10px;
-    border: 1px solid #999999;
+    padding: 1em;
     text-align: left;
     font-size: 13px;
-    color: #222233;
-    background: none repeat scroll 0 0 #eeeeee;
-    box-shadow: 0 1px 5px 0 rgba(0, 0, 0, 0.4) inset;
-    transition: all 215ms linear 0s;
 }
 
-body.settings form p {
+form p {
     padding: 0 0 0 10px;
     font-size: 9px;
     color: #777777;
 }
 
-body.settings .textbox,
-body.settings select {
+.textbox,
+select {
     width: 248px;
 }
 
-body.settings input.textbox {
+input.textbox {
     height: 25px;
     margin-bottom: 5px;
 }
 
-body.settings input,
-body.settings select,
-body.settings textarea {
+input[type="radio"] {
+    margin-bottom: 1em;
+}
+
+input,
+select,
+textarea {
     -moz-box-sizing: border-box;
 }
 
-body.settings .textbox,
-body.settings textarea,
-body.settings select {
+.textbox,
+textarea,
+select {
     padding: 4px 5px;
     border: 1px solid #888888;
     outline: 0 none;
     background: none repeat scroll 0 0 #ffffff;
 }
 
-body.settings input,
-body.settings textarea,
-body.settings select,
-body.settings button {
+input,
+textarea,
+select,
+button {
     font: 11px Tahoma, Calibri, Verdana, Geneva, sans-serif;
 }
 
-body.settings .button {
-    display: inline-block;
-    float: none;
-    margin-left: 5px;
-    padding: 4px 5px;
-    border: 1px solid #a8a8a8;
-    border-radius: 0 0 0 0;
-    font: bold 11px Tahoma, Calibri, Verdana, Geneva, sans-serif;
-    color: #424242;
-    background: url("http://sgfc.co/EKBzf") repeat-x scroll left top #e9e9e9;
-    cursor: pointer;
-}
-
-body.settings h2 {
+h2 {
     margin-bottom: 10px;
     padding: 4px 10px;
     border-top: 1px solid #cecece;
@@ -113,18 +84,18 @@ body.settings h2 {
     background: none repeat-x scroll 0 0 #cccccc;
 }
 
-body.settings option {
+option {
     font-family: inherit;
     font-size: inherit;
     font-style: inherit;
     font-weight: inherit;
 }
 
-body.settings select {
+select {
     margin: 0 0 5px -4px;
 }
 
-body.settings form .rightcol {
+form .right-col {
     display: block;
     float: none;
     margin-top: 0;
@@ -133,17 +104,17 @@ body.settings form .rightcol {
     max-width: 496px;
 }
 
-body.settings ul {
+ul {
     margin-left: 145px !important;
 }
 
-body.settings ul label {
+ul label {
     display: inline;
     float: none;
     width: auto;
 }
 
-body.settings li {
+li {
     list-style: none outside none;
 }
 
@@ -165,10 +136,10 @@ body {
     text-decoration: underline !important;
 }
 
-.rightcol label {
+.right-col label {
     padding-left: 0px !important;
 }
 
-.rightcol input {
+.right-col input {
     margin-left: 0;
 }

@@ -21,16 +21,26 @@ html,
 body {
     width: 100%;
     height: 100%;
-    background: url("//sgfc.co/SAgXV") repeat fixed 0 0,
+    background: url("/static/bg_texture.png") repeat fixed 0 0,
     linear-gradient(to bottom, #485563 0, #29323c 100%) repeat fixed 0 0 rgba(0, 0, 0, 0);
+    font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+    font-size: 14px;
+    margin: 0;
 }
 
 #wrapper {
-    background: url("//sgfc.co/TQUet") repeat scroll 0 0 #ffffff;
+    background: url("/static/tex.png") repeat scroll 0 0 #ffffff;
+    border: 1px solid #000;
+}
+
+a:link,
+a:visited {
+    text-decoration: none;
+    color: #34345c;
 }
 
 #maintb {
-    width: 750px;
+    width: 752px;
     height: 100%;
     margin: 0 auto;
 }
@@ -45,95 +55,16 @@ body {
     margin: 0 auto;
 }
 
-#rules-hidden {
-    display: none;
-    padding: 0 10px;
-    text-align: center;
-    font-size: 11px;
-}
-
-#rules-hidden > button {
-    margin-top: 1em;
-    padding: 0.5em 1em;
-    font-size: 1.5em;
-}
-
-pre {
-    box-sizing: border-box;
-    width: 600px;
-    margin: 0 auto;
-    padding: 10px 20px;
-    border: 1px dashed #8f8f8f;
-    overflow-x: auto;
-    text-align: left;
-    white-space: pre-wrap;
-    background: #fff;
-    word-wrap: break-word;
-}
-
-span.button-icon {
-    display: inline-block;
-    width: auto;
-}
-
-span.button-icon a {
-    display: inline-block;
-    position: relative;
-    width: 72px;
-    height: 72px;
-    border-radius: 10px;
-    text-decoration: none !important;
-    font-size: 38px;
-    vertical-align: middle;
-    color: #000;
-    background: #bbb;
-    border: 1px solid #999;
-    text-align: center;
-    margin: 10px;
-}
-
-span.button-icon a[data-icon]:before {
-    position: absolute;
-    top: 10px;
-    width: 100%;
-    height: auto;
-    left: 0;
-}
-
-span.button-icon a:hover {
-    background: #ddd;
-}
-
-span.button-icon .types {
-    position: absolute;
-    bottom: 0;
-    width: 100%;
-    left: 0;
-    padding: 3px 0;
-    font-size: 13px;
-    font-weight: normal;
-    color: #111;
-    background: 0;
+header {
+    margin-bottom: 1em;
+    font-size: 2.5em;
+    letter-spacing: 0;
+    color: #eeeeee;
     text-align: center;
 }
-
-span.button-icon .locks {
-    display: block;
-    position: absolute;
-    top: 35%;
-    right: 30%;
-    text-align: center;
-    text-decoration: none !important;
-    font-size: 13px;
-    line-height: 19px;
-    color: white;
-    text-shadow: -1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000, 1px 1px 0 #000;
-}
-
 
 @media only screen and (max-width: 750px) {
-    #main,
-    header {
+    #main {
         float: none !important;
         clear: both;
         width: 90% !important;
@@ -142,71 +73,18 @@ span.button-icon .locks {
         min-width: 90%;
     }
 
-    header {
-        margin: 0 auto 10px;
-        padding: 0;
-        border-right: 0 !important;
-        border-bottom: 1px solid black;
+    #wrapper {
+        border-left: none;
+        border-right: none;
     }
 
     #maintb {
-        width: 99% !important;
+        width: 100% !important;
     }
 
     pre {
         width: 90% !important;
     }
-}
-
-
-header {
-    display: block;
-    float: left;
-    width: 320px;
-    border-right: 1px solid #0b0b0b;
-    box-sizing: border-box;
-    text-align: center;
-    position: relative;
-}
-
-#main {
-    display: block;
-    float: right;
-    width: 430px;
-    height: 340px;
-    padding: 0;
-    overflow-y: auto;
-    text-align: center;
-}
-
-#identification {
-    display: block;
-    margin-top: 10px;
-    text-align: center;
-}
-
-#identification label {
-    display: inline-block;
-    width: 80px;
-    margin: 5px 10px 5px 0;
-    text-align: right;
-}
-
-input[type="radio"] {
-    margin-right: 5px;
-    margin-left: 15px;
-}
-
-#overlay {
-    display: none;
-    z-index: 1000;
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    text-align: center;
-    background: rgba(0, 0, 0, 0.95);
 }
 
 .cf:before,
@@ -227,20 +105,25 @@ input[type="radio"] {
     font-size: 80%;
 }
 
-#files {
-    cursor: pointer;
-}
-
 h2 {
     margin-bottom: 1em;
 }
 
-.bottom {
-    bottom: 0;
-    box-sizing: content-box;
-    line-height: 1.6em;
-    margin: 0 auto;
-    padding: 1em 0em;
-    position: absolute;
-    width: 100%;
+.button, button, input[type="button"], input[type="submit"] {
+    display: inline-block;
+    float: none;
+    padding: 4px 12px;
+    border: 1px solid #a8a8a8;
+    border-radius: 0 0 0 0;
+    font-weight: bold;
+    font-size: 11px;
+    color: #424242;
+    background: rgb(233, 233, 233);
+    background: linear-gradient(0deg, rgba(233, 233, 233, 1) 25%, rgba(252, 252, 252, 1) 100%);
+    cursor: pointer;
 }
+
+.button:hover, button:hover, input[type="button"]:hover, input[type="submit"]:hover {
+    background: #d9d9d9;
+}
+
