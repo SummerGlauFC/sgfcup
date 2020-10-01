@@ -18,7 +18,7 @@
     <td id="maintd">
       {% block other %}{% endblock %}
       <div id="wrapper" class='cf'>
-        <header>
+        <header id="box-left">
           <a href="/"><h2>SGFC File Upload</h2></a>
           <div class='cf'>
             {% block left %}
@@ -29,7 +29,7 @@
             {% block extra %}{% endblock %}
           </div>
         </header>
-        <div id="main">
+        <div id="box-right">
           <table id="overlaytb">
             <tr>
               <td style='vertical-align:middle'>

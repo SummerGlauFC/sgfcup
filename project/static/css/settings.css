@@ -9,33 +9,33 @@ label {
 #container {
     width: 900px;
     text-align: center;
-    color: #eeeeee;
+    color: #eee;
 }
 
 header div {
+    font-size: 13px;
+    font-weight: 400;
     width: 70%;
     margin: 20px auto 0;
     padding: 14px 10px;
     text-align: center;
-    font-size: 13px;
-    font-weight: 400;
-    color: #000000;
-    background: none repeat scroll 0 0 #eeeeee;
+    color: #000;
+    background: none repeat scroll 0 0 #eee;
     box-shadow: 0 1px 5px 0 rgba(0, 0, 0, 0.4) inset;
 }
 
 #wrapper {
+    font-size: 13px;
     width: 80%;
     margin: 0 auto;
     padding: 1em;
     text-align: left;
-    font-size: 13px;
 }
 
 form p {
-    padding: 0 0 0 10px;
     font-size: 9px;
-    color: #777777;
+    padding: 0 0 0 10px;
+    color: #777;
 }
 
 .textbox,
@@ -62,9 +62,9 @@ textarea {
 textarea,
 select {
     padding: 4px 5px;
-    border: 1px solid #888888;
+    border: 1px solid #888;
     outline: 0 none;
-    background: none repeat scroll 0 0 #ffffff;
+    background: none repeat scroll 0 0 #fff;
 }
 
 input,
@@ -75,20 +75,20 @@ button {
 }
 
 h2 {
-    margin-bottom: 10px;
-    padding: 4px 10px;
-    border-top: 1px solid #cecece;
     font-size: 11pt;
     font-weight: bold;
+    margin-bottom: 10px;
+    padding: 4px 10px;
     color: #3e3e3e;
-    background: none repeat-x scroll 0 0 #cccccc;
+    border-top: 1px solid #cecece;
+    background: none repeat-x scroll 0 0 #ccc;
 }
 
 option {
     font-family: inherit;
     font-size: inherit;
-    font-style: inherit;
     font-weight: inherit;
+    font-style: inherit;
 }
 
 select {
@@ -98,10 +98,10 @@ select {
 form .right-col {
     display: block;
     float: none;
+    max-width: 496px;
     margin-top: 0;
     margin-bottom: 0;
     margin-left: 175px;
-    max-width: 496px;
 }
 
 ul {
@@ -126,13 +126,13 @@ body {
     linear-gradient(to bottom, #485563 0%, #29323c 100%) repeat fixed 0 0 rgba(0, 0, 0, 0);
 }
 
-#main {
-    background: url("//sgfc.co/TQUet") repeat fixed 0 0 #ffffff !important;
-    box-shadow: none !important;
+#box-right {
     border: none !important;
+    background: url("//sgfc.co/TQUet") repeat fixed 0 0 #fff !important;
+    box-shadow: none !important;
 }
 
-#main a {
+#box-right a {
     text-decoration: underline !important;
 }
 

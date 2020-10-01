@@ -45,12 +45,12 @@
 
 .dropzone .dz-preview,
 .dropzone-previews .dz-preview {
-    display: inline-block;
     position: relative;
+    display: inline-block;
     margin: 6px;
     padding: 6px;
-    border: 1px solid #acacac;
     vertical-align: top;
+    border: 1px solid #acacac;
     background: rgba(255, 255, 255, 0.8);
 }
 
@@ -69,8 +69,8 @@
 
 .dropzone .dz-preview .dz-details .dz-filename,
 .dropzone-previews .dz-preview .dz-details .dz-filename {
-    height: 100%;
     overflow: hidden;
+    height: 100%;
 }
 
 .dropzone .dz-preview .dz-details img,
@@ -84,8 +84,8 @@
 
 .dropzone .dz-preview .dz-details .dz-size,
 .dropzone-previews .dz-preview .dz-details .dz-size {
-    height: 28px;
     line-height: 28px;
+    height: 28px;
     absolute: bottom -28px left 3px;
 }
 
@@ -108,14 +108,14 @@
 .dropzone-previews .dz-preview .dz-success-mark,
 .dropzone .dz-preview .dz-error-mark,
 .dropzone-previews .dz-preview .dz-error-mark {
-    display: none;
+    font-size: 30px;
     position: absolute;
     top: -10px;
     right: -10px;
+    display: none;
     width: 40px;
     height: 40px;
     text-align: center;
-    font-size: 30px;
 }
 
 .dropzone .dz-preview .dz-success-mark,
@@ -130,22 +130,22 @@
 
 .dropzone .dz-preview .dz-progress,
 .dropzone-previews .dz-preview .dz-progress {
-    display: none;
     position: absolute;
     top: 100px;
     right: 6px;
     left: 6px;
+    display: none;
     height: 6px;
     background: #d7d7d7;
 }
 
 .dropzone .dz-preview .dz-progress .dz-upload,
 .dropzone-previews .dz-preview .dz-progress .dz-upload {
-    display: block;
     position: absolute;
     top: 0;
     bottom: 0;
     left: 0;
+    display: block;
     width: 0;
     background-color: #8cc657;
 }
@@ -157,11 +157,11 @@
 
 .dropzone .dz-preview .dz-error-message,
 .dropzone-previews .dz-preview .dz-error-message {
-    display: none;
     z-index: 500;
-    padding: 8px 10px;
-    max-width: 500px;
+    display: none;
     min-width: 140px;
+    max-width: 500px;
+    padding: 8px 10px;
     color: #800;
     background: rgba(245, 245, 245, 0.8);
     absolute: top -5px left -20px;
@@ -173,8 +173,8 @@
 }
 
 .dropzone {
-    padding: 23px;
     min-height: 270px;
+    padding: 23px;
     border: 0;
     -webkit-border-radius: 3px;
     border-radius: 3px;
@@ -189,15 +189,15 @@
     height: 123px;
     margin-top: -61.5px;
     margin-left: -214px;
-    opacity: 1;
-    background-image: url(../images/spritemap.png);
-    background-position: 0 0;
-    background-repeat: no-repeat;
-    -webkit-transition: opacity 0.3s ease-in-out;
     -moz-transition: opacity 0.3s ease-in-out;
     -ms-transition: opacity 0.3s ease-in-out;
     -o-transition: opacity 0.3s ease-in-out;
+    -webkit-transition: opacity 0.3s ease-in-out;
     transition: opacity 0.3s ease-in-out;
+    opacity: 1;
+    background-image: url(../images/spritemap.png);
+    background-repeat: no-repeat;
+    background-position: 0 0;
     -ms-filter: none;
     filter: none;
 }
@@ -210,8 +210,8 @@
 (min-resolution: 1.5dppx) {
     .dropzone .dz-default.dz-message {
         background-image: url(../images/spritemap@2x.png);
-        -webkit-background-size: 428px 406px;
         -moz-background-size: 428px 406px;
+        -webkit-background-size: 428px 406px;
         background-size: 428px 406px;
     }
 }
@@ -280,14 +280,14 @@
 .dropzone .dz-preview .dz-success-mark,
 .dropzone-previews .dz-preview .dz-success-mark {
     display: block;
-    opacity: 0;
-    background-image: url(//raw.githubusercontent.com/enyo/dropzone/master/downloads/images/spritemap.png);
-    background-repeat: no-repeat;
-    -webkit-transition: opacity 0.4s ease-in-out;
     -moz-transition: opacity 0.4s ease-in-out;
     -ms-transition: opacity 0.4s ease-in-out;
     -o-transition: opacity 0.4s ease-in-out;
+    -webkit-transition: opacity 0.4s ease-in-out;
     transition: opacity 0.4s ease-in-out;
+    opacity: 0;
+    background-image: url(//raw.githubusercontent.com/enyo/dropzone/master/downloads/images/spritemap.png);
+    background-repeat: no-repeat;
     -ms-filter: "progid:DXImageTransform.Microsoft.Alpha(Opacity=0)";
     filter: alpha(opacity=0);
 }
@@ -307,8 +307,8 @@
     .dropzone .dz-preview .dz-success-mark,
     .dropzone-previews .dz-preview .dz-success-mark {
         background-image: url(../images/spritemap@2x.png);
-        -webkit-background-size: 428px 406px;
         -moz-background-size: 428px 406px;
+        -webkit-background-size: 428px 406px;
         background-size: 428px 406px;
     }
 }
@@ -337,21 +337,21 @@
     left: 0;
     width: 0;
     height: 100%;
-    -webkit-border-radius: 2px;
-    border-radius: 2px;
-    background-image: url(../images/spritemap.png);
-    background-position: 0 -400px;
-    background-repeat: repeat-x;
-    -webkit-animation: loading 0.4s linear infinite;
-    -moz-animation: loading 0.4s linear infinite;
-    -o-animation: loading 0.4s linear infinite;
-    animation: loading 0.4s linear infinite;
-    -webkit-transition: width 0.3s ease-in-out;
     -moz-transition: width 0.3s ease-in-out;
     -ms-transition: width 0.3s ease-in-out;
     -o-transition: width 0.3s ease-in-out;
+    -webkit-transition: width 0.3s ease-in-out;
     transition: width 0.3s ease-in-out;
+    -moz-animation: loading 0.4s linear infinite;
     -ms-animation: loading 0.4s linear infinite;
+    -o-animation: loading 0.4s linear infinite;
+    -webkit-animation: loading 0.4s linear infinite;
+    animation: loading 0.4s linear infinite;
+    -webkit-border-radius: 2px;
+    border-radius: 2px;
+    background-image: url(../images/spritemap.png);
+    background-repeat: repeat-x;
+    background-position: 0 -400px;
 }
 
 @media all and(-webkit-min-device-pixel-ratio: 1.5),
@@ -363,8 +363,8 @@
     .dropzone .dz-preview .dz-progress .dz-upload,
     .dropzone-previews .dz-preview .dz-progress .dz-upload {
         background-image: url(../images/spritemap@2x.png);
-        -webkit-background-size: 428px 406px;
         -moz-background-size: 428px 406px;
+        -webkit-background-size: 428px 406px;
         background-size: 428px 406px;
     }
 }
@@ -372,12 +372,12 @@
 .dropzone .dz-preview.dz-success .dz-progress,
 .dropzone-previews .dz-preview.dz-success .dz-progress {
     display: block;
-    opacity: 0;
-    -webkit-transition: opacity 0.4s ease-in-out;
     -moz-transition: opacity 0.4s ease-in-out;
     -ms-transition: opacity 0.4s ease-in-out;
     -o-transition: opacity 0.4s ease-in-out;
+    -webkit-transition: opacity 0.4s ease-in-out;
     transition: opacity 0.4s ease-in-out;
+    opacity: 0;
     -ms-filter: "progid:DXImageTransform.Microsoft.Alpha(Opacity=0)";
     filter: alpha(opacity=0);
 }
@@ -385,12 +385,12 @@
 .dropzone .dz-preview .dz-error-message,
 .dropzone-previews .dz-preview .dz-error-message {
     display: block;
-    opacity: 0;
-    -webkit-transition: opacity 0.3s ease-in-out;
     -moz-transition: opacity 0.3s ease-in-out;
     -ms-transition: opacity 0.3s ease-in-out;
     -o-transition: opacity 0.3s ease-in-out;
+    -webkit-transition: opacity 0.3s ease-in-out;
     transition: opacity 0.3s ease-in-out;
+    opacity: 0;
     -ms-filter: "progid:DXImageTransform.Microsoft.Alpha(Opacity=0)";
     filter: alpha(opacity=0);
 }
@@ -407,12 +407,12 @@
     display: block;
     margin-top: 0;
     padding: 4px 5px;
-    border: 1px solid #eee;
-    -webkit-border-radius: 2px;
-    border-radius: 2px;
     text-align: center;
     text-decoration: none;
     color: #aaa;
+    border: 1px solid #eee;
+    -webkit-border-radius: 2px;
+    border-radius: 2px;
     background-image: -webkit-linear-gradient(top, #fafafa, #eee);
     background-image: -moz-linear-gradient(top, #fafafa, #eee);
     background-image: -o-linear-gradient(top, #fafafa, #eee);

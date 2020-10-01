@@ -3,12 +3,12 @@
 }
 
 .lds-spinner {
-    color: #444444;
-    display: inline-block;
     position: relative;
+    top: 2em;
+    display: inline-block;
     width: 80px;
     height: 80px;
-    top: 2em;
+    color: #444;
 }
 
 .lds-spinner div {
@@ -17,15 +17,15 @@
 }
 
 .lds-spinner div:after {
-    content: " ";
-    display: block;
     position: absolute;
     top: 3px;
     left: 37px;
+    display: block;
     width: 6px;
     height: 18px;
+    content: " ";
     border-radius: 20%;
-    background: #444444;
+    background: #444;
 }
 
 .lds-spinner div:nth-child(1) {

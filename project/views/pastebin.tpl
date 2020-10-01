@@ -15,7 +15,7 @@
           margin: 1em;
       }
 
-      #main {
+      #box-right {
           height: 430px;
       }
   </style>

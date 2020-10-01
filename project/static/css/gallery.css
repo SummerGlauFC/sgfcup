@@ -1,19 +1,12 @@
 #container {
     width: 100%;
-    margin: 20px 0 0;
+    margin: 1em 0 0;
     text-align: center;
-    color: #eeeeee;
+    color: #eee;
 }
 
 header {
-    float: none;
-    font-family: "Open Sans", "Helvetica Neue", Segoe UI, Helvetica, Arial, sans-serif;
-    font-size: 2.5em;
-    letter-spacing: 0;
-    color: #eeeeee;
-    text-align: center;
-    margin: 0 auto 10px;
-    border: 0px;
+    margin: 0 auto 0.5em;
 }
 
 header a:link, header a:visited {
@@ -21,283 +14,174 @@ header a:link, header a:visited {
 }
 
 #main {
-    float: none;
-    width: 100%;
-    height: auto;
-    margin: 0 auto;
+    font-size: 16px;
+    width: 95%;
+    margin: 0 auto 3rem;
     padding: 0;
-    border: 0 solid #999999;
-    text-align: center;
-    font-size: 16px;
-    color: #222233;
-    background: none repeat scroll 0 0 #eeeeee;
-    box-shadow: 0 1px 5px 0 rgba(0, 0, 0, 0.4) inset;
     transition: all 215ms linear 0s;
-}
-
-header div {
-    width: 90%;
-    margin: 20px auto 0;
-    padding: 14px 11px;
     text-align: center;
-    font-size: 13px;
-    font-weight: 400;
-    color: #000000;
-    background: none repeat scroll 0 0 #eeeeee;
-    box-shadow: 0 1px 5px 0 rgba(0, 0, 0, 0.4) inset;
+    color: #223;
+    background-color: #eee;
+    background-blend-mode: screen;
 }
 
-.left {
-    text-align: left;
+@media only screen and (max-width: 750px) {
+    #main {
+        width: 100%;
+    }
 }
 
-.sorty div {
-    display: block;
-    margin-top: 3px;
-    font-size: 0.8em;
-    color: rgba(0, 0, 0, 0.5);
-}
-
-a {
-    text-decoration: none;
-    font-weight: 400;
-}
-
-.sorty div a {
-    text-decoration: underline !important;
-}
-
-h2 {
-    margin: 0 0 0;
-    padding: 7px 9px;
-    text-align: center;
-    font-family: Arial;
+h2, .row {
     font-size: 16px;
-    background: none repeat scroll 0 0 #dddddd;
+    margin: 0;
+    padding: 0.5rem;
+    text-align: center;
+    background: none repeat scroll 0 0 #ddd;
 }
 
-.group {
-    padding: 10px 0;
-    background: #ffffff;
+.pages a {
+    font-size: 16px !important;
+    display: inline-block;
+    box-sizing: content-box;
+    margin: 1px 1px 4px;
+    padding: 0.4rem 0.8rem;
+    color: #090910;
+    border: 1px dashed #aaa;
+    background: #dd;
 }
 
-.pages {
-    font-weight: 400 !important;
+.pages a:hover {
+    background: #d9d9d9;
+}
+
+.pages a.active {
+    font-weight: bold;
+    background: #ccc;
 }
 
 .pages.bottom {
     border-top: 1px solid rgba(0, 0, 0, 0.3);
 }
 
-.debug.top {
-    border-bottom: 1px solid rgba(0, 0, 0, 0.3);
-    font-size: 16px;
-    font-weight: 400;
-}
-
-.debug {
-    margin: 0;
+.row {
     border-top: 1px solid rgba(0, 0, 0, 0.3);
-    font-size: 9pt;
 }
 
-p {
-    margin-bottom: 12px;
-    font-size: 12px;
-}
-
-.submit {
-    text-align: center;
-}
-
-.wrapper {
-    display: inline-block;
-    width: 200px;
-    height: 200px;
-    margin-bottom: 40px;
-    margin-left: 5px;
-}
-
-.img {
-    z-index: 2;
-    width: 200px;
-    height: 200px;
-    background-color: #ffffff;
-    background-position: center center;
-    background-size: cover;
-    -webkit-box-shadow: inset 0 0 1px rgba(0, 0, 0, 0.8),
-    inset 0 2px 0 rgba(255, 255, 255, 0.5), inset 0 -1px 0 rgba(0, 0, 0, 0.4);
-    -moz-box-shadow: inset 0 0 1px rgba(0, 0, 0, 0.8),
-    inset 0 2px 0 rgba(255, 255, 255, 0.5), inset 0 -1px 0 rgba(0, 0, 0, 0.4);
-    box-shadow: inset 0 0 1px rgba(0, 0, 0, 0.8),
-    inset 0 2px 0 rgba(255, 255, 255, 0.5), inset 0 -1px 0 rgba(0, 0, 0, 0.4);
-}
-
-img {
-    border: 0 none;
-}
-
-hr {
-    clear: both;
-}
-
-.disabled {
-    text-decoration: line-through;
-    color: #444;
-}
-
-.checkbawks {
-    float: left;
-    margin: 1px 3px 1px 1px;
-    vertical-align: bottom;
-}
-
-.paste {
-    color: #666;
-    display: inline-block;
-    position: absolute;
-    top: 1px;
-    left: 0;
-    width: 196px;
-    height: 199px;
-    overflow-y: auto;
-    font-size: 8pt;
-    text-align: left;
-    margin: 0 0 0 3px;
-}
-
-.gc .wrapper {
-    display: block;
-    float: none;
-    clear: both;
-    -moz-box-sizing: border-box;
-    box-sizing: border-box;
-    width: 100%;
-    height: auto;
-    margin-bottom: 0;
-    margin-left: 0;
-    padding: 15px;
+.row.top {
+    font-size: 13px;
+    font-weight: 400;
+    margin-bottom: 1rem;
+    padding: 0;
     border-bottom: 1px solid rgba(0, 0, 0, 0.3);
 }
 
-.gc .wrapper:nth-last-child(2) {
+.row.padded {
+    padding: 1rem;
 }
 
-.gc .img {
-    float: left;
-    position: relative;
-    width: 80px;
-    height: 80px;
-}
-
-.gc .img a {
-    top: 0;
-    left: 0;
-}
-
-.gc .paste {
-    display: block;
-    z-index: 2;
-    position: relative;
-    top: 1px;
-    width: 80px;
-    height: 79px;
-    overflow-y: auto;
-    text-align: center;
-    font-size: 8pt;
-}
-
-.gc h2 {
-    margin: 0;
-}
-
-.gc .checkbawks {
-    float: none;
-    margin: 1px 0;
-    vertical-align: middle;
-}
-
-.gc .info {
-    display: block;
-    float: left;
-    -moz-box-sizing: border-box;
-    box-sizing: border-box;
-    width: 40%;
-    margin-left: 0;
-    padding: 0 11px;
-    overflow: hidden;
-    text-align: left !important;
-    text-overflow: ellipsis;
-    font-size: 150%;
-    line-height: 80px;
-    white-space: nowrap;
-    color: #000000;
-    box-shadow: none;
-}
-
-.gc .info.details {
-    display: table-cell;
-    width: 25%;
-    margin-top: 21px;
-    padding: 0;
-    font-size: 14px;
-    line-height: 19px !important;
-    vertical-align: middle;
+.small {
+    font-size: 0.8rem;
     color: rgba(0, 0, 0, 0.5);
 }
 
-.gc .info.details span {
-    color: #000;
+form.sort-form {
+    display: inline-flex;
+    flex-flow: wrap;
+    margin: 0 auto;
 }
 
-h2.pages {
-    padding: 15px;
+form.sort-form > div {
+    flex-grow: 1;
+    margin: 0.5rem 1rem;
 }
 
-h2.pages a {
+form.sort-form select, form.sort-form input.search-query {
+    margin-right: 0.5rem;
+    margin-left: 0.5rem;
+}
+
+form.sort-form p {
     display: inline-block;
-    width: 20px;
-    margin: 1px 1px 4px;
-    padding: 5px;
-    border: 1px dashed #aaaaaa;
-    font-size: 16px !important;
-    background: none repeat scroll 0 0 #cccccc;
+    margin: 0;
 }
 
-h2.pages a:last-child {
-    padding: 5px;
-}
-
-.info {
-    background: none repeat scroll 0 0 #ffffff;
-    box-shadow: 0 0 1px rgba(0, 0, 0, 0.8) inset,
-    0 2px 0 rgba(255, 255, 255, 0.5) inset, 0 -1px 0 rgba(0, 0, 0, 0.4) inset;
-    color: #000000;
+.file-container {
     display: inline-block;
-    font-size: 75%;
-    margin-top: 2px;
+    width: 200px;
+    margin-left: 0.5rem;
+}
+
+.file-container .file-thumbnail, .file-container .file-info {
+    background-color: #fff;
+    box-shadow: inset 0 0 1px rgba(0, 0, 0, 0.8),
+    inset 0 2px 0 rgba(255, 255, 255, 0.5),
+    inset 0 -1px 0 rgba(0, 0, 0, 0.4);
+}
+
+.file-container .file-thumbnail {
+    position: relative;
+    z-index: 2;
+    width: 200px;
+    height: 200px;
+    margin-bottom: 4px;
+    background-position: center center;
+    background-size: cover;
+}
+
+.file-container .file-thumbnail-link {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 200px;
+    height: 200px;
+}
+
+.file-container .file-thumbnail-type {
+    font-size: 92px;
+    line-height: 200px;
+}
+
+.file-container input.file-delete-checkbox {
+    float: left;
+    margin: 1px 3px 1px 1px;
+}
+
+.file-container .file-info {
+    font-size: 0.75rem;
+    display: block;
     overflow: hidden;
+    margin-bottom: 4px;
     padding: 2px 4px;
     text-align: right;
-    text-overflow: ellipsis;
     white-space: nowrap;
-    width: 192px;
-    position: relative;
-    top: 201px;
+    text-overflow: ellipsis;
+    color: #000;
+    background: none repeat scroll 0 0 #fff;
+    box-shadow: 0 0 1px rgba(0, 0, 0, 0.8) inset,
+    0 2px 0 rgba(255, 255, 255, 0.5) inset, 0 -1px 0 rgba(0, 0, 0, 0.4) inset;
 }
 
-.wrapper {
-    margin-bottom: 60px;
-    height: 240px;
+.file-container .file-info.details {
+    margin-bottom: 1rem;
 }
 
-h2.debug.top {
-    margin-bottom: 20px;
+.file-container .file-thumbnail-paste {
+    font-size: 8pt;
+    position: absolute;
+    top: 1px;
+    left: 0;
+    display: inline-block;
+    overflow-y: auto;
+    width: 196px;
+    height: 199px;
+    margin: 0 0 0 3px;
+    text-align: left;
+    color: #666;
 }
 
 .hl {
-    background: yellow;
     font-weight: bold;
+    background: yellow;
 }
 
 #error {
