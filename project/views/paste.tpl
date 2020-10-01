@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>SGFC >> {{ title }}</title>
+  <title>SGFC | {{ title }}</title>
   <link rel="icon" type="image/ico" href="/favicon.ico" />
   <link href='/static/css/main.css' rel='stylesheet' type='text/css'>
   <link href='/static/css/paste.css' rel='stylesheet' type='text/css'>

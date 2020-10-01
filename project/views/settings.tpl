@@ -3,7 +3,7 @@
 <html>
 
 <head>
-  <title>SGFC >> Settings</title>
+  <title>SGFC | Settings</title>
   <link rel="icon" type="image/ico" href="/favicon.ico" />
   <link href='/static/css/main.css' rel='stylesheet' type='text/css'>
   <link href='/static/css/settings.css' rel='stylesheet' type='text/css'>

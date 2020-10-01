@@ -38,7 +38,7 @@
       <link href='/static/css/gallery.css' rel='stylesheet' type='text/css'>
       <link href="/static/css/loader.css" rel="stylesheet" type='text/css' />
       <meta name="viewport" content="width=device-width, initial-scale=1">
-      <title>SGFC >> {{ info.key }}'{% if info.key[-1] != "s" %}s{% endif %} Gallery</title>
+      <title>SGFC | {{ info.key }}'{% if info.key[-1] != "s" %}s{% endif %} Gallery</title>
     </head>
 
     <body class="gallery">
