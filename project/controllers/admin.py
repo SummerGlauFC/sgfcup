@@ -1,7 +1,3 @@
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import print_function
-
 import os
 
 from bottle import jinja2_template as template
@@ -13,18 +9,14 @@ from project import config
 from project import functions
 from project.functions import get_setting
 
-# Set up short references to common variables.
 db = config.db
-Settings = config.Settings
 
 
 def auth_session(fn):
     def check_session(**kwargs):
         SESSION = request.environ.get("beaker.session", {})
-
         if SESSION.get("admin"):
             return fn(**kwargs)
-
         redirect("/admin/login")
 
     return check_session
@@ -88,7 +80,7 @@ def delete_hits():
             db.execute("DELETE FROM `files` WHERE `hits` <= %s", [hit_threshold])
         else:
             db.execute(
-                "DELETE FROM `files` WHERE `userid` = %s and `hits` <= %s",
+                "DELETE FROM `files` WHERE `userid` = %s AND `hits` <= %s",
                 [user_id, hit_threshold],
             )
 

@@ -1,7 +1,3 @@
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import print_function
-
 import functools
 import inspect
 import random
@@ -10,12 +6,14 @@ import string
 from builtins import range
 from functools import partial
 from math import ceil
+from pprint import pprint
 
 import markupsafe
 import pygments
 from PIL import Image
 from bottle import HTTPResponse
 from bottle import abort
+from bottle import request
 from pygments.formatters import HtmlFormatter
 from pygments.lexers import PhpLexer
 from pygments.lexers import TextLexer
@@ -66,9 +64,9 @@ def hl(text, search):
     for m in regex.finditer(text):
         output += "".join(
             [
-                text[i: m.start()],
+                text[i : m.start()],
                 '<span class="hl">',
-                text[m.start(): m.end()],
+                text[m.start() : m.end()],
                 "</span>",
             ]
         )
@@ -100,19 +98,30 @@ def get_inrange(get, default, highest):
 def sizeof_fmt(num, short=None):
     """ Bytes to a human-readable format """
     for x in ["bytes", "KB", "MB", "GB"]:
-        if num < 1024.0 and num > -1024.0:
+        if 1024.0 > num > -1024.0:
             return "%3.2f %s" % (num, x) if not short else "%3.0f %s" % (num, x)
         num /= 1024.0
     return "%3.1f %s" % (num, "TB")
 
 
 class Pagination(object):
-    """ Useful pagination class """
+    def __init__(self, page, per_page, total_count, data=None):
+        """
+        Allows easy pagination implementation
 
-    def __init__(self, page, per_page, total_count):
+        :param page: current page
+        :param per_page: items per page
+        :param total_count: total number of items
+        :param data: list of data to use for pages instead of numbers
+        """
         self.page = page
         self.per_page = per_page
         self.total_count = total_count
+        self.data = data or range(1, self.pages + 1)
+
+    @property
+    def current_page(self):
+        return self.data[self.page - 1]
 
     @property
     def pages(self):
@@ -143,19 +152,13 @@ class Pagination(object):
         for num in range(1, self.pages + 1):
             if (
                 num <= left_edge
-                or (
-                num > self.page - left_current - 1
-                and num < self.page + right_current
-            )
+                or (self.page - left_current - 1 < num < self.page + right_current)
                 or num > self.pages - right_edge
             ):
                 if last + 1 != num:
                     yield None
-                yield num
+                yield self.data[num - 1]
                 last = num
-
-
-LANGUAGES = get_all_lexers()
 
 
 def get_language_for(filename, mimetype=None, default="text"):
@@ -186,7 +189,7 @@ def lookup_language_alias(alias, default="text"):
 the alias does not exist at all or is not in languages, `default` is
 returned.
 """
-    if alias in LANGUAGES:
+    if alias in get_all_lexers():
         return alias
     try:
         lexer = get_lexer_by_name(alias)
@@ -198,15 +201,15 @@ returned.
 def get_known_alias(lexer, default="text"):
     """Return the known alias for the lexer."""
     for alias in lexer.aliases:
-        if alias in LANGUAGES:
+        if alias in get_all_lexers():
             return alias
     return default
 
 
 def list_languages():
     """List all languages."""
-    languages = LANGUAGES.items()
-    languages.sort(key=lambda x: x[1].lstrip(" _-.").lower())
+    languages = list(get_all_lexers())
+    languages.sort(key=lambda x: x[0].lstrip(" _-.").lower())
     return languages
 
 
@@ -221,17 +224,20 @@ def highlight(code, language, _preview=False, _linenos=True):
             lexer = get_lexer_by_name(language)
         except ClassNotFound:
             lexer = TextLexer()
-    formatter = HtmlFormatter(linenos=_linenos, cssclass="syntax", style="vs")
+    formatter = HtmlFormatter(linenos=_linenos, cssclass="syntax", style="xcode")
     return f'<div class="syntax">{pygments.highlight(code, lexer, formatter)}</div>'
 
 
-def css(style="vs", css_class=".syntax"):
+def css(style="xcode", css_class=".syntax"):
     """ Gets the CSS for pygments """
     return HtmlFormatter(style=style).get_style_defs(css_class)
 
 
 def json_response(success=True, error=False, status=200, **body):
-    return HTTPResponse(body={"success": success, "error": error, "status_code": status, **body}, status=status)
+    return HTTPResponse(
+        body={"success": success, "error": error, "status_code": status, **body},
+        status=status,
+    )
 
 
 def json_error(error, status=400):
@@ -325,3 +331,56 @@ def abort_if_invalid_image_url(file, filename, ext):
             should_abort = True
     if should_abort:
         abort(404, "File not found.")
+
+
+def get_host():
+    """ Get the schema + host """
+    return "{}://{}".format(
+        "https" if get_setting("ssl") else "http", request.environ.get("HTTP_HOST"),
+    )
+
+
+def get_paste_revision(paste_id, **kwargs):
+    return config.db.select(
+        "revisions", where={"pasteid": paste_id, **kwargs}, singular=True,
+    )
+
+
+def get_paste_content(shorturl=None, commit=None, paste=None, revision=None):
+    if not paste:
+        file = config.db.fetchone(
+            "SELECT * FROM `files` WHERE BINARY `shorturl` = %s", [shorturl]
+        )
+        if not file:
+            return None
+        paste = paste or config.db.select(
+            "pastes", where={"id": file["original"]}, singular=True
+        )
+        if not paste:
+            return None
+
+    revision = revision or config.db.select(
+        "revisions", where={"pasteid": paste["id"], "commit": commit}, singular=True
+    )
+    if revision:
+        return revision["paste"]
+    else:
+        return paste["content"]
+
+
+def get_parent_paste(rev):
+    parent_commit = None
+
+    if rev["parent_revision"]:
+        rev = config.db.select(
+            "revisions", where={"id": rev["parent_revision"]}, singular=True
+        )
+        parent_commit = rev["commit"]
+        parent = config.db.select("pastes", where={"id": rev["pasteid"]}, singular=True)
+    else:
+        parent = config.db.select("pastes", where={"id": rev["parent"]}, singular=True)
+
+    pprint(dict(parent=parent["shorturl"], commit=parent_commit))
+    parent_content = get_paste_content(commit=parent_commit, paste=parent)
+
+    return parent, parent_commit, parent_content

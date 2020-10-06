@@ -1,8 +1,37 @@
+{% from "utils.tpl" import login_form %}
+{% macro render_revisions() %}
+  {% if pagination.pages > 1 %}
+    [ Revisions:
+    {% for rev in pagination.iter_pages()|reverse %}
+      {% if rev %}
+        {% if rev == pagination.current_page %}
+          {{ rev.commit }}
+        {% else %}
+          <a href="/paste/{{ paste.url }}
+              {%- if rev.commit != "base" %}:{{ rev.commit }}{% endif -%}
+              {%- if flag.value %}/{{ flag.value }}{% endif -%}"
+             {% if rev.message %}title="{{ rev.message }}"{% endif %}
+          >{{ rev.commit }}</a>
+        {% endif %}
+      {% else %}
+        ...
+      {% endif %}
+      {%- if not loop.last %}
+        /
+      {%- endif -%}
+    {% endfor %}
+    ]
+    {%- if revision.parent_url %}
+      <br />
+      [ Parent: <a href="/paste/{{ revision.parent_url }}">{{ revision.parent_url }}</a> ]
+    {%- endif %}
+  {% endif %}
+{% endmacro %}
 <!DOCTYPE html>
 <html>
 <head>
   <title>SGFC | {{ title }}</title>
-  <link rel="icon" type="image/ico" href="/favicon.ico" />
+  <link rel="icon" type="image/ico" href="/static/misc/favicon.ico" />
   <link href='/static/css/main.css' rel='stylesheet' type='text/css'>
   <link href='/static/css/paste.css' rel='stylesheet' type='text/css'>
   <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -14,88 +43,80 @@
   <header>
     {{ title }}
   </header>
-  <div id="wrapper">
-    <div class="boardlist">[ Characters: {{ length }} | Lines: {{ lines }} | Hits: {{ hits }} | Language: {{ lang }}
+  <div id="main" class="wrapper">
+    <div class="paste-info">
+      [
+      Characters: {{ paste.length }} |
+      Lines: {{ paste.lines }} |
+      Hits: {{ paste.hits }} |
+      Language: {{ paste.lang }}
       ]
-      <br />[ Revisions:
-      {% if revisions -%}
-        {%- for _revision in revisions[-5:]|reverse -%}
-          {%- if _revision.commit != revision.commit -%}
-            <a href="/paste/{{ url }}.{{ _revision.commit }}" title="{{ _revision.message }}">{%- endif %}
-        {{ _revision.commit }}
-        {% if _revision.commit != revision.commit -%}</a>{%- endif -%}
-          {%- if not loop.last %}
-            /
-          {% else -%}
-            / {% if revision.commit %}<a href="/paste/{{ url }}">{% endif %}base{% if revision.commit %}
-            </a>{% endif %}
-          {%- endif -%}
-        {%- endfor -%}
-      {%- else -%}
-        base
-      {%- endif -%}
-      {% if revision.parent != revision.pasteid %}| Parent:
-        <a href="/paste/{{ revision.parent_url }}">{{ revision.parent_url }}</a>{% endif %} ]
+      <br />
+      {{ render_revisions() }}
     </div>
-    {% if not edit %}
-      <div class="boardlist" style="float: right; text-align: right;">[
-        <a href="/paste/{{ url }}{% if revision.commit %}.{{ revision.commit }}{% endif %}/raw">View raw
-          paste</a> |
-        <a href="/paste/{{ url }}{% if revision.commit %}.{{ revision.commit }}{% endif %}/edit">
-          {%- if is_owner %}
-            Edit{% else %}Fork{% endif %} paste</a>
+    {% set paste_url = paste.url + (":" + revision.commit if revision.commit else "") %}
+    <div class="paste-info" style="float: right; text-align: right;">
+      [
+      <a href="/paste/{{ paste_url }}/raw">View raw paste</a> |
+      {% if flag != paste_actions.EDIT -%}
+        <a href="/paste/{{ paste_url }}/edit">{% if paste.own %}Edit{% else %}Fork{% endif %} paste</a>
+      {%- else -%}
+        <a href="/paste/{{ paste_url }}">View paste</a>
+      {%- endif %}
+      ]
+      {% if revision.commit -%}
+        <br />
+        [ View:
+        {% if flag != paste_actions.DIFF -%}
+          <a href="/paste/{{ paste_url }}/diff">Diff</a> / Paste
+        {%- else -%}
+          Diff / <a href="/paste/{{ paste_url }}">Paste</a>
+        {%- endif %}
         ]
-        {% if revision.commit %}
-          <br />
-          [ View: {% if flag != "diff" %}
-          <a href="/paste/{{ url }}.{{ revision.commit }}/diff">{% endif %}Diff{% if flag != "diff" %}</a>
-        {% endif %} /
-          {% if flag == "diff" %}<a href="/paste/{{ url }}.{{ revision.commit }}">{% endif %}Normal
-        {% if flag == "diff" %}</a>{% endif %} ]
-        {% endif %}
+      {% endif %}
+    </div>
+    {% if flag != paste_actions.EDIT -%}
+      {% if revision.message -%}
+        <div class="commit-message">
+          <h6>Commit Message</h6>
+          <div class="code-text">
+            <div class="syntax">
+              <table class="syntaxtable">
+                <tbody>
+                <tr>
+                  <td class="code">
+                    <div class="syntax">
+                      <pre>{{ revision.message|trim|e }}</pre>
+                    </div>
+                  </td>
+                </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      {% endif %}
+      <div class="code-view">
+        {{ paste.content|safe }}
       </div>
-      {% if revision.message %}
-        <h2 style="text-align:center">Message: {{ revision.message|e }}</h2>
-      {% endif %}
-      {% if use_wrapper %}
-        <div class="allcode">
-          {{ content }}
-        </div>
-      {% else %}
-        {{ content }}
-      {% endif %}
-    {% else %}
-      <form action="/api/edit/paste" method="POST">
-        <div class="allcode">
-          <input type="text" id="commit" name="commit" value="" placeholder="commit message" />
-          <br /><br />
-          <textarea tabindex="20" rows="22" name="paste_edit_body" id="paste_edit_body"
-                    class="pastebox">{{ raw_paste }}</textarea>
-        </div>
-
+    {%- else -%}
+      <form action="/api/edit/paste" method="POST" id="paste">
+        <input type="hidden" name="id" value="{{ paste.id }}" />
+        {% if revision.id -%}
+          <input type="hidden" name="commit" value="{{ revision.id }}" />
+        {%- endif %}
+        <textarea rows="2" id="commit-message" name="commit_message" placeholder="commit message"></textarea>
+        <textarea rows="22" name="paste_edit_body" id="paste_edit_body"
+                  class="pastebox">{{ paste.raw }}</textarea>
         <div style="text-align:center; margin-top:15px">
           <div id="message" style="display: none">Uploading...</div>
-          <div id="identification">
-            <p><small>You do not have to change these values.
-              <br>Clear the fields to upload anonymously.</small>
-              <br>
-              <br>
-              <button id="clear-fields" type="button">Clear Fields</button>
-            </p>
-            <label for="key">Key</label>&nbsp;
-            <input type="text" id="key" name="key" value="{{ key }}" size="20">
-            <br>
-            <label for="password">Pass</label>&nbsp;
-            <input type="password" id="password" name="password" value="{{ password }}" size="20">
-            <br><br>
-          </div>
-          <input type="hidden" name="id" value="{{ id }}" />
-          <input type="submit" name="submit" value="
-                            {%- if is_owner %}Edit{% else %}Fork{% endif -%}" />
-        </div>
+          {{ login_form(key=key, password=password, show_clear=True) }}
+          <br />
+          <input type="submit" name="submit" value="{% if paste.own %}Edit{% else %}Fork{% endif %}" />
       </form>
+      <script src="/static/js/base.js" type="text/javascript"></script>
       <script src="/static/js/pastebin.js" type="text/javascript"></script>
-    {% endif %}
+    {%- endif %}
   </div>
 </div>
 </body>

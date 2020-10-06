@@ -1,7 +1,3 @@
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import print_function
-
 import json
 import pickle
 
@@ -65,13 +61,13 @@ class PickleSettings:
 
         if current_config:
             # print current_config, dir(current_config)
-            json = pickle.loads(current_config["json"])
+            conf = pickle.loads(current_config["json"])
 
             # make sure removed config values are ignored
             new = {}
-            for key in json:
+            for key in conf:
                 if key in self.json_file:
-                    new[key] = json[key]
+                    new[key] = conf[key]
 
             merged_json = merge(self.json_file, new)
             return merged_json
@@ -82,12 +78,8 @@ class PickleSettings:
         """ gets a key from a users config, and returns the default option if
             the user has not set it yet. """
 
-        user_json = self._get(user_id)
-
-        if "value" in user_json[key]:
-            return user_json[key]["value"]
-
-        return user_json[key]["default"]
+        conf = self._get(user_id)
+        return conf[key].get("value", conf[key]["default"])
 
     def set(self, user_id, items):
         """ sets multiple values at once (avoids multiple sql selects)
@@ -105,9 +97,9 @@ class PickleSettings:
         """ returns all values from a users config, including defaults.
             Like a version of get for every key instead.
         """
-        jsoned = self._get(user_id)
-        for key in jsoned:
-            if "value" not in jsoned[key] and "default" in jsoned[key]:
-                jsoned[key]["value"] = jsoned[key]["default"]
+        conf = self._get(user_id)
+        for key in conf:
+            if "value" not in conf[key] and "default" in conf[key]:
+                conf[key]["value"] = conf[key]["default"]
 
-        return jsoned
+        return conf

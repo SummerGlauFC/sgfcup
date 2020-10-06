@@ -1,10 +1,11 @@
 #loader {
-    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 40vh;
 }
 
 .lds-spinner {
-    position: relative;
-    top: 2em;
     display: inline-block;
     width: 80px;
     height: 80px;

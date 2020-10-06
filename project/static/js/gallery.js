@@ -15,30 +15,46 @@ function _wr(type) {
 // patch history to fire pushState events
 history.pushState = _wr("pushState")
 
+function pageClickHandler(e) {
+  e.preventDefault()
+  const {page} = e.target.dataset
+  const url = e.target.href
+  if (page !== undefined && page !== window.current_page) {
+    history.pushState({page, url}, document.title, url)
+  }
+}
+
 function addLinkHandlers(el) {
   const links = el.querySelectorAll(".pages a")
   Array.prototype.forEach.call(links, (link) => {
-    link.addEventListener("click", (e) => {
-      e.preventDefault()
-      const {page} = e.target.dataset
-      const url = e.target.href
-      if (page !== undefined && page !== window.current_page) {
-        history.pushState({page, url}, document.title, url)
-      }
-    })
+    link.addEventListener("click", pageClickHandler)
+  })
+}
+
+function removeLinkHandlers(el) {
+  const links = el.querySelectorAll(".pages a")
+  Array.prototype.forEach.call(links, (link) => {
+    link.removeEventListener("click", pageClickHandler)
   })
 }
 
 function load_page(page, url) {
-  const mainForm = document.getElementById("main_form")
-  const main = document.getElementById("main")
-  const loader = document.getElementById("loader")
+  let fader, content, loader
 
-  fadeOut(mainForm, 100, true)
+  const getElements = () => {
+    fader = document.getElementById("fader")
+    content = document.getElementById("replace-content")
+    loader = document.getElementById("loader")
+  }
+
+  getElements()
+
+  fadeOut(fader, 100)
   fadeIn(loader, 100)
 
   // disable clicking on the hidden contents while it loads
-  mainForm.style.pointerEvents = "none"
+  fader.style.pointerEvents = "none"
+  removeLinkHandlers(content)
 
   fetch(url, {
     headers: {
@@ -50,13 +66,13 @@ function load_page(page, url) {
       setTimeout(() => {
         fadeOut(loader, 100)
         setTimeout(() => {
-          mainForm.style.pointerEvents = "inherit"
-          main.innerHTML = data
+          fader.style.pointerEvents = "inherit"
+          content.innerHTML = data
           if (page)
             window.current_page = page
-          addLinkHandlers(document)
-          fadeOut(mainForm, 0)
-          fadeIn(mainForm, 1000)
+          getElements()
+          addLinkHandlers(content)
+          fadeIn(fader, 100)
         }, 100)
       }, 200)
     })

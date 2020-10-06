@@ -3,7 +3,8 @@
 {% block content %}
   <form method="post" action="/admin/deletehits">
     Delete uploads for <input type="text" value="" placeholder="key" name="key" />
-    <br /> where hits &lt;=:
+    <br />
+    where hits &lt;=:
     <input type="text" name="hit_threshold" size="5" />
     <br /><br />
     <input type="checkbox" name="all_keys" /> Delete from all keys

@@ -1,7 +1,3 @@
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import print_function
-
 import hashlib
 import os
 import random
@@ -11,7 +7,9 @@ from bottle import request
 from project import app
 from project import config
 from project import functions
+from project.functions import get_host
 from project.functions import get_or_create_account
+from project.functions import get_paste_revision
 from project.functions import get_setting
 
 id_generator = functions.id_generator
@@ -26,7 +24,7 @@ def handle_auth(key, password):
         SESSION["password"] = password
         SESSION["id"] = user_id
     if not is_authed:
-        raise functions.json_error("Incorrect Key or password", status=403)
+        raise functions.json_error("Incorrect Key or password", status=401)
     return is_authed, user_id
 
 
@@ -135,11 +133,6 @@ def api_upload_file(upload_type="file"):
     password = request.forms.get("password", False)
     is_authed, user_id = handle_auth(key, password)
 
-    # Decide whether to return a https URL or not
-    host = "{}://{}".format(
-        "https" if get_setting("ssl") else "http", request.environ.get("HTTP_HOST"),
-    )
-
     # defaults for an impossible case
     shorturl = ext = ""
     if upload_type == "file":
@@ -147,8 +140,8 @@ def api_upload_file(upload_type="file"):
     elif upload_type == "paste":
         shorturl, ext, _ = submit_paste(user_id)
 
+    host = get_host()
     path = "/" + ("" if upload_type == "file" else upload_type + "/")
-
     return functions.json_response(
         type=ext,
         key="anon" if not user_id else key,
@@ -163,29 +156,48 @@ def api_edit_paste():
     key = request.forms.get("key", False)
     password = request.forms.get("password", False)
     body = request.forms.get("paste_edit_body", "").strip()
-    editing_id = request.forms.get("id", False)
-    commit_msg = request.forms.get("commit", False)
+    editing_id = request.forms.get("id", None)
+    editing_commit = request.forms.get("commit", None)
+    msg = request.forms.get("commit_message", None)
 
     abort_if_paste_body_error(body)
+
+    if msg and len(msg) > 1024:
+        raise functions.json_error(
+            "Your commit message exceeds the maximum character length of 1024"
+        )
 
     is_authed, user_id = handle_auth(key, password)
 
     # Select the paste that is being edited
-    paste_row = config.db.select("pastes", where={"id": editing_id}, singular=True)
-    if not paste_row:
+    base_paste = config.db.select("pastes", where={"id": editing_id}, singular=True)
+    if not base_paste:
         raise functions.json_error("Paste does not exist")
 
-    # Generate a hash for the paste revision
+    # Generate a hash for this paste revision
     commit = hashlib.sha1(body.encode("utf-8")).hexdigest()[0:7]
+    shorturl = base_paste["shorturl"]
+    paste_id = base_paste["id"]
 
-    shorturl = id_generator(random.SystemRandom().randint(4, 7))
-    paste_id = paste_row["id"]
+    # Select the commit that is being edited
+    parent_revision = None
+    if editing_commit:
+        base_revision = get_paste_revision(paste_id, id=editing_commit)
+        if not base_revision:
+            raise functions.json_error("Commit does not exist")
+        parent_revision = base_revision["id"]
 
     # Check whether to fork or just edit the paste
-    is_fork = user_id != paste_row["userid"]
+    is_fork = user_id != base_paste["userid"]
     if is_fork:
-        paste_data = dict(**paste_row, body=body)
-        shorturl, _, paste_id = submit_paste(user_id, paste_data)
+        shorturl, _, paste_id = submit_paste(
+            user_id, dict(**base_paste, body=base_paste["content"])
+        )
+    else:
+        # if the user is editing the paste, disallow it if it matches a previous commit
+        commit_exists = get_paste_revision(paste_id, commit=commit)
+        if commit_exists:
+            raise functions.json_error("Commit already exists")
 
     # Insert as a revision regardless of being a fork or edit
     config.db.insert(
@@ -194,17 +206,19 @@ def api_edit_paste():
             "pasteid": paste_id,
             "userid": user_id,
             "commit": commit,
-            "message": commit_msg,
+            "message": msg,
             "paste": body,
             "fork": is_fork,
-            "parent": paste_row["id"],
+            "parent": base_paste["id"],
+            "parent_revision": parent_revision,
         },
     )
 
+    host = get_host()
+    url = "/paste/{}".format(shorturl + "." + commit)
     return functions.json_response(
-        url="/paste/{}".format(
-            paste_row["shorturl"] + "." + commit if not is_fork else shorturl
-        ),
+        url=url,
         key="anon" if not user_id else key,
         base=get_setting("directories.url"),
+        full_url=host + url,
     )

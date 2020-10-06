@@ -1,7 +1,3 @@
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import print_function
-
 from bottle import jinja2_view as view
 from bottle import request
 from bottle import static_file
@@ -36,7 +32,10 @@ def index():
 @app.get("/paste")
 @view("pastebin.tpl")
 def paste_home():
-    return key_password_return(request.environ.get("beaker.session"))
+    return dict(
+        langs=functions.list_languages(),
+        **key_password_return(request.environ.get("beaker.session")),
+    )
 
 
 @app.route("/keys")

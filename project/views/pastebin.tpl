@@ -1,4 +1,5 @@
 {% extends "base.tpl" %}
+{% from "utils.tpl" import login_form %}
 {% block title %}Pastebin{% endblock %}
 {% block head %}
   <style type="text/css">
@@ -7,16 +8,19 @@
           width: 392px;
       }
 
-      #identification label {
-          width: 40px;
-      }
-
       #reset {
           margin: 1em;
       }
 
       #box-right {
           height: 430px;
+      }
+
+      textarea {
+          font-family: "InconsolataMedium", Consolas, Monaco, "Liberation Mono", Courier,
+          monospace;
+          font-size: 12px;
+          margin: 0.5rem 0;
       }
   </style>
 {% endblock %}
@@ -33,54 +37,43 @@
     <p>
       <label for="lang">Language:</label>
       <select name="lang" id="lang">
-        <option value="bbcode">BBCode</option>
-        <option value="bash">Bash</option>
-        <option value="bat">Batchfile</option>
-        <option value="brainfuck">Brainfuck</option>
-        <option value="c">C</option>
-        <option value="csharp">C#</option>
-        <option value="cpp">C++</option>
-        <option value="css">CSS</option>
-        <option value="diff">Diff</option>
-        <option value="html">HTML</option>
-        <option value="html+php">HTML+PHP</option>
-        <option value="ini">INI</option>
-        <option value="irc">IRC logs</option>
-        <option value="java">Java</option>
-        <option value="js">JavaScript</option>
-        <option value="lua">Lua</option>
-        <option value="mysql">MySQL</option>
-        <option value="nginx">Nginx Conf</option>
-        <option value="php">PHP</option>
-        <option value="python">Python</option>
-        <option value="text" selected>Plain text</option>
+        <option value="text" selected>Plain Text</option>
+        <optgroup label="------ POPULAR LANGUAGES -------">
+          <option value="bash">Bash</option>
+          <option value="c">C</option>
+          <option value="csharp">C#</option>
+          <option value="cpp">C++</option>
+          <option value="css">CSS</option>
+          <option value="html">HTML</option>
+          <option value="json">JSON</option>
+          <option value="java">Java</option>
+          <option value="js">JavaScript</option>
+          <option value="ts">TypeScript</option>
+          <option value="lua">Lua</option>
+          <option value="md">Markdown</option>
+          <option value="objective-c">Objective C</option>
+          <option value="php">PHP</option>
+          <option value="perl">Perl</option>
+          <option value="python">Python</option>
+          <option value="rb">Ruby</option>
+          <option value="swift">Swift</option>
+        </optgroup>
+        <optgroup label="------ ALL LANGUAGES -------">
+          {% for lang in langs %}
+            <option value="{{ lang[1][0] }}">{{ lang[0] }}</option>
+          {%- endfor %}
+        </optgroup>
       </select>
     </p>
   </div>
-  <div id="identification">
-    <p>
-      <small>
-        You do not have to change these values.
-        <br />
-        Clear the fields to upload anonymously.
-      </small>
-      <br />
-      <br />
-      <button type='button' id="clear-fields">Clear Fields</button>
-    </p>
-    <label for="key">Key</label>&nbsp;
-    <input type="text" size="20" value="{{ key }}" name="key" id="key" />
-    <br />
-    <label for="password">Pass</label>&nbsp;
-    <input type="password" size="20" value="{{ password }}" name="password" id="password" />
-    <br /><br />
-    <input type="submit" name="submit" value="Paste" />
-  </div>
+  {{ login_form(key=key, password=password, show_clear=True) }}
+  <br />
+  <input type="submit" name="submit" value="Paste" />
 {% endblock %}
 {% block extra %}{% endblock %}
 {% block content %}
-  <textarea tabindex="20" name="paste_body" id="paste_body" class="pastebox"></textarea>
   <div id="message" style="display: none">Uploading...</div>
+  <textarea tabindex="20" name="paste_body" id="paste_body" class="pastebox"></textarea>
   <div style="text-align:center; display: none" id="reset">
     <button type="button">Go back</button>
   </div>
@@ -89,5 +82,6 @@
   </form>
 {% endblock %}
 {% block script %}
+  <script src="/static/js/base.js" type="text/javascript"></script>
   <script src="/static/js/pastebin.js" type="text/javascript"></script>
 {% endblock %}

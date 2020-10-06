@@ -4,8 +4,8 @@ from enum import Enum
 # |  Please try not to adjust any of the below without good reason. |
 # \-----------------------------------------------------------------/
 
-# Sortmodes used by the gallery ('Name', 'database column', 'sort order')
-sortmodes = [
+# Sort modes used by the gallery ('Name', 'database column', 'sort order')
+sort_modes = [
     ["Date (descending)", "id", "DESC"],
     ["Date (ascending)", "id", "ASC"],
     ["Hits (descending)", "hits", "DESC"],
@@ -14,13 +14,27 @@ sortmodes = [
 ]
 
 # Search modes used by the gallery ('Name', 'database column')
-searchmodes = [["Filename", "original"], ["Short URL", "shorturl"]]
+search_modes = [["Filename", "original"], ["Short URL", "shorturl"]]
 
 # File type definitions used by the gallery
 file_types = ["image", "file", "paste"]
 
 
-class file_type(Enum):
+class FileType(Enum):
     IMAGE = 0
     FILE = 1
     PASTE = 2
+
+
+class PasteAction(Enum):
+    NONE = ""
+    EDIT = "edit"
+    DIFF = "diff"
+    RAW = "raw"
+
+    @staticmethod
+    def get(key):
+        try:
+            return PasteAction(key)
+        except ValueError:
+            return PasteAction.NONE

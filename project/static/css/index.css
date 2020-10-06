@@ -63,6 +63,10 @@
     padding: 1em 0;
 }
 
+.bottom a {
+    text-decoration: underline;
+}
+
 input[type="radio"] {
     margin-right: 5px;
     margin-left: 15px;
@@ -141,7 +145,7 @@ span.button-icon a[data-icon]:before {
 
 span.button-icon a:hover {
     /*box-shadow: 0 4px 10px rgba(0, 0, 0, 0.35);*/
-    box-shadow: 0 9px 12px 1px rgba(0,0,0,0.14), 0 3px 16px 2px rgba(0,0,0,0.12), 0 5px 6px -3px rgba(0,0,0,0.20);
+    box-shadow: 0 9px 12px 1px rgba(0, 0, 0, 0.14), 0 3px 16px 2px rgba(0, 0, 0, 0.12), 0 5px 6px -3px rgba(0, 0, 0, 0.20);
 }
 
 span.button-icon .types {
@@ -172,4 +176,9 @@ span.button-icon .locks {
 
 button, input[type="button"], input[type="submit"] {
     font-size: 14px;
+}
+
+#remove-all-files {
+    display: block;
+    margin: 1rem auto;
 }

@@ -15,20 +15,11 @@ header a:link, header a:visited {
 
 #main {
     font-size: 16px;
-    width: 95%;
-    margin: 0 auto 3rem;
-    padding: 0;
     transition: all 215ms linear 0s;
     text-align: center;
     color: #223;
     background-color: #eee;
     background-blend-mode: screen;
-}
-
-@media only screen and (max-width: 750px) {
-    #main {
-        width: 100%;
-    }
 }
 
 h2, .row {
@@ -47,7 +38,7 @@ h2, .row {
     padding: 0.4rem 0.8rem;
     color: #090910;
     border: 1px dashed #aaa;
-    background: #dd;
+    background: #ddd;
 }
 
 .pages a:hover {
@@ -70,16 +61,24 @@ h2, .row {
 .row.top {
     font-size: 13px;
     font-weight: 400;
-    margin-bottom: 1rem;
-    padding: 0;
+    padding: 0.5rem;
     border-bottom: 1px solid rgba(0, 0, 0, 0.3);
+}
+
+.row.m-b {
+    border-top: none;
+    margin-bottom: 1rem;
 }
 
 .row.padded {
     padding: 1rem;
 }
 
-.small {
+.row.delete-options input {
+    margin: 0 0.5rem 0 0;
+}
+
+small {
     font-size: 0.8rem;
     color: rgba(0, 0, 0, 0.5);
 }
@@ -98,11 +97,6 @@ form.sort-form > div {
 form.sort-form select, form.sort-form input.search-query {
     margin-right: 0.5rem;
     margin-left: 0.5rem;
-}
-
-form.sort-form p {
-    display: inline-block;
-    margin: 0;
 }
 
 .file-container {
@@ -182,10 +176,6 @@ form.sort-form p {
 .hl {
     font-weight: bold;
     background: yellow;
-}
-
-#error {
-    padding: 20px;
 }
 
 .highlight {

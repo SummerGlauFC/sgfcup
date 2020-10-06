@@ -1,7 +1,3 @@
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import print_function
-
 import os
 
 import ghdiff
@@ -18,7 +14,9 @@ from bottle import static_file as bottle_static_file
 from project import app
 from project import config
 from project import functions
+from project.configdefines import PasteAction
 from project.functions import abort_if_invalid_image_url
+from project.functions import get_parent_paste
 from project.functions import get_setting
 from project.functions import remove_transparency
 
@@ -93,179 +91,171 @@ def api_thumb(url, filename=None, ext=None, temp=False, size=(400, 400)):
 
 @app.route("/paste/<url>")
 @app.route("/paste/<url>/<flag>")
-@app.route("/paste/<url>/<flag>.<ext>")
-def paste_view(url, flag=None, ext=None):
+def paste_view(url, flag=None):
     SESSION = request.environ.get("beaker.session", {})
 
     # Extract the commit from the URL, if it exists.
-    if "." in url:
-        url = url.split(".")
-        commit = url[-1]
-        url = url[0]
+    if ":" in url:
+        url, commit = url.split(":", 1)
     else:
         commit = False
 
     # Select the paste from `files`
-    results = config.db.fetchone(
+    file = config.db.fetchone(
         "SELECT * FROM `files` WHERE BINARY `shorturl` = %s", [url]
     )
+    if not file:
+        abort(404, "File not found.")
 
-    if results:
-        paste_row = config.db.select(
-            "pastes", where={"id": results["original"]}, singular=True
-        )
+    paste = config.db.select("pastes", where={"id": file["original"]}, singular=True)
+    if not paste:
+        # Paste exists in files table but not in pastes table... remove it.
+        config.db.delete("files", {"id": file["id"]})
+        abort(404, "File not found.")
 
-        if not paste_row:
-            print("Deleting a paste that was not found...")
-            # config.db.execute(
-            #     'DELETE FROM `files` WHERE `id` = %s', [results['id']])
-            config.db.delete("files", {"id": results["id"]})
-            abort(404, "File not found.")
+    flag = PasteAction.get(flag)
+    flag_path = "/" + flag.value if flag.value else ""
 
-        # Select every revision for specified paste
-        revisions_rows = config.db.select(
-            "revisions", where={"pasteid": paste_row["id"], "fork": 0}
-        )
+    # Get revisions for specified paste
+    revisions = config.db.select("revisions", where={"pasteid": paste["id"]})
+    if revisions:
+        # user navigated to a forked paste, without specifying a commit
+        # so redirect to the first commit for the paste.
+        redirect_commit = None
+        if not commit:
+            first_revision = revisions[0]
+            if first_revision["fork"]:
+                redirect_commit = first_revision["commit"]
+        # redirect user to the latest revision if commit is "latest"
+        elif commit == "latest":
+            latest_revision = revisions[-1]
+            redirect_commit = latest_revision["commit"]
+        if redirect_commit:
+            redirect(f"/paste/{url}:{redirect_commit}{flag_path}")
+    else:
+        # redirect to the base paste if there are no commits
+        if commit == "latest":
+            redirect(f"/paste/{url}{flag_path}")
 
-        # Add a hit to the paste
-        config.db.execute(
-            "UPDATE `files` SET hits=hits+1 WHERE `id`=%s", [results["id"]]
-        )
+    # Add a hit to the paste
+    config.db.execute("UPDATE `files` SET `hits`=`hits`+1 WHERE `id`=%s", [file["id"]])
 
-        # Decide whether the viewer owns this file (for forking or editing)
-        is_owner = paste_row["userid"] == SESSION.get("id", 0)
+    # Decide whether the viewer owns this file (for forking or editing)
+    is_owner = paste["userid"] == SESSION.get("id", 0)
 
-        # If a commit is provided, get the row for that revision
-        if commit:
-            revisions_row = config.db.select(
-                "revisions", where={"commit": commit}, singular=True
-            )
-        else:
-            revisions_row = None
+    # If a commit is provided, get the row for that revision
+    revision = next(filter(lambda rev: rev["commit"] == commit, revisions), None)
 
-        # Add the base commit in by default
+    is_fork = False
+
+    commits = []
+    # Append every commit which exists
+    if revisions:
+        first_revision = revisions[0]
+        is_fork = first_revision["fork"]
+        # add the dummy base revision to the revision list
+        if not is_fork:
+            revisions = ({"commit": "base"},) + revisions
+        for row in revisions:
+            commits.append(row["commit"])
+    else:
         commits = ["base"]
 
-        # Append every commit which exists
-        if revisions_rows:
-            for row in revisions_rows:
-                commits.append(row["commit"])
+    # commit provided but is not valid
+    if commit and commit not in commits:
+        abort(404, "Commit does not exist.")
 
-        # Check if the commit exists in the commits list
-        if commit in commits:
-            current_commit = commits.index(commit)
-            current_commit = commits[
-                current_commit - 1 if current_commit - 1 >= 0 else 0
-            ]
-        else:
-            current_commit = commits[0]
+    # If the given commit does not exist, use the base commit
+    if commit not in commits:
+        commit = commits[0]
 
-        # Disable the ability to use diff on the base commit only
-        if current_commit == "base" and commit == "" and flag == "diff":
-            flag = ""
+    # Disable the ability to use diff on the base commit only
+    # ... but allow forks to be diffed with the original paste
+    if (commit == "base" or commit == "") and not is_fork and flag == PasteAction.DIFF:
+        redirect(f"/paste/{url}")
 
-        # Function to get the previous commit from the database for diffs
-        def previous_commit():
-            if current_commit != "base":
-                return config.db.select(
-                    "revisions", where={"commit": current_commit}, singular=True
-                )["paste"]
-            else:
-                return config.db.select(
-                    "pastes", where={"id": paste_row["id"]}, singular=True
-                )["content"]
+    # If the user provided the raw flag, skip all HTML rendering
+    if flag == PasteAction.RAW:
+        response.content_type = "text/plain; charset=utf-8"
+        return revision["paste"] if revision and commit else paste["content"]
 
-        # If the user provided the raw flag, skip all HTML rendering
-        if flag == "raw":
-            response.content_type = "text/plain; charset=utf-8"
-            return revisions_row["paste"] if commit else paste_row["content"]
-        else:
-            revision = {}
+    # Check if the paste has a name, and show the name if it does.
+    name = paste["name"]
+    title = f"Paste: {name or url}"
+    lang = paste["lang"]
 
-            # Check if the paste has a name, and show the name if it does.
-            if paste_row["name"]:
-                title = f'Paste "{paste_row["name"]}" ({url})'
-            else:
-                title = f"Paste {url}"
+    # save the original paste text before we transform it
+    # for statistics
+    raw_paste = paste["content"]
 
-            lang = paste_row["lang"]
+    # Check if to make a diff or not,
+    # depending on if the revision exists
+    if revision:
+        raw_paste = revision["paste"]
+        paste["content"] = raw_paste
 
-            # Check if to make a diff or not,
-            # depending on if the revision exists
-            if revisions_row:
-                if flag == "diff":
-                    prev_commit = previous_commit()
+        parent, parent_commit, parent_content = get_parent_paste(revision)
+        if flag == PasteAction.DIFF:
+            # diff with parent paste
+            paste["content"] = ghdiff.diff(parent_content, revision["paste"], css=False)
 
-                    # Render the diff without CSS, so I can edit it easier
-                    paste_row["content"] = ghdiff.diff(
-                        prev_commit, revisions_row["paste"], css=False
-                    )
-                    lang = "diff"
-                else:
-                    paste_row["content"] = revisions_row["paste"]
+        # Add the parent pastes URL to the revision's data.
+        revision["parent_url"] = parent["shorturl"] + (
+            ":" + parent_commit if parent_commit else ""
+        )
 
-                revision = revisions_row
+        title += f' [{revision["commit"]}]'
 
-                # Add the parent pastes URL to the revision's data.
-                revision["parent_url"] = config.db.select(
-                    "pastes", where={"id": revision["parent"]}, singular=True
-                )["shorturl"]
+    # Get meta data about the pastes
+    length = len(raw_paste)
+    lines = len(raw_paste.split("\n"))
+    hits = file["hits"]
 
-                title += f' (revision {revision["commit"]})'
-
-            # Decide whether to wrap the response in an extra element
-            use_wrapper = not (flag == "diff" and commit in commits)
-
-            if not use_wrapper:
-                content = paste_row["content"]
-            else:
-                content = functions.highlight(paste_row["content"], lang)
-
-            # Get meta data about the pastes
-            length = len(paste_row["content"])
-            lines = len(paste_row["content"].split("\n"))
-            hits = results["hits"]
-
-            # Get the styles for syntax highlighting
-            css = functions.css()
-
-            # Generate a key and password for the edit form
-            if SESSION.get("id"):
-                key = SESSION.get("key")
-                password = SESSION.get("password")
-            else:
-                key = functions.id_generator(15)
-                password = functions.id_generator(15)
-
-            # Decide if the paste should be in edit/fork mode or not
-            edit = flag == "edit"
-
-            # Provide the template with a mass of variables
-            return template(
-                "paste",
-                title=title,
-                content=content,
-                css=css,
-                url=url,
-                lang=lang,
-                length=length,
-                hits=hits,
-                lines=lines,
-                edit=edit,
-                raw_paste=paste_row["content"],
-                is_owner=is_owner,
-                key=key,
-                password=password,
-                id=paste_row["id"],
-                revisions=revisions_rows,
-                revision=revision,
-                flag=flag,
-                _commit=commit,
-                commits=commits,
-                use_wrapper=use_wrapper,
-            )
+    # Decide whether to diff the
+    diffing = flag == PasteAction.DIFF and commit in commits
+    if diffing:
+        content = paste["content"]
     else:
-        abort(404, "File not found.")
+        content = functions.highlight(paste["content"], lang)
+
+    # Get the styles for syntax highlighting
+    css = functions.css()
+
+    # Generate a key and password for the edit form
+    if SESSION.get("id"):
+        key = SESSION.get("key")
+        password = SESSION.get("password")
+    else:
+        key = functions.id_generator(15)
+        password = functions.id_generator(15)
+
+    # paginate the commits for a post
+    pagination = functions.Pagination(
+        commits.index(commit or "base") + 1, 1, len(commits), data=revisions
+    )
+
+    # Provide the template with a mass of variables
+    return template(
+        "paste",
+        paste=dict(
+            id=paste["id"],
+            raw=paste["content"],
+            content=content,
+            lang=lang,
+            length=length,
+            lines=lines,
+            own=is_owner,
+            url=url,
+            hits=hits,
+        ),
+        title=title,
+        css=css,
+        key=key,
+        password=password,
+        revision=revision,
+        pagination=pagination,
+        flag=flag,
+    )
 
 
 @app.route("/<url>")
@@ -290,7 +280,7 @@ def image_view(url, filename=None, ext=None, results=None, update_hits=True):
             # Add one hit to the file
             if update_hits:
                 config.db.execute(
-                    "UPDATE `files` SET hits=hits+1 WHERE `id`=%s", [results["id"]]
+                    "UPDATE `files` SET `hits`=`hits`+1 WHERE `id`=%s", [results["id"]]
                 )
 
             return static_file(

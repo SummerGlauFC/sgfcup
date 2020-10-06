@@ -1,7 +1,10 @@
 ready(() => {
   const form = document.getElementById("paste")
   const reset = document.getElementById("reset")
-  const reset_btn = reset.getElementsByTagName("button")[0]
+  let reset_btn = null
+  if (reset) {
+    reset_btn = reset.getElementsByTagName("button")[0]
+  }
   const msg = document.getElementById("message")
   const textarea = document.getElementById("paste_body")
   const wrapper = document.getElementById("wrapper")
@@ -27,11 +30,13 @@ ready(() => {
       }, 250)
     })
   })
-  reset_btn.addEventListener("click", (e) => {
-    e.preventDefault()
-    fadeOut(msg, 250)
-    fadeOut(reset, 250)
-    setTimeout(() => fadeIn(textarea, 250), 250)
-    equalHeight(wrapper)
-  })
+  if (reset_btn) {
+    reset_btn.addEventListener("click", (e) => {
+      e.preventDefault()
+      fadeOut(msg, 250)
+      fadeOut(reset, 250)
+      setTimeout(() => fadeIn(textarea, 250), 250)
+      equalHeight(wrapper)
+    })
+  }
 })

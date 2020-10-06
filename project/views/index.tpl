@@ -1,4 +1,5 @@
 {% extends "base.tpl" %}
+{% from "utils.tpl" import login_form %}
 {% block title %}Homepage{% endblock %}
 {% block head %}
   <link href='/static/css/dropzone.css' rel='stylesheet' type='text/css'>
@@ -50,33 +51,27 @@
   </p>
 {% endblock %}
 {% block content %}
-  <div id="message"></div>
+  <template id="dz-preview-template">
+    <div class="dz-preview dz-file-preview">
+      <div class="dz-details">
+        <img data-dz-thumbnail />
+        <div class="dz-filename"><span data-dz-name></span></div>
+        <div class="dz-size" data-dz-size></div>
+      </div>
+      <div class="dz-progress"><span class="dz-upload" data-dz-uploadprogress></span></div>
+      <div class="dz-success-mark"><span>✔</span></div>
+      <div class="dz-error-mark"><span>✘</span></div>
+      <div class="dz-error-message"></div>
+      <button class="dz-remove" data-dz-remove>Remove file</button>
+    </div>
+  </template>
   <form class="dropzone" id="my-awesome-dropzone" action="/api/upload/file" method="post"
         enctype="multipart/form-data">
     <div id="fields">
       <div id="files">
         Drop files <strong>here</strong>, or click to browse
       </div>
-      <div id="identification">
-        <p>
-          <small>
-            You do not have to change these values.
-            <br />
-            Clear the fields to upload anonymously.
-          </small>
-          <br />
-          <br />
-          <button type='button' id="clear-fields">Clear Fields</button>
-        </p>
-        <div>
-          <label for="key">Key</label>
-          <input type="text" size="20" value="{{ key }}" name="key" id="key" />
-        </div>
-        <div>
-          <label for="password">Password</label>
-          <input type="password" size="20" value="{{ password }}" name="password" id="password" />
-        </div>
-      </div>
+      {{ login_form(key=key, password=password, show_clear=True) }}
     </div>
     <br />
     <input type="submit" name="submit" value="Upload" />

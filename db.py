@@ -1,7 +1,3 @@
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import print_function
-
 import logging
 from functools import wraps
 
@@ -16,7 +12,7 @@ def catch_error(f):
         try:
             return f(self, *args, **kwargs)
         except (cymysql.err.Error, BrokenPipeError):
-            logger.exception("Database connection died, trying to reinit...")
+            logger.exception("Database connection died, trying to reinitialise...")
             self._init_connection()
             return f(self, *args, **kwargs)
 
@@ -26,10 +22,10 @@ def catch_error(f):
 class BaseDB(object):
     """ a small database abstraction to eliminate lost connections """
 
-    # the cymysql connection instance
+    # the connection instance
     conn = None
 
-    # the cymysql cursor instance
+    # the cursor instance
     cur = None
 
     # number of retries for a failed operation
@@ -51,20 +47,26 @@ class BaseDB(object):
             raise DBConnectionFailed()
 
         try:
-            self.conn = cymysql.connect(
-                host=self.host,
-                user=self.user,
-                passwd=self.password,
-                db=self.database,
-                connect_timeout=604800,
-                charset="utf8",
-                use_unicode=True,
-            )
-            self.cur = self.conn.cursor(cymysql.cursors.DictCursor)
+            self._connect()
         except (cymysql.err.Error, BrokenPipeError):
-            logger.exception("Database connection died, trying to reinit...")
+            logger.exception("Database connection died, trying to reinitialise...")
             self.retries -= 1
             self._init_connection()
+
+    def _connect(self):
+        """ connect to the database """
+        self.conn = cymysql.connect(
+            host=self.host,
+            user=self.user,
+            passwd=self.password,
+            db=self.database,
+            connect_timeout=604800,
+            charset="utf8",
+            use_unicode=True,
+        )
+        # autocommit just in case we're on InnoDB
+        self.conn.autocommit(True)
+        self.cur = self.conn.cursor(cymysql.cursors.DictCursor)
 
     @catch_error
     def escape(self, obj):
@@ -149,7 +151,6 @@ class DB(BaseDB):
 
         if singular:
             return self.fetchone(query, list(where.values()))
-
         return self.fetchall(query, list(where.values()))
 
     def update(self, table, set_pairs, where_pairs):
@@ -160,9 +161,7 @@ class DB(BaseDB):
         """
         sets = self._columns_generator(set_pairs)
         where = self._pairs_generator(where_pairs, brackets=True)
-
         query = f"UPDATE `{table}` SET {sets} WHERE {where}"
-
         return self.execute(
             query, list(set_pairs.values()) + list(where_pairs.values())
         )
@@ -176,20 +175,15 @@ class DB(BaseDB):
 
         where = self._pairs_generator(pairs, brackets=True)
         query = f"DELETE FROM `{table}` WHERE {where}"
-
         return self.execute(query, list(pairs.values()))
 
     def insert(self, table, columns_pair):
         """ build and execute an insert operation, as such:
             insert('table_name', {'column1': 'value', 'column2': 'value2'}) """
 
-        columns = ", ".join([f"`{col}`" for col in columns_pair])
-        values = ", ".join(["%s" for _ in columns_pair])
-
-        query = "INSERT INTO `{table}` ({columns}) VALUES ({values})".format(
-            table=table, columns=columns, values=values
-        )
-
+        columns = ",".join([f"`{col}`" for col in columns_pair])
+        values = ",".join(["%s"] * len(columns_pair))
+        query = f"INSERT INTO `{table}` ({columns}) VALUES ({values})"
         return self.execute(query, list(columns_pair.values()))
 
     def fetchone(self, sql, args=None):

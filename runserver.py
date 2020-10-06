@@ -1,8 +1,4 @@
 #!/usr/bin/env python
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import print_function
-
 import sys
 
 from beaker.middleware import SessionMiddleware
@@ -39,7 +35,7 @@ debug(debug_enabled)
 if __name__ == "__main__":
     try:
         port = int(sys.argv[1])
-        run(app, reloader=debug_enabled, host="0.0.0.0", port=port, server="tornado")
+        run(app, reloader=debug_enabled, host="localhost", port=port, server="tornado")
     except Exception as e:
         print(e)
         print("Port to run on not specified.")
