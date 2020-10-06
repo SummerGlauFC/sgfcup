@@ -215,7 +215,7 @@ def api_edit_paste():
     )
 
     host = get_host()
-    url = "/paste/{}".format(shorturl + "." + commit)
+    url = "/paste/{}".format(shorturl + ":" + commit)
     return functions.json_response(
         url=url,
         key="anon" if not user_id else key,
