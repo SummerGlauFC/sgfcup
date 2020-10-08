@@ -1,6 +1,6 @@
 #container {
     width: 100%;
-    margin: 1em 0 0;
+    margin: 1rem 0 0;
     text-align: center;
     color: #eee;
 }
@@ -61,13 +61,14 @@ h2, .row {
 .row.top {
     font-size: 13px;
     font-weight: 400;
-    padding: 0.5rem;
+    padding: 0;
     border-bottom: 1px solid rgba(0, 0, 0, 0.3);
 }
 
 .row.m-b {
     border-top: none;
     margin-bottom: 1rem;
+    padding: 0.5em;
 }
 
 .row.padded {
@@ -75,7 +76,7 @@ h2, .row {
 }
 
 .row.delete-options input {
-    margin: 0 0.5rem 0 0;
+    margin: 0.5rem;
 }
 
 small {

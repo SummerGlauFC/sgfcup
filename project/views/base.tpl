@@ -18,28 +18,30 @@
     <td id="maintd">
       {% block other %}{% endblock %}
       <div id="wrapper" class='cf'>
-        <header id="box-left">
-          <a href="/"><h2>SGFC File Upload</h2></a>
-          <div class='cf'>
-            {% block left %}
-              <h3>{{ self.title() }}</h3>
-            {% endblock %}
+        {% block wrapper %}
+          <header id="box-left">
+            <a href="/"><h2>SGFC File Upload</h2></a>
+            <div class='cf'>
+              {% block left %}
+                <h3>{{ self.title() }}</h3>
+              {% endblock %}
+            </div>
+            <div class="bottom">
+              {% block extra %}{% endblock %}
+            </div>
+          </header>
+          <div id="box-right">
+            <table id="overlaytb">
+              <tr>
+                <td style='vertical-align:middle'>
+                  {% block content %}{% endblock %}
+                </td>
+              </tr>
+            </table>
           </div>
-          <div class="bottom">
-            {% block extra %}{% endblock %}
           </div>
-        </header>
-        <div id="box-right">
-          <table id="overlaytb">
-            <tr>
-              <td style='vertical-align:middle'>
-                {% block content %}{% endblock %}
-              </td>
-            </tr>
-          </table>
-        </div>
-      </div>
-      <div id="previews" class="dropzone-previews"></div>
+          <div id="previews" class="dropzone-previews"></div>
+        {% endblock %}
       {% block end %}{% endblock %}
     </td>
   </tr>

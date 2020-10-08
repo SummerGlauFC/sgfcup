@@ -162,7 +162,7 @@
           </div>
           {% if not info.pjax %}
         </div>
-        <div class="row delete-options padded">
+        <div class="row delete-options">
           <input type="hidden" name="key" value="{{ info.key }}" />
           <label for="password">
             <small>password:</small>

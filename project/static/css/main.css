@@ -81,8 +81,8 @@ header {
     }
 
     #wrapper, .wrapper {
-        border-right: none;
-        border-left: none;
+        border-right-width: 0;
+        border-left-width: 0;
     }
 
     #maintb, #main {
