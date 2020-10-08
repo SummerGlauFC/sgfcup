@@ -9,6 +9,7 @@ from project import config
 from project import functions
 from project.functions import get_host
 from project.functions import get_or_create_account
+from project.functions import get_paste
 from project.functions import get_paste_revision
 from project.functions import get_setting
 
@@ -170,7 +171,7 @@ def api_edit_paste():
     is_authed, user_id = handle_auth(key, password)
 
     # Select the paste that is being edited
-    base_paste = config.db.select("pastes", where={"id": editing_id}, singular=True)
+    base_paste = get_paste(editing_id)
     if not base_paste:
         raise functions.json_error("Paste does not exist")
 
@@ -182,7 +183,7 @@ def api_edit_paste():
     # Select the commit that is being edited
     parent_revision = None
     if editing_commit:
-        base_revision = get_paste_revision(paste_id, id=editing_commit)
+        base_revision = get_paste_revision(pasteid=paste_id, id=editing_commit)
         if not base_revision:
             raise functions.json_error("Commit does not exist")
         parent_revision = base_revision["id"]
@@ -195,7 +196,7 @@ def api_edit_paste():
         )
     else:
         # if the user is editing the paste, disallow it if it matches a previous commit
-        commit_exists = get_paste_revision(paste_id, commit=commit)
+        commit_exists = get_paste_revision(pasteid=paste_id, commit=commit)
         if commit_exists:
             raise functions.json_error("Commit already exists")
 

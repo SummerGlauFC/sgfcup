@@ -15,6 +15,7 @@ from project import config
 from project import configdefines
 from project import functions
 from project.functions import get_dict
+from project.functions import get_paste
 from project.functions import get_setting
 
 
@@ -142,9 +143,7 @@ def gallery_view(user_key=None):
     for row in results:
         row_file = {}
         if row["ext"] == "paste":
-            paste = config.db.select(
-                "pastes", where={"id": row["original"]}, singular=True
-            )
+            paste = get_paste(row["original"])
             row_file["type"] = configdefines.FileType.PASTE
             row_file["url"] = row["shorturl"]
             row_file["content"] = paste["content"]

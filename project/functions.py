@@ -6,14 +6,16 @@ import string
 from builtins import range
 from functools import partial
 from math import ceil
-from pprint import pprint
 
+import magic
 import markupsafe
 import pygments
 from PIL import Image
 from bottle import HTTPResponse
 from bottle import abort
 from bottle import request
+from bottle import response
+from bottle import static_file as bottle_static_file
 from pygments.formatters import HtmlFormatter
 from pygments.lexers import PhpLexer
 from pygments.lexers import TextLexer
@@ -333,54 +335,76 @@ def abort_if_invalid_image_url(file, filename, ext):
         abort(404, "File not found.")
 
 
-def get_host():
+def get_host() -> str:
     """ Get the schema + host """
     return "{}://{}".format(
         "https" if get_setting("ssl") else "http", request.environ.get("HTTP_HOST"),
     )
 
 
-def get_paste_revision(paste_id, **kwargs):
-    return config.db.select(
-        "revisions", where={"pasteid": paste_id, **kwargs}, singular=True,
+def get_file(shorturl: str):
+    return config.db.fetchone(
+        "SELECT * FROM `files` WHERE BINARY `shorturl` = %s", [shorturl]
     )
 
 
-def get_paste_content(shorturl=None, commit=None, paste=None, revision=None):
+def add_file_hit(file_id: int):
+    config.db.execute("UPDATE `files` SET `hits`=`hits`+1 WHERE `id`=%s", [file_id])
+
+
+def get_paste(paste_id: int):
+    return config.db.select("pastes", where={"id": paste_id}, singular=True)
+
+
+def get_paste_revision(**kwargs):
+    return config.db.select("revisions", where=kwargs, singular=True)
+
+
+def get_paste_content(shorturl: str = None, commit: str = None, paste=None):
     if not paste:
-        file = config.db.fetchone(
-            "SELECT * FROM `files` WHERE BINARY `shorturl` = %s", [shorturl]
-        )
+        file = get_file(shorturl)
         if not file:
             return None
-        paste = paste or config.db.select(
-            "pastes", where={"id": file["original"]}, singular=True
-        )
+        paste = paste or get_paste(file["original"])
         if not paste:
             return None
-
-    revision = revision or config.db.select(
-        "revisions", where={"pasteid": paste["id"], "commit": commit}, singular=True
-    )
+    revision = get_paste_revision(pasteid=paste["id"], commit=commit)
     if revision:
         return revision["paste"]
-    else:
+    elif paste:
         return paste["content"]
+    return None
 
 
 def get_parent_paste(rev):
     parent_commit = None
-
     if rev["parent_revision"]:
-        rev = config.db.select(
-            "revisions", where={"id": rev["parent_revision"]}, singular=True
-        )
-        parent_commit = rev["commit"]
-        parent = config.db.select("pastes", where={"id": rev["pasteid"]}, singular=True)
+        parent_rev = get_paste_revision(id=rev["parent_revision"])
+        parent_commit = parent_rev["commit"]
+        parent = get_paste(parent_rev["pasteid"])
     else:
-        parent = config.db.select("pastes", where={"id": rev["parent"]}, singular=True)
-
-    pprint(dict(parent=parent["shorturl"], commit=parent_commit))
+        parent = get_paste(rev["parent"])
     parent_content = get_paste_content(commit=parent_commit, paste=parent)
-
     return parent, parent_commit, parent_content
+
+
+def static_file(path, root, filename=False):
+    file_path = root + path
+    mime = magic.from_file(file_path, mime=True)
+
+    def set_file_info(resp):
+        resp.set_header("Content-Type", mime)
+        if filename:
+            resp.set_header("Content-Disposition", f'inline; filename="{filename}"')
+        return resp
+
+    set_file_info(response)
+
+    # Use the sendfile built into nginx if it's available
+    if get_setting("use_nginx_sendfile"):
+        # TODO: use paths from settings
+        folder = "t" if root is get_setting("directories.thumbs") else "p"
+        response.set_header("X-Accel-Redirect", f"/get_image/{folder}/{path}")
+        return "This should be handled by nginx."
+
+    return set_file_info(bottle_static_file(path, root=root, mimetype=mime))
