@@ -1,11 +1,13 @@
 import functools
 import inspect
+import os
 import random
 import re
 import string
 from builtins import range
 from functools import partial
 from math import ceil
+from urllib.parse import urlencode
 
 import magic
 import markupsafe
@@ -27,6 +29,8 @@ from pygments.lexers import guess_lexer
 from pygments.util import ClassNotFound
 
 from project import config
+from project import config
+from project.configdefines import gallery_params
 
 
 def id_generator(size=6, chars=string.ascii_letters + string.digits):
@@ -54,15 +58,17 @@ def is_image(path):
     return im
 
 
-def hl(text, search):
-    """ Use regex to highlight all occurances of a substring in a string """
+def hl(text, search, case_sensitive=False):
+    """ Use regex to highlight all occurrences of a substring in a string """
     if not search:
         return text
 
     output = ""
     i = 0
     text = markupsafe.escape(text)
-    regex = re.compile(r"(" + re.escape(search) + ")", re.I)
+    regex = re.compile(
+        r"(" + re.escape(search) + ")", re.I if not case_sensitive else 0
+    )
     for m in regex.finditer(text):
         output += "".join(
             [
@@ -79,22 +85,16 @@ def hl(text, search):
 def get_userid(key, return_row=False):
     """ Gets a users ID from their `key` """
     userid = config.db.select("accounts", where={"key": key}, singular=True)
-
     if userid:
         return userid["id"] if not return_row else userid
-    else:
-        return False
+    return None
 
 
 def get_inrange(get, default, highest):
     """ Checks if an int is in a range """
-    if get:
-        if int(get) in range(highest):
-            return int(get)
-        else:
-            return default
-    else:
-        return default
+    if get and get.isdigit() and int(get) in range(highest):
+        return int(get)
+    return default
 
 
 def sizeof_fmt(num, short=None):
@@ -408,3 +408,74 @@ def static_file(path, root, filename=False):
         return "This should be handled by nginx."
 
     return set_file_info(bottle_static_file(path, root=root, mimetype=mime))
+
+
+def url_for_page(page):
+    """
+    Get the URL for a given gallery page.
+
+    :param page: page number to get URL for
+    :return: URL for the given gallery page
+    """
+
+    request.query["page"] = str(page)
+    query = {}
+    for key, value in request.query.items():
+        if value != gallery_params.get(key):
+            query[key] = value
+
+    encoded = urlencode(query)
+    return request.urlparts.path + (encoded and "?" + urlencode(query))
+
+
+def delete_file(file):
+    size = file["size"]
+    shorturl = file["shorturl"]
+    original = file["original"]
+
+    config.db.delete("files", {"shorturl": shorturl})
+
+    # Special treatment for pastes as they don't physically exist
+    # on the disk
+    if file["ext"] == "paste":
+        config.db.delete("pastes", {"id": original})
+        # TODO: delete revisions of the deleted paste
+        output = f"Removed paste {shorturl}"
+    else:
+        try:
+            os.remove(get_setting("directories.files") + shorturl + file["ext"])
+            output = f'Removed file "{original}" ({shorturl})'
+        except OSError:
+            output = f"Could not delete {shorturl}"
+
+    return size, output
+
+
+def delete_files(to_delete, output=None):
+    size = 0
+    count = 0
+
+    if output is None:
+        output = []
+
+    for row in to_delete:
+        file_size, file_output = delete_file(row)
+        count += 1
+        size += file_size
+        output.append(file_output)
+
+    return size, count, output
+
+
+def auth_account(key, password):
+    return config.db.select(
+        "accounts", where={"key": key, "password": password}, singular=True,
+    )
+
+
+def key_password_return(session):
+    # Check if the user has got their key and password stored, else
+    # generate a mostly secure key for them.
+    if session.get("id"):
+        return {"key": session.get("key"), "password": session.get("password")}
+    return {"key": functions.id_generator(15), "password": functions.id_generator(15)}

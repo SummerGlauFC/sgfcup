@@ -19,6 +19,14 @@ search_modes = [["Filename", "original"], ["Short URL", "shorturl"]]
 # File type definitions used by the gallery
 file_types = ["image", "file", "paste"]
 
+# Default query params for the gallery
+gallery_params = {
+    "sort": "0",
+    "in": "0",
+    "page": "1",
+    "case": "0",
+}
+
 
 class FileType(Enum):
     IMAGE = 0

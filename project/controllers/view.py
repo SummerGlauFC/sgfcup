@@ -19,20 +19,18 @@ from project.functions import get_file
 from project.functions import get_parent_paste
 from project.functions import get_paste
 from project.functions import get_setting
+from project.functions import key_password_return
 from project.functions import remove_transparency
 from project.functions import static_file
 
 
 @app.route("/paste/<url>")
 @app.route("/paste/<url>/<flag>")
-def paste_view(url, flag=None):
+@app.route("/paste/<url>\:<commit>")
+@app.route("/paste/<url>\:<commit>/<flag>")
+def paste_view(url, commit=None, flag=None):
+    # TODO: simplify paste view controller
     SESSION = request.environ.get("beaker.session", {})
-
-    # Extract the commit from the URL, if it exists.
-    if ":" in url:
-        url, commit = url.split(":", 1)
-    else:
-        commit = False
 
     # Select the paste from `files`
     file = get_file(url)
@@ -142,14 +140,6 @@ def paste_view(url, flag=None):
     # Get the styles for syntax highlighting
     css = functions.css()
 
-    # Generate a key and password for the edit form
-    if SESSION.get("id"):
-        key = SESSION.get("key")
-        password = SESSION.get("password")
-    else:
-        key = functions.id_generator(15)
-        password = functions.id_generator(15)
-
     # paginate the commits for a post
     pagination = functions.Pagination(
         commits.index(commit or "base") + 1, 1, len(commits), data=revisions
@@ -171,11 +161,11 @@ def paste_view(url, flag=None):
         ),
         title=title,
         css=css,
-        key=key,
-        password=password,
         revision=revision,
         pagination=pagination,
         flag=flag,
+        # Generate a key and password for the edit form
+        **key_password_return(SESSION),
     )
 
 

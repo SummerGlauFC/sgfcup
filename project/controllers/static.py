@@ -4,23 +4,13 @@ from bottle import static_file
 
 from project import app
 from project import config
-from project import functions
+from project.functions import key_password_return
+from project.functions import list_languages
 
 
 # File to serve (mostly) static files, like the upload pages, the
 # user info page, the favicon and all stylesheets
 # (provided their HTTP server doesn't serve the stylesheets/favicon)
-
-
-def key_password_return(SESSION):
-    SESSION = request.environ.get("beaker.session", {})
-
-    # Check if the user has got their key and password stored, else
-    # generate a mostly secure key for them.
-    if SESSION.get("id"):
-        return {"key": SESSION.get("key"), "password": SESSION.get("password")}
-
-    return {"key": functions.id_generator(15), "password": functions.id_generator(15)}
 
 
 @app.route("/")
@@ -33,7 +23,7 @@ def index():
 @view("pastebin.tpl")
 def paste_home():
     return dict(
-        langs=functions.list_languages(),
+        langs=list_languages(),
         **key_password_return(request.environ.get("beaker.session")),
     )
 
@@ -58,7 +48,7 @@ def keys():
         message += f"<br />Gallery view password: {gallery_password}"
 
     # Provide the user with their details.
-    return {"title": "Keys", "message": message}
+    return {"title": "Keys", "content": message}
 
 
 @app.route("/favicon.ico")

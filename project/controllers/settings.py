@@ -6,6 +6,7 @@ from bottle import request
 from project import app
 from project import config
 from project import functions
+from project.functions import auth_account
 
 SETTING_LINK = '<p><a href="/settings">Return to settings...</a></p>'
 error = functools.partial(template, "error.tpl", extra=SETTING_LINK)
@@ -32,13 +33,9 @@ def settings_process():
     change_password = request.forms.get("password")
 
     if not confirm_key or not confirm_password:
-        return template("error.tpl", error="No key or password entered.")
+        return error(error="No key or password entered.")
 
-    account = config.db.select(
-        "accounts",
-        where={"key": confirm_key, "password": confirm_password},
-        singular=True,
-    )
+    account = auth_account(confirm_key, confirm_password)
     if not account:
         return error(error="Key or password is incorrect.")
 

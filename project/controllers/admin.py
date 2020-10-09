@@ -1,5 +1,3 @@
-import os
-
 from bottle import jinja2_template as template
 from bottle import redirect
 from bottle import request
@@ -7,6 +5,7 @@ from bottle import request
 from project import app
 from project import config
 from project import functions
+from project.functions import delete_files
 from project.functions import get_setting
 
 db = config.db
@@ -30,9 +29,12 @@ def route():
 @app.post("/admin/deletehits", apply=[auth_session])
 def delete_hits():
     # Short references to commonly used data
-    key = (request.forms.get("key"),)
-    hit_threshold = (request.forms.get("hit_threshold"),)
-    all_keys = request.forms.get("all_keys", 0)
+    key = request.forms.get("key", None)
+    hit_threshold = request.forms.get("hit_threshold", -1)
+    all_keys = request.forms.get("all_keys", None)
+
+    user_id = None
+    delete_queue = ()
 
     # If admin has selected to delete from all keys
     if all_keys:
@@ -43,50 +45,14 @@ def delete_hits():
     else:
         # Select files from a user, where hits <= threshold
         user_id = functions.get_userid(key)
-        delete_queue = db.fetchall(
-            "SELECT * FROM `files` WHERE `userid` = %s AND `hits` <= %s",
-            [user_id, hit_threshold],
-        )
-
-    size = 0  # total size tally
-    items_deleted = 0  # items deleted tally
-
-    if delete_queue:
-        for item in delete_queue:
-            # Check if item is a physical file
-            if not item["ext"] == "paste":
-                try:
-                    size += os.stat(
-                        get_setting("directories.files")
-                        + item["shorturl"]
-                        + item["ext"]
-                    ).st_size
-
-                    os.remove(
-                        get_setting("directories.files")
-                        + item["shorturl"]
-                        + item["ext"]
-                    )
-
-                    items_deleted += 1
-                except:
-                    # 'gracefully' handle any exceptions
-                    print("file does not exist:", item["shorturl"])
-            else:
-                db.delete("pastes", {"id": item["original"]})
-
-        # Actually remove rows now.
-        if all_keys:
-            db.execute("DELETE FROM `files` WHERE `hits` <= %s", [hit_threshold])
-        else:
-            db.execute(
-                "DELETE FROM `files` WHERE `userid` = %s AND `hits` <= %s",
+        if user_id:
+            delete_queue = db.fetchall(
+                "SELECT * FROM `files` WHERE `userid` = %s AND `hits` <= %s",
                 [user_id, hit_threshold],
             )
 
-        return f"{items_deleted} items deleted. {functions.sizeof_fmt(size)} of disk space saved."
-    else:
-        return "nothing to delete."
+    size, count, _ = delete_files(delete_queue)
+    return f"{count} items deleted. {functions.sizeof_fmt(size)} of disk space saved."
 
 
 @app.get("/admin/login")
@@ -98,16 +64,10 @@ def login():
 @app.post("/admin/login")
 def do_login():
     SESSION = request.environ.get("beaker.session", {})
-
-    user = request.forms.get("key")
-    password = request.forms.get("password")
-
-    admin_dict = get_setting("admin")
-
-    if admin_dict.get(user, None) == password:
+    admin = get_setting("admin").get(request.forms.get("key"), None)
+    if admin and admin == request.forms.get("password"):
         # Allow for a persistent login
         SESSION["admin"] = True
         redirect("/admin")
-
     # If user provided incorrect details, just redirect back to login page
     redirect("/admin/login")
