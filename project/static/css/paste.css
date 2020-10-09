@@ -37,7 +37,7 @@
 
 .code-text, .code-view {
     font-family: "InconsolataMedium", Consolas, Monaco, "Liberation Mono", Courier, monospace;
-    font-size: 9pt;
+    font-size: 12px;
     overflow: auto;
     width: 100%;
     border: 1px solid #ccc;
@@ -46,8 +46,8 @@
 }
 
 .code-view {
-    font-size: 15px;
-    line-height: 20px;
+    font-size: 13px;
+    line-height: 125%;
 }
 
 pre, textarea {
@@ -57,7 +57,7 @@ pre, textarea {
 }
 
 .paste-info {
-    font-size: 9pt;
+    font-size: 12px;
     display: inline-block;
     margin-bottom: 10px;
     color: #000;

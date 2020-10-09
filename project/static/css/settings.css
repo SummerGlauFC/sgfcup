@@ -4,6 +4,7 @@
     --input-height: 2rem;
 }
 
+/* Reset wrapper border hiding width set by main.css */
 @media only screen and (max-width: 750px) {
     #wrapper {
         border-right-width: 1px;
@@ -30,6 +31,7 @@
 #wrapper {
     margin: 0 auto 2em;
     padding: 0;
+    font-size: 13px;
 }
 
 h2 {
