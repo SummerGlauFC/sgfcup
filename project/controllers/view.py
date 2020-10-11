@@ -202,4 +202,4 @@ def thumbnail(url, filename=None, ext=None):
         return thumb
 
     # no thumb was generated, just return the actual image instead
-    return image_view(url, filename, ext, results=file, update_hits=False)
+    return image_view(url, filename, ext, file=file, update_hits=False)
