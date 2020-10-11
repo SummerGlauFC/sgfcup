@@ -1,10 +1,10 @@
 # sgfcup
 
-New codebase for the SGFC file uploader.
+Codebase for the [SGFC file uploader](https://sgfc.co). 
 
 ## Dependencies
 
-Requires Python >= 3.6
+Requires Python >= 3.7
 
 Dependencies can be installed using [Poetry](https://python-poetry.org):
 
@@ -37,6 +37,7 @@ have a location block for `/get_image/`, like so:
         
         # this may need to be customised based on your
         # chosen directory structure.
+        # /path/to/base/image/directory/ should contain the "p" and "t" folders.
     }
 
 Then in `project/config.py`:

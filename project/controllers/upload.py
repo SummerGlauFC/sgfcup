@@ -8,17 +8,21 @@ from project import app
 from project import config
 from project import functions
 from project.functions import get_host
-from project.functions import get_or_create_account
 from project.functions import get_paste
 from project.functions import get_paste_revision
+from project.functions import get_session
 from project.functions import get_setting
+from project.services.account import AccountService
+from project.services.file import FileInterface
+from project.services.file import FileService
 
 id_generator = functions.id_generator
 
 
 def handle_auth(key, password):
-    SESSION = request.environ.get("beaker.session", {})
-    is_authed, user_id = get_or_create_account(key, password)
+    SESSION = get_session()
+    user, is_authed = AccountService.get_or_create_account(key, password)
+    user_id = user["id"]
     if not user_id == 0:
         # Store the users credentials in the session.
         SESSION["key"] = key
@@ -26,7 +30,7 @@ def handle_auth(key, password):
         SESSION["id"] = user_id
     if not is_authed:
         raise functions.json_error("Incorrect Key or password", status=401)
-    return is_authed, user_id
+    return user_id
 
 
 def submit_file(user_id):
@@ -43,17 +47,16 @@ def submit_file(user_id):
     if not ext:
         ext = ""
 
-    files.save(directory + shorturl + ext)
-
-    config.db.insert(
-        "files",
-        {
-            "userid": user_id,
-            "shorturl": shorturl,
-            "ext": ext,
-            "original": filename,
-            "size": os.path.getsize(directory + shorturl + ext),
-        },
+    path = os.path.join(directory, shorturl + ext)
+    files.save(path)
+    FileService.create(
+        FileInterface(
+            userid=user_id,
+            shorturl=shorturl,
+            ext=ext,
+            original=filename,
+            size=os.path.getsize(path),
+        )
     )
 
     # Use extensions if user has specified it in their settings.
@@ -93,19 +96,17 @@ def submit_paste(user_id, paste_data=None):
             "content": body,
         },
     )
-
     paste_row = paste_entry.lastrowid
 
     # ... then add to files table
-    config.db.insert(
-        "files",
-        {
-            "userid": user_id,
-            "shorturl": shorturl,
-            "ext": ext,
-            "original": paste_row,
-            "size": len(body),
-        },
+    FileService.create(
+        FileInterface(
+            userid=user_id,
+            shorturl=shorturl,
+            ext=ext,
+            original=paste_row,
+            size=len(body),
+        )
     )
 
     return shorturl, ext, paste_row
@@ -132,7 +133,7 @@ def api_upload_file(upload_type="file"):
     # Short references
     key = request.forms.get("key", False)
     password = request.forms.get("password", False)
-    is_authed, user_id = handle_auth(key, password)
+    user_id = handle_auth(key, password)
 
     # defaults for an impossible case
     shorturl = ext = ""
@@ -168,7 +169,7 @@ def api_edit_paste():
             "Your commit message exceeds the maximum character length of 1024"
         )
 
-    is_authed, user_id = handle_auth(key, password)
+    user_id = handle_auth(key, password)
 
     # Select the paste that is being edited
     base_paste = get_paste(editing_id)

@@ -6,7 +6,9 @@ from bottle import request
 from project import app
 from project import config
 from project import functions
-from project.functions import auth_account
+from project.functions import get_session
+from project.services.account import AccountInterface
+from project.services.account import AccountService
 
 SETTING_LINK = '<p><a href="/settings">Return to settings...</a></p>'
 error = functools.partial(template, "error.tpl", extra=SETTING_LINK)
@@ -14,11 +16,11 @@ error = functools.partial(template, "error.tpl", extra=SETTING_LINK)
 
 @app.route("/settings", method="GET")
 def settings():
-    SESSION = request.environ.get("beaker.session", {})
+    SESSION = get_session()
 
     return template(
         "settings.tpl",
-        settings=config.user_settings.get_all_values(SESSION.get("id", 0)),
+        settings=AccountService.get_settings(SESSION.get("id", 0)),
         key=SESSION.get("key"),
         password=SESSION.get("password"),
     )
@@ -26,7 +28,7 @@ def settings():
 
 @app.route("/settings", method="POST")
 def settings_process():
-    SESSION = request.environ.get("beaker.session", {})
+    SESSION = get_session()
 
     confirm_key = request.forms.get("confirm_key")
     confirm_password = request.forms.get("confirm_pass")
@@ -35,12 +37,12 @@ def settings_process():
     if not confirm_key or not confirm_password:
         return error(error="No key or password entered.")
 
-    account = auth_account(confirm_key, confirm_password)
-    if not account:
+    user, is_authed = AccountService.authenticate(confirm_key, confirm_password)
+    if not user:
         return error(error="Key or password is incorrect.")
 
-    key_password = account["password"]
-    key_id = account["id"]
+    key_password = user["password"]
+    key_id = user["id"]
 
     SESSION["id"] = key_id
     SESSION["key"] = confirm_key
@@ -51,9 +53,7 @@ def settings_process():
             return error(
                 error="Password change ignored due to being the same as previous password."
             )
-        config.db.update(
-            "accounts", {"password": change_password}, {"key": confirm_key},
-        )
+        AccountService.update(user["id"], AccountInterface(password=change_password))
         SESSION["password"] = change_password
 
     # Convert form strings to integers as HTTP likes to not

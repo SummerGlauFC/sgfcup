@@ -32,7 +32,7 @@ Settings = {
     },
 }
 
-# Initalize database connection
+# Initialize database connection
 db = DB(
     user=Settings["database"]["user"],
     password=Settings["database"]["password"],

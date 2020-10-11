@@ -1,5 +1,4 @@
 import functools
-import inspect
 import os
 import random
 import re
@@ -7,6 +6,7 @@ import string
 from builtins import range
 from functools import partial
 from math import ceil
+from typing import Optional
 from urllib.parse import urlencode
 
 import magic
@@ -14,7 +14,6 @@ import markupsafe
 import pygments
 from PIL import Image
 from bottle import HTTPResponse
-from bottle import abort
 from bottle import request
 from bottle import response
 from bottle import static_file as bottle_static_file
@@ -23,14 +22,15 @@ from pygments.lexers import PhpLexer
 from pygments.lexers import TextLexer
 from pygments.lexers import get_all_lexers
 from pygments.lexers import get_lexer_by_name
-from pygments.lexers import get_lexer_for_filename
-from pygments.lexers import get_lexer_for_mimetype
 from pygments.lexers import guess_lexer
 from pygments.util import ClassNotFound
 
 from project import config
-from project import config
 from project.configdefines import gallery_params
+
+
+def get_session():
+    return request.environ.get("beaker.session", {})
 
 
 def id_generator(size=6, chars=string.ascii_letters + string.digits):
@@ -41,12 +41,9 @@ def id_generator(size=6, chars=string.ascii_letters + string.digits):
 def strs_to_ints(dicts):
     """ Converts all strings which are ints in a dict to actual ints
         (for bottle GET/POST variables) """
-    new = {}
-
-    for key, value in dicts.iteritems():
-        new[key] = int(value) if value.isdigit() else value
-
-    return new
+    return {
+        key: int(value) if value.isdigit() else value for key, value in dicts.items()
+    }
 
 
 def is_image(path):
@@ -54,11 +51,11 @@ def is_image(path):
     try:
         im = Image.open(path)
     except IOError:
-        return False
+        return None
     return im
 
 
-def hl(text, search, case_sensitive=False):
+def highlight_text(text, search, case_sensitive=False):
     """ Use regex to highlight all occurrences of a substring in a string """
     if not search:
         return text
@@ -80,14 +77,6 @@ def hl(text, search, case_sensitive=False):
         )
         i = m.end()
     return "".join([output, text[i:]])
-
-
-def get_userid(key, return_row=False):
-    """ Gets a users ID from their `key` """
-    userid = config.db.select("accounts", where={"key": key}, singular=True)
-    if userid:
-        return userid["id"] if not return_row else userid
-    return None
 
 
 def get_inrange(get, default, highest):
@@ -163,51 +152,6 @@ class Pagination(object):
                 last = num
 
 
-def get_language_for(filename, mimetype=None, default="text"):
-    """Get language for filename and mimetype"""
-    try:
-        if mimetype is None:
-            raise ClassNotFound()
-        lexer = get_lexer_for_mimetype(mimetype)
-    except ClassNotFound:
-        try:
-            lexer = get_lexer_for_filename(filename)
-        except ClassNotFound:
-            return default
-    return get_known_alias(lexer, default)
-
-
-def get_language_for_code(code, mimetype=None, default="text"):
-    """Get language for filename and mimetype"""
-    try:
-        lexer = guess_lexer(code)
-    except ClassNotFound:
-        return default
-    return get_known_alias(lexer, default)
-
-
-def lookup_language_alias(alias, default="text"):
-    """When passed a pygments alias returns the alias from LANGUAGES. If
-the alias does not exist at all or is not in languages, `default` is
-returned.
-"""
-    if alias in get_all_lexers():
-        return alias
-    try:
-        lexer = get_lexer_by_name(alias)
-    except ClassNotFound:
-        return default
-    return get_known_alias(lexer)
-
-
-def get_known_alias(lexer, default="text"):
-    """Return the known alias for the lexer."""
-    for alias in lexer.aliases:
-        if alias in get_all_lexers():
-            return alias
-    return default
-
-
 def list_languages():
     """List all languages."""
     languages = list(get_all_lexers())
@@ -215,7 +159,7 @@ def list_languages():
     return languages
 
 
-def highlight(code, language, _preview=False, _linenos=True):
+def highlight_code(code, language, _preview=False, _linenos=True):
     """ Syntax highlights a code file """
     if language == "php":
         lexer = PhpLexer(startinline=True)
@@ -230,7 +174,7 @@ def highlight(code, language, _preview=False, _linenos=True):
     return f'<div class="syntax">{pygments.highlight(code, lexer, formatter)}</div>'
 
 
-def css(style="xcode", css_class=".syntax"):
+def highlight_code_css(style="xcode", css_class=".syntax"):
     """ Gets the CSS for pygments """
     return HtmlFormatter(style=style).get_style_defs(css_class)
 
@@ -255,50 +199,6 @@ def get_dict(dictionary, dotted_key):
 get_setting = partial(get_dict, config.Settings)
 
 
-def debug_print(*args, trace=True):
-    print(args)
-    if trace:
-        (
-            frame,
-            filename,
-            line_number,
-            function_name,
-            lines,
-            index,
-        ) = inspect.getouterframes(inspect.currentframe())[2]
-
-        lines = "\n".join([x.strip() for x in lines])
-        print(f"\t{filename}:{line_number} in {function_name}\n\t-->\t{lines}")
-    print("-" * 40)
-
-
-def get_or_create_account(key, password):
-    if not key:
-        # if no key is provided, anonymous upload
-        return True, 0
-
-    # Keys must only contain alphanumerics and underscores/hyphens
-    if not re.match("^[a-zA-Z0-9_-]+$", key):
-        raise json_error(
-            "Invalid key given. (can only contain letters, numbers, underscores and hyphens)"
-        )
-
-    # Check if the specified account already exists.
-    user = config.db.select("accounts", where={"key": key}, singular=True)
-
-    # If it does, check their password is correct.
-    if user:
-        is_authed = user["password"] == password
-        user_id = user["id"]
-    else:
-        # If the account doesn't exist, make a new account.
-        new_account = config.db.insert("accounts", {"key": key, "password": password})
-        user_id = new_account.lastrowid
-        is_authed = True
-
-    return is_authed, user_id
-
-
 def remove_transparency(im, bg_colour=(255, 255, 255)):
     # courtesy of Humphrey@stackoverflow
     # https://stackoverflow.com/a/35859141
@@ -307,44 +207,18 @@ def remove_transparency(im, bg_colour=(255, 255, 255)):
     # (http://stackoverflow.com/a/1963146)
     if im.mode in ("RGBA", "LA") or (im.mode == "P" and "transparency" in im.info):
         # Need to convert to RGBA if LA format due to a bug in PIL
-        # (http://stackoverflow.com/a/1963146)
         alpha = im.convert("RGBA").split()[-1]
         background = Image.new("RGB", im.size, bg_colour)
-        background.paste(im, mask=alpha)  # 3 is the alpha channel
+        background.paste(im, mask=alpha)
         return background
     else:
         return im
-
-
-def abort_if_invalid_image_url(file, filename, ext):
-    use_extensions = config.user_settings.get(file["userid"], "ext")
-    should_abort = False
-    if filename:
-        # Check for extensionless files first (e.g. Dockerfile)
-        if not ext and filename != file["original"]:
-            should_abort = True
-        if ext and "{}.{}".format(filename, ext) != file["original"]:
-            should_abort = True
-    else:
-        # don't resolve if longer filename setting set, and the filename is not included.
-        if use_extensions == 2:
-            should_abort = True
-        if ext and ".{}".format(ext) != file["ext"]:
-            should_abort = True
-    if should_abort:
-        abort(404, "File not found.")
 
 
 def get_host() -> str:
     """ Get the schema + host """
     return "{}://{}".format(
         "https" if get_setting("ssl") else "http", request.environ.get("HTTP_HOST"),
-    )
-
-
-def get_file(shorturl: str):
-    return config.db.fetchone(
-        "SELECT * FROM `files` WHERE BINARY `shorturl` = %s", [shorturl]
     )
 
 
@@ -362,7 +236,10 @@ def get_paste_revision(**kwargs):
 
 def get_paste_content(shorturl: str = None, commit: str = None, paste=None):
     if not paste:
-        file = get_file(shorturl)
+        # imported here due to circular
+        from project.services.file import FileService
+
+        file = FileService.get_by_url(shorturl)
         if not file:
             return None
         paste = paste or get_paste(file["original"])
@@ -388,8 +265,8 @@ def get_parent_paste(rev):
     return parent, parent_commit, parent_content
 
 
-def static_file(path, root, filename=False):
-    file_path = root + path
+def static_file(path: str, root: str, filename: Optional[str] = None) -> HTTPResponse:
+    file_path = os.path.join(root, path)
     mime = magic.from_file(file_path, mime=True)
 
     def set_file_info(resp):
@@ -405,7 +282,7 @@ def static_file(path, root, filename=False):
         # TODO: use paths from settings
         folder = "t" if root is get_setting("directories.thumbs") else "p"
         response.set_header("X-Accel-Redirect", f"/get_image/{folder}/{path}")
-        return "This should be handled by nginx."
+        return response
 
     return set_file_info(bottle_static_file(path, root=root, mimetype=mime))
 
@@ -467,15 +344,9 @@ def delete_files(to_delete, output=None):
     return size, count, output
 
 
-def auth_account(key, password):
-    return config.db.select(
-        "accounts", where={"key": key, "password": password}, singular=True,
-    )
-
-
 def key_password_return(session):
     # Check if the user has got their key and password stored, else
     # generate a mostly secure key for them.
     if session.get("id"):
         return {"key": session.get("key"), "password": session.get("password")}
-    return {"key": functions.id_generator(15), "password": functions.id_generator(15)}
+    return {"key": id_generator(15), "password": id_generator(15)}

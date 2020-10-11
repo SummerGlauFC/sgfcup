@@ -1,12 +1,9 @@
 import functools
-import hashlib
 import os
-from functools import partial
 
 from bottle import jinja2_template as template
 from bottle import redirect
 from bottle import request
-from bottle import response
 
 from project import FileType
 from project import app
@@ -14,11 +11,14 @@ from project import config
 from project import configdefines
 from project import functions
 from project.configdefines import gallery_params
-from project.functions import auth_account
 from project.functions import delete_files
 from project.functions import get_dict
 from project.functions import get_paste
+from project.functions import get_session
 from project.functions import get_setting
+from project.functions import key_password_return
+from project.services.account import ACCOUNT_KEY_REGEX
+from project.services.account import AccountService
 
 
 @app.route("/redirect/gallery/<user_key>")
@@ -31,7 +31,7 @@ def gallery_redirect(user_key=None):
 @app.route("/gallery/", method="GET")
 @app.route("/gallery/<user_key>", method="GET")
 def gallery_view(user_key=None):
-    SESSION = request.environ.get("beaker.session", {})
+    SESSION = get_session()
 
     key = SESSION.get("key", None)
     # If a user does not provide a gallery to view, redirect to their own
@@ -39,22 +39,15 @@ def gallery_view(user_key=None):
         redirect(f"/gallery/{key}")
         return ""
 
-    user_id = functions.get_userid(user_key)
-    if not user_id:
+    user = AccountService.get_by_key(user_key)
+    if not user:
         return template("error.tpl", error="Specified key does not exist.")
 
     # Check the users settings to see if they have specified
     # gallery access restrictions
-    settings = config.user_settings.get_all_values(user_id)
-    get_user_setting = partial(get_dict, settings)
-
-    if get_user_setting("block.value") and get_user_setting("gallery_password.value"):
-        auth_cookie = request.get_cookie(f"auth+{user_id}")
-        hex_pass = hashlib.sha1(
-            get_user_setting("gallery_password.value").encode("utf-8")
-        ).hexdigest()
-        if not auth_cookie or not hex_pass == auth_cookie:
-            redirect(f"/gallery/auth/{user_key}")
+    settings = AccountService.get_settings(user["id"])
+    if not AccountService.validate_auth_cookie(user["id"], settings=settings):
+        redirect(f"/gallery/auth/{user_key}")
 
     files = []
 
@@ -89,7 +82,7 @@ def gallery_view(user_key=None):
     params = []
     if query:
         params = ["%" + query + "%"]
-    params.append(user_id)
+    params.append(user["id"])
 
     total_entries = config.db.fetchone(
         get_search_query("COUNT(`id`) AS `total`"), params
@@ -160,34 +153,32 @@ def gallery_view(user_key=None):
         search={"query": query, "in": query_in, "case": case},
         files=files,
         xhr=request.headers.get("X-AJAX", "false") == "true",
-        show_ext=get_user_setting("ext.value"),
-        hl=functools.partial(functions.hl, search=query, case_sensitive=case),
+        show_ext=get_dict(settings, "ext.value"),
+        hl=functools.partial(
+            functions.highlight_text, search=query, case_sensitive=case
+        ),
     )
 
 
-@app.get("/gallery/auth/<:re:[a-zA-Z0-9_-]+>")
+@app.get(f"/gallery/auth/<:re:{ACCOUNT_KEY_REGEX}>")
 def gallery_auth_view():
     return template("gallery_auth.tpl")
 
 
-@app.post("/gallery/auth/<user_key:re:[a-zA-Z0-9_-]+>")
+@app.post(f"/gallery/auth/<user_key:re:{ACCOUNT_KEY_REGEX}>")
 def gallery_auth_do(user_key):
     # Set a long cookie to grant a user access to a gallery
     remember = request.forms.get("remember")
     authcode = request.forms.get("authcode")
-    name = f"auth+{functions.get_userid(user_key)}"
-    value = hashlib.sha1(authcode.encode("utf-8")).hexdigest()
-    if remember:
-        response.set_cookie(name, value, max_age=3600 * 24 * 7 * 30 * 12, path="/")
-    else:
-        response.set_cookie(name, value, path="/")
+    user = AccountService.get_by_key(user_key)
+    AccountService.set_auth_cookie(user["id"], authcode, remember)
     redirect(f"/gallery/{user_key}")
 
 
 @app.route("/gallery/delete/advanced", method="GET")
 def gallery_delete_advanced_view():
-    SESSION = request.environ.get("beaker.session", {})
-    return template("delete_advanced.tpl", key=SESSION.get("key", ""))
+    SESSION = get_session()
+    return template("delete_advanced.tpl", **key_password_return(SESSION))
 
 
 @app.route("/gallery/delete/advanced", method="POST")
@@ -208,7 +199,7 @@ def gallery_delete_advanced():
     ):
         return template("delete.tpl", messages=["Invalid request. Please try again."])
 
-    user = auth_account(key, password)
+    user, is_authed = AccountService.authenticate(key, password)
     if not user:
         return template("delete.tpl", messages=["Key or password is incorrect."])
 
@@ -233,13 +224,13 @@ def gallery_delete():
         return template("error.tpl", error="Invalid deletion type provided.")
 
     # Check if user details are correct
-    userid = functions.get_userid(key, return_row=True)
-    if userid["password"] != password:
+    user = AccountService.get_by_key(key)
+    if user["password"] != password:
         return template("error.tpl", error="Password is incorrect.")
     elif del_type == "Delete Selected" and not files_to_delete:
         return template("error.tpl", error="No files were provided.")
 
-    files = config.db.select("files", where={"userid": userid["id"]})
+    files = config.db.select("files", where={"userid": user["id"]})
     source = (
         filter(lambda row: row["shorturl"] in files_to_delete, files)
         if del_type == "Delete Selected"

@@ -6,14 +6,16 @@ from project import app
 from project import config
 from project import functions
 from project.functions import delete_files
+from project.functions import get_session
 from project.functions import get_setting
+from project.services.account import AccountService
 
 db = config.db
 
 
 def auth_session(fn):
     def check_session(**kwargs):
-        SESSION = request.environ.get("beaker.session", {})
+        SESSION = get_session()
         if SESSION.get("admin"):
             return fn(**kwargs)
         redirect("/admin/login")
@@ -33,7 +35,6 @@ def delete_hits():
     hit_threshold = request.forms.get("hit_threshold", -1)
     all_keys = request.forms.get("all_keys", None)
 
-    user_id = None
     delete_queue = ()
 
     # If admin has selected to delete from all keys
@@ -44,11 +45,11 @@ def delete_hits():
         )
     else:
         # Select files from a user, where hits <= threshold
-        user_id = functions.get_userid(key)
-        if user_id:
+        user = AccountService.get_by_key(key)
+        if user:
             delete_queue = db.fetchall(
                 "SELECT * FROM `files` WHERE `userid` = %s AND `hits` <= %s",
-                [user_id, hit_threshold],
+                [user["id"], hit_threshold],
             )
 
     size, count, _ = delete_files(delete_queue)
@@ -63,7 +64,7 @@ def login():
 
 @app.post("/admin/login")
 def do_login():
-    SESSION = request.environ.get("beaker.session", {})
+    SESSION = get_session()
     admin = get_setting("admin").get(request.forms.get("key"), None)
     if admin and admin == request.forms.get("password"):
         # Allow for a persistent login

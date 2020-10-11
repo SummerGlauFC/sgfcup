@@ -24,13 +24,14 @@ class PickleSettings:
     def _update(self, user_id, new_json, current_config=None):
         """ handles the insertion of user info into the database """
 
+        # TODO: move from pickle to just json string
+
         if not current_config:
             current_config = self._get_config_blob(user_id)
 
         if current_config:
             if current_config["json"] != "0":
                 merged_json = merge(pickle.loads(current_config["json"]), new_json)
-
                 self.db.update(
                     "settings",
                     {"json": pickle.dumps(merged_json, -1)},
@@ -58,7 +59,6 @@ class PickleSettings:
         """ returns a users config, including defaults. """
 
         current_config = self._get_config_blob(user_id)
-
         if current_config:
             # print current_config, dir(current_config)
             conf = pickle.loads(current_config["json"])
@@ -71,7 +71,6 @@ class PickleSettings:
 
             merged_json = merge(self.json_file, new)
             return merged_json
-
         return self.json_file
 
     def get(self, user_id, key):
@@ -90,7 +89,6 @@ class PickleSettings:
                 like: {'ext': 0, 'gallery_password': 'test'} """
 
         current_config = self._get_config_blob(user_id)
-
         self._update(user_id, self.change_values(items), current_config)
 
     def get_all_values(self, user_id):
@@ -101,5 +99,4 @@ class PickleSettings:
         for key in conf:
             if "value" not in conf[key] and "default" in conf[key]:
                 conf[key]["value"] = conf[key]["default"]
-
         return conf

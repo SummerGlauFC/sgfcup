@@ -1,27 +1,18 @@
-import os
-
 import ghdiff
-from PIL import Image
-from PIL import ImageOps
 from bottle import abort
 from bottle import jinja2_template as template
 from bottle import redirect
-from bottle import request
 from bottle import response
 
 from project import app
 from project import config
 from project import functions
 from project.configdefines import PasteAction
-from project.functions import abort_if_invalid_image_url
-from project.functions import add_file_hit
-from project.functions import get_file
 from project.functions import get_parent_paste
 from project.functions import get_paste
-from project.functions import get_setting
+from project.functions import get_session
 from project.functions import key_password_return
-from project.functions import remove_transparency
-from project.functions import static_file
+from project.services.file import FileService
 
 
 @app.route("/paste/<url>")
@@ -30,10 +21,10 @@ from project.functions import static_file
 @app.route("/paste/<url>\:<commit>/<flag>")
 def paste_view(url, commit=None, flag=None):
     # TODO: simplify paste view controller
-    SESSION = request.environ.get("beaker.session", {})
+    SESSION = get_session()
 
     # Select the paste from `files`
-    file = get_file(url)
+    file = FileService.get_by_url(url)
     if not file:
         abort(404, "File not found.")
 
@@ -98,7 +89,7 @@ def paste_view(url, commit=None, flag=None):
 
     # Add a hit to the paste file
     # Safe to count paste as viewed here since no errors occur after this point
-    add_file_hit(file["id"])
+    FileService.increment_hits(file["id"])
 
     # save the original paste text before we transform it
     raw_paste = revision["paste"] if revision and commit else paste["content"]
@@ -132,13 +123,13 @@ def paste_view(url, commit=None, flag=None):
 
     # highlight the paste if not diffed
     if not content:
-        content = functions.highlight(paste["content"], lang)
+        content = functions.highlight_code(paste["content"], lang)
 
     # Decide whether the viewer owns this file (for forking or editing)
     is_owner = paste["userid"] == SESSION.get("id", 0)
 
     # Get the styles for syntax highlighting
-    css = functions.css()
+    css = functions.highlight_code_css()
 
     # paginate the commits for a post
     pagination = functions.Pagination(
@@ -177,7 +168,7 @@ def image_view(url, filename=None, ext=None, file=None, update_hits=True):
     # Use passed results if provided (e.g. by thumbnailer)
     if not file:
         # Check if the requested file exists
-        file = get_file(url)
+        file = FileService.get_by_url(url)
         if not file:
             abort(404, "File not found.")
 
@@ -185,53 +176,30 @@ def image_view(url, filename=None, ext=None, file=None, update_hits=True):
     if file["ext"] == "paste":
         redirect(f"/paste/{url}")
 
-    abort_if_invalid_image_url(file, filename, ext)
+    FileService.abort_if_invalid_url(file, filename, ext)
 
     # Add a hit to the file
     if update_hits:
-        add_file_hit(file["id"])
+        FileService.increment_hits(file["id"])
 
-    return static_file(
-        file["shorturl"] + file["ext"],
-        root=get_setting("directories.files"),
-        filename=file["original"],
-    )
+    return FileService.serve_file(file)
 
 
 @app.route("/api/thumb/<url>")
 @app.route("/api/thumb/<url>.<ext>")
 @app.route("/api/thumb/<url>/<filename>")
 @app.route("/api/thumb/<url>/<filename>.<ext>")
-def thumbnail(url, filename=None, ext=None, size=(400, 400)):
-    # Return the currently saved thumbnail if it exists
-    thumb_file = f"thumb_{url}.jpg"
-    thumb_dir = get_setting("directories.thumbs")
-    if os.path.exists(os.path.join(thumb_dir, thumb_file)):
-        return static_file(thumb_file, root=thumb_dir)
-
+def thumbnail(url, filename=None, ext=None):
     # Select the full file from the database
-    results = get_file(url)
-    if not results:
+    file = FileService.get_by_url(url)
+    if not file:
         abort(404, "File not found.")
 
-    abort_if_invalid_image_url(results, filename, ext)
+    FileService.abort_if_invalid_url(file, filename, ext)
 
-    # Generate a 400x400 (by default) thumbnail
-    try:
-        base = Image.open(
-            os.path.join(
-                get_setting("directories.files"), results["shorturl"] + results["ext"]
-            )
-        )
-        if size < base.size:
-            image_info = base.info
-            # if base.mode not in ('L', 'RGBA'):
-            #     base = base.convert('RGBA')
-            base = ImageOps.fit(base, size, Image.ANTIALIAS)
-            base = remove_transparency(base)
-            base.save(os.path.join(thumb_dir, thumb_file), **image_info)
-            return static_file(thumb_file, root=thumb_dir)
-    except Exception:
-        # just return the actual image if thumbnail generation fails
-        pass
-    return image_view(url, filename, ext, results=results, update_hits=False)
+    thumb = FileService.get_or_create_thumbnail(file)
+    if thumb:
+        return thumb
+
+    # no thumb was generated, just return the actual image instead
+    return image_view(url, filename, ext, results=file, update_hits=False)
