@@ -21,11 +21,11 @@
       {%- endif -%}
     {% endfor %}
     ]
-    {%- if revision.parent_url %}
-      <br />
-      [ Parent: <a href="/paste/{{ revision.parent_url }}">{{ revision.parent_url }}</a> ]
-    {%- endif %}
+    <br />
   {% endif %}
+  {%- if revision.parent_url %}
+    [ Parent: <a href="/paste/{{ revision.parent_url }}">{{ revision.parent_url }}</a> ]
+  {%- endif %}
 {% endmacro %}
 <!DOCTYPE html>
 <html>
@@ -33,9 +33,9 @@
   <title>SGFC | {{ title }}</title>
   <link rel="icon" type="image/ico" href="/static/misc/favicon.ico" />
   <link href='/static/css/main.css' rel='stylesheet' type='text/css'>
-  <link href='/static/css/paste.css' rel='stylesheet' type='text/css'>
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <style type="text/css">{{ css }}</style>
+  <link href='/static/css/paste.css' rel='stylesheet' type='text/css'>
 </head>
 
 <body class="paste">

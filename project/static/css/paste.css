@@ -26,7 +26,7 @@
 
 .linenos {
     width: 14px;
-    padding: 0 1rem;
+    padding: 0 0.5rem;
     text-align: right;
     border-right: 1px solid #ccc;
 }
@@ -45,6 +45,11 @@
     text-shadow: none;
 }
 
+td.linenos pre {
+    /* this is set by pygments css */
+    background: #fff;
+}
+
 .code-view {
     font-size: 13px;
     line-height: 125%;
@@ -53,6 +58,8 @@
 pre, textarea {
     font-family: "InconsolataMedium", Consolas, Monaco, "Liberation Mono", Courier,
     monospace;
+    /* this is set by pygments css */
+    line-height: inherit;
     margin: 0.5em 0;
 }
 
