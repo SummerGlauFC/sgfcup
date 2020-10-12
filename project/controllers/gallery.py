@@ -11,14 +11,14 @@ from project import config
 from project import configdefines
 from project import functions
 from project.configdefines import gallery_params
-from project.functions import delete_files
 from project.functions import get_dict
-from project.functions import get_paste
 from project.functions import get_session
 from project.functions import get_setting
 from project.functions import key_password_return
 from project.services.account import ACCOUNT_KEY_REGEX
 from project.services.account import AccountService
+from project.services.file import FileService
+from project.services.paste import PasteService
 
 
 @app.route("/redirect/gallery/<user_key>")
@@ -105,7 +105,7 @@ def gallery_view(user_key=None):
         row_file = {}
         # TODO: get latest revision content
         if row["ext"] == "paste":
-            paste = get_paste(row["original"])
+            paste = PasteService.get_by_id(row["original"])
             row_file["type"] = FileType.PASTE
             row_file["url"] = row["shorturl"]
             row_file["content"] = paste["content"]
@@ -206,7 +206,7 @@ def gallery_delete_advanced():
 
     sql = f"SELECT * FROM `files` WHERE `userid` = %s AND `{del_type}` {mapping[operator]} %s"
     files = config.db.fetchall(sql, [user["id"], threshold])
-    size, count, messages = delete_files(files)
+    size, count, messages = FileService.delete_batch(files)
     messages.append(f"{count} items deleted. {functions.sizeof_fmt(size)} freed.")
     return template("delete.tpl", messages=messages, key=key)
 
@@ -237,7 +237,7 @@ def gallery_delete():
         if del_type == "Delete Selected"
         else files
     )
-    size, count, messages = delete_files(source, messages)
+    size, count, messages = FileService.delete_batch(source, messages)
 
     messages.append(
         f"{count} items deleted. {functions.sizeof_fmt(size)} of disk space saved."

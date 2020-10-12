@@ -8,11 +8,10 @@ from project import app
 from project import config
 from project import functions
 from project.configdefines import PasteAction
-from project.functions import get_parent_paste
-from project.functions import get_paste
 from project.functions import get_session
 from project.functions import key_password_return
 from project.services.file import FileService
+from project.services.paste import PasteService
 
 
 @app.route("/paste/<url>")
@@ -28,7 +27,7 @@ def paste_view(url, commit=None, flag=None):
     if not file:
         abort(404, "File not found.")
 
-    paste = get_paste(file["original"])
+    paste = PasteService.get_by_id(file["original"])
     if not paste:
         # Paste exists in files table but not in pastes table... remove it.
         config.db.delete("files", {"id": file["id"]})
@@ -110,7 +109,7 @@ def paste_view(url, commit=None, flag=None):
     # Check if to make a diff or not,
     # depending on if the revision exists
     if revision:
-        parent, parent_commit, parent_content = get_parent_paste(revision)
+        parent, parent_commit, parent_content = PasteService.get_parent(revision)
         # diff with parent paste
         if flag == PasteAction.DIFF:
             content = ghdiff.diff(parent_content, revision["paste"], css=False)

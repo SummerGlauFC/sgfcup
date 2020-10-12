@@ -222,49 +222,6 @@ def get_host() -> str:
     )
 
 
-def add_file_hit(file_id: int):
-    config.db.execute("UPDATE `files` SET `hits`=`hits`+1 WHERE `id`=%s", [file_id])
-
-
-def get_paste(paste_id: int):
-    return config.db.select("pastes", where={"id": paste_id}, singular=True)
-
-
-def get_paste_revision(**kwargs):
-    return config.db.select("revisions", where=kwargs, singular=True)
-
-
-def get_paste_content(shorturl: str = None, commit: str = None, paste=None):
-    if not paste:
-        # imported here due to circular
-        from project.services.file import FileService
-
-        file = FileService.get_by_url(shorturl)
-        if not file:
-            return None
-        paste = paste or get_paste(file["original"])
-        if not paste:
-            return None
-    revision = get_paste_revision(pasteid=paste["id"], commit=commit)
-    if revision:
-        return revision["paste"]
-    elif paste:
-        return paste["content"]
-    return None
-
-
-def get_parent_paste(rev):
-    parent_commit = None
-    if rev["parent_revision"]:
-        parent_rev = get_paste_revision(id=rev["parent_revision"])
-        parent_commit = parent_rev["commit"]
-        parent = get_paste(parent_rev["pasteid"])
-    else:
-        parent = get_paste(rev["parent"])
-    parent_content = get_paste_content(commit=parent_commit, paste=parent)
-    return parent, parent_commit, parent_content
-
-
 def static_file(path: str, root: str, filename: Optional[str] = None) -> HTTPResponse:
     file_path = os.path.join(root, path)
     mime = magic.from_file(file_path, mime=True)
@@ -303,45 +260,6 @@ def url_for_page(page):
 
     encoded = urlencode(query)
     return request.urlparts.path + (encoded and "?" + urlencode(query))
-
-
-def delete_file(file):
-    size = file["size"]
-    shorturl = file["shorturl"]
-    original = file["original"]
-
-    config.db.delete("files", {"shorturl": shorturl})
-
-    # Special treatment for pastes as they don't physically exist
-    # on the disk
-    if file["ext"] == "paste":
-        config.db.delete("pastes", {"id": original})
-        # TODO: delete revisions of the deleted paste
-        output = f"Removed paste {shorturl}"
-    else:
-        try:
-            os.remove(get_setting("directories.files") + shorturl + file["ext"])
-            output = f'Removed file "{original}" ({shorturl})'
-        except OSError:
-            output = f"Could not delete {shorturl}"
-
-    return size, output
-
-
-def delete_files(to_delete, output=None):
-    size = 0
-    count = 0
-
-    if output is None:
-        output = []
-
-    for row in to_delete:
-        file_size, file_output = delete_file(row)
-        count += 1
-        size += file_size
-        output.append(file_output)
-
-    return size, count, output
 
 
 def key_password_return(session):

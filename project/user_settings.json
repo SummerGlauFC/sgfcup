@@ -8,7 +8,7 @@
       "Secure URL: <code>sgfc.co/code/filename.png</code>"
     ],
     "default": 0,
-    "notes": "<b style='color:red'>Warning</b>: Secure URLs are <b>required</b> if selected! Existing short and extension URLs will <b>cease to work</b>."
+    "notes": "<b style='color:red'>Warning</b>: Secure URLs are <b>required</b> if selected! Existing short and extension URLs will <b>not work</b> with this option selected."
   },
   "block": {
     "name": "Access options",

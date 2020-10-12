@@ -5,10 +5,10 @@ from bottle import request
 from project import app
 from project import config
 from project import functions
-from project.functions import delete_files
 from project.functions import get_session
 from project.functions import get_setting
 from project.services.account import AccountService
+from project.services.file import FileService
 
 db = config.db
 
@@ -52,7 +52,7 @@ def delete_hits():
                 [user["id"], hit_threshold],
             )
 
-    size, count, _ = delete_files(delete_queue)
+    size, count, _ = FileService.delete_batch(delete_queue)
     return f"{count} items deleted. {functions.sizeof_fmt(size)} of disk space saved."
 
 
