@@ -7,6 +7,11 @@
 /*!40111 SET @OLD_SQL_NOTES=@@SQL_NOTES, SQL_NOTES=0 */;
 
 
+-- Enable no auto on zero so we can insert the anon account
+SET sql_mode='NO_AUTO_VALUE_ON_ZERO';
+
+
+
 
 DROP TABLE IF EXISTS `accounts`;
 
@@ -17,6 +22,9 @@ CREATE TABLE `accounts` (
   `hash` varchar(50) DEFAULT NULL,
   PRIMARY KEY (`id`)
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8;
+
+-- Create anonymous upload account
+INSERT INTO `accounts` (`id`, `key`, `password`) VALUES (0, 'hidden', 'public');
 
 
 

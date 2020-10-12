@@ -38,7 +38,7 @@ class AccountService:
         :param user_id: the ID of the user
         :return: row of the User if they exist
         """
-        return db.select("accounts", where={"userid": user_id}, singular=True)
+        return db.select("accounts", where={"id": user_id}, singular=True)
 
     @staticmethod
     def get_by_key(key: str) -> Optional[AccountInterface]:

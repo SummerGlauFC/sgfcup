@@ -40,7 +40,8 @@ def gallery_view(user_key=None):
         return ""
 
     user = AccountService.get_by_key(user_key)
-    if not user:
+    # anonymous account, hide gallery
+    if not user or user["id"] == 0:
         return template("error.tpl", error="Specified key does not exist.")
 
     # Check the users settings to see if they have specified
