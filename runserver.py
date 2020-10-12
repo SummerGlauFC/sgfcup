@@ -35,7 +35,8 @@ debug(debug_enabled)
 if __name__ == "__main__":
     try:
         port = int(sys.argv[1])
-        run(app, reloader=debug_enabled, host="localhost", port=port, server="tornado")
+        run(app, reloader=debug_enabled, host="localhost", port=port, 
+            server="tornado" if not debug_enabled else "wsgiref")
     except Exception as e:
         print(e)
         print("Port to run on not specified.")

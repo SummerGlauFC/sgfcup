@@ -134,7 +134,7 @@ def gallery_view(user_key=None):
             row_file["hits"] = row["hits"]
             row_file["size"] = functions.sizeof_fmt(row["size"])
             row_file["time"] = {
-                "epoch": row["date"].strftime("%s"),
+                "epoch": row["date"].timestamp(),
                 "timestamp": row["date"].strftime("%d/%m/%Y @ %H:%M:%S"),
             }
         files.append(row_file)
