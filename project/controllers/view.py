@@ -12,6 +12,7 @@ from project.functions import get_session
 from project.functions import key_password_return
 from project.services.file import FileService
 from project.services.paste import PasteService
+from project.services.paste import RevisionInterface
 
 
 @app.route("/paste/<url>")
@@ -21,6 +22,17 @@ from project.services.paste import PasteService
 def paste_view(url, commit=None, flag=None):
     # TODO: simplify paste view controller
     SESSION = get_session()
+
+    flag = PasteAction.get(flag)
+    flag_path = "/" + flag.value if flag.value else ""
+
+    # redirect to the base url if commit is "base"
+    if commit == "base":
+        redirect(f"/paste/{url}{flag_path}")
+
+    # Disable the ability to use diff on the base commit only
+    if not commit and flag == PasteAction.DIFF:
+        redirect(f"/paste/{url}")
 
     # Select the paste from `files`
     file = FileService.get_by_url(url)
@@ -33,58 +45,39 @@ def paste_view(url, commit=None, flag=None):
         config.db.delete("files", {"id": file["id"]})
         abort(404, "File not found.")
 
-    flag = PasteAction.get(flag)
-    flag_path = "/" + flag.value if flag.value else ""
+    # redirect user to the latest revision if commit is "latest"
+    if commit == "latest":
+        revision = PasteService.get_latest_revision(paste)
+        if revision:
+            # add latest commit hash to the URL
+            url = f"{url}:{revision['commit']}"
+        redirect(f"/paste/{url}{flag_path}")
 
     # Get revisions for specified paste
-    revisions = config.db.select("revisions", where={"pasteid": paste["id"]})
-    # handle any necessary redirects
-    if revisions:
-        # user navigated to a forked paste, without specifying a commit
-        # so redirect to the first commit for the paste.
-        redirect_commit = None
-        if not commit:
-            first_revision = revisions[0]
-            if first_revision["fork"]:
-                redirect_commit = first_revision["commit"]
-        # redirect user to the latest revision if commit is "latest"
-        elif commit == "latest":
-            latest_revision = revisions[-1]
-            redirect_commit = latest_revision["commit"]
-        # redirect to the commit if needed
-        if redirect_commit:
-            redirect(f"/paste/{url}:{redirect_commit}{flag_path}")
-    else:
-        # redirect to the base paste if there are no commits
-        if commit == "latest":
-            redirect(f"/paste/{url}{flag_path}")
-
-    # If a commit is provided, get the revision row for that commit
-    revision = next(filter(lambda rev: rev["commit"] == commit, revisions), None)
-
-    # List all available commits
-    is_fork = False
+    revisions = PasteService.get_revisions(RevisionInterface(pasteid=paste["id"]))
     commits = ["base"]
     if revisions:
         first_revision = revisions[0]
+        if not commit:
+            # user navigated to a forked paste, without specifying a commit
+            # so redirect to the first commit for the paste.
+            if first_revision["fork"]:
+                redirect_commit = first_revision["commit"]
+                redirect(f"/paste/{url}:{redirect_commit}{flag_path}")
+
         is_fork = first_revision["fork"]
         # add the dummy base revision to the revision list
         if not is_fork:
-            revisions = ({"commit": "base"},) + revisions
+            revisions = (RevisionInterface(commit="base"), *revisions)
+        # list all available commits
         commits = [row["commit"] for row in revisions]
 
     # commit provided but is not valid
     if commit and commit not in commits:
         abort(404, "Commit does not exist.")
 
-    # If the given commit does not exist, use the base commit
-    if commit not in commits:
-        commit = commits[0]
-
-    # Disable the ability to use diff on the base commit only
-    # ... but allow forks to be diffed with the original paste
-    if (commit == "base" or commit == "") and not is_fork and flag == PasteAction.DIFF:
-        redirect(f"/paste/{url}")
+    # If a commit is provided, get the revision row for that commit
+    revision = next(filter(lambda rev: rev["commit"] == commit, revisions), None)
 
     # Add a hit to the paste file
     # Safe to count paste as viewed here since no errors occur after this point
@@ -120,7 +113,7 @@ def paste_view(url, commit=None, flag=None):
         # show commit hash in title
         title += f' [{revision["commit"]}]'
 
-    # highlight the paste if not diffed
+    # highlight the paste if not a diff
     if not content:
         content = functions.highlight_code(paste["content"], lang)
 

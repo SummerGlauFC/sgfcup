@@ -1,5 +1,5 @@
 import functools
-import os
+from typing import Tuple
 
 from bottle import jinja2_template as template
 from bottle import redirect
@@ -13,11 +13,12 @@ from project import functions
 from project.configdefines import gallery_params
 from project.functions import get_dict
 from project.functions import get_session
-from project.functions import get_setting
 from project.functions import key_password_return
 from project.services.account import ACCOUNT_KEY_REGEX
 from project.services.account import AccountService
+from project.services.file import FileInterface
 from project.services.file import FileService
+from project.services.paste import PasteInterface
 from project.services.paste import PasteService
 
 
@@ -91,7 +92,7 @@ def gallery_view(user_key=None):
 
     # generate pages with a useful pagination class
     pagination = functions.Pagination(page, 30, total_entries)
-    results = config.db.fetchall(
+    results: Tuple[FileInterface, ...] = config.db.fetchall(
         f"{get_search_query('*')} LIMIT {pagination.limit}", params
     )
 
@@ -102,42 +103,39 @@ def gallery_view(user_key=None):
             return template("error.tpl", error="This page does not exist.")
 
     for row in results:
-        row_file = {}
-        # TODO: get latest revision content
-        if row["ext"] == "paste":
-            paste = PasteService.get_by_id(row["original"])
-            row_file["type"] = FileType.PASTE
-            row_file["url"] = row["shorturl"]
-            row_file["content"] = paste["content"]
-            row_file["hits"] = row["hits"]
-            row_file["name"] = paste["name"] or row["shorturl"]
-            row_file["size"] = len(paste["content"].split("\n"))
-            row_file["time"] = {
-                "epoch": row["date"].strftime("%s"),
-                "timestamp": row["date"].strftime("%d/%m/%Y @ %H:%M:%S"),
-            }
-        else:
-            # is either an image or a file
-            path = os.path.join(
-                get_setting("directories.files"), row["shorturl"] + row["ext"]
-            )
-            image = functions.is_image(path)
-            if image:
-                row_file["type"] = FileType.IMAGE
-                row_file["resolution"] = image.size
-                image.close()
-            else:
-                row_file["type"] = FileType.FILE
-            row_file["url"] = row["shorturl"]
-            row_file["ext"] = row["ext"]
-            row_file["original"] = row["original"]
-            row_file["hits"] = row["hits"]
-            row_file["size"] = functions.sizeof_fmt(row["size"])
-            row_file["time"] = {
+        file = {
+            "url": row["shorturl"],
+            "hits": row["hits"],
+            "time": {
                 "epoch": row["date"].timestamp(),
                 "timestamp": row["date"].strftime("%d/%m/%Y @ %H:%M:%S"),
-            }
-        files.append(row_file)
+            },
+            "ext": row["ext"],
+            "original": row["original"],
+        }
+        if row["ext"] == "paste":
+            paste: PasteInterface = PasteService.get_by_id(row["original"])
+            file["type"] = FileType.PASTE
+            file["content"] = paste["content"]
+            file["name"] = paste["name"] or row["shorturl"]
+            file["size"] = len(file["content"].split("\n"))
+
+            # get latest revision for paste
+            latest_rev = PasteService.get_latest_revision(paste)
+            if latest_rev:
+                file["content"] = latest_rev["paste"]
+                # add latest commit hash to url
+                file["url"] = row["shorturl"] + ":" + latest_rev["commit"]
+        else:
+            file["type"] = FileType.FILE
+            file["size"] = functions.sizeof_fmt(row["size"])
+            path = FileService.get_file_path(row)
+            image = functions.is_image(path)
+            if image:
+                file["type"] = FileType.IMAGE
+                file["resolution"] = image.size
+                image.close()
+        files.append(file)
 
     tally = config.db.fetchone(get_search_query("SUM(`size`) AS `total`"), params)
     usage = None
@@ -228,7 +226,7 @@ def gallery_delete():
     user = AccountService.get_by_key(key)
     if user["password"] != password:
         return template("error.tpl", error="Password is incorrect.")
-    elif del_type == "Delete Selected" and not files_to_delete:
+    if del_type == "Delete Selected" and not files_to_delete:
         return template("error.tpl", error="No files were provided.")
 
     files = config.db.select("files", where={"userid": user["id"]})

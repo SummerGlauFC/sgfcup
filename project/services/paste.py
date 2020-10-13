@@ -2,9 +2,7 @@ import hashlib
 import random
 import sys
 from typing import Optional
-from typing import Set
 from typing import Tuple
-from typing import Union
 
 from project.functions import id_generator
 
@@ -60,17 +58,24 @@ class PasteService:
         return db.fetchone("SELECT * FROM `pastes` WHERE BINARY `shorturl` = %s", [url])
 
     @staticmethod
-    def get_revision(
-        attrs: RevisionInterface, get_all=False
-    ) -> Union[RevisionInterface, Set[RevisionInterface]]:
+    def get_revision(attrs: RevisionInterface) -> RevisionInterface:
         """
         Get a specific paste revision.
 
         :param attrs: attributes to get revision by
-        :param get_all: whether to grab all matching revisions
         :return: row of the revision if it exists
         """
-        return db.select("revisions", where=attrs, singular=not get_all)
+        return db.select("revisions", where=attrs, singular=True)
+
+    @staticmethod
+    def get_revisions(attrs: RevisionInterface) -> Tuple[RevisionInterface, ...]:
+        """
+        Get all matching revisions.
+
+        :param attrs: attributes to get revisions by
+        :return: Tuple of matching revisions
+        """
+        return db.select("revisions", where=attrs)
 
     @staticmethod
     def get_commit_hash(body: str):
@@ -155,29 +160,35 @@ class PasteService:
         db.delete("pastes", PasteInterface(id=paste_id))
 
     @staticmethod
-    def get_content(
-        shorturl: str = None, commit: str = None, paste: PasteInterface = None
-    ) -> Optional[str]:
+    def get_latest_revision(paste: PasteInterface) -> Optional[RevisionInterface]:
+        """
+        Get the latest revision for the given paste.
+
+        :param paste: paste row (only id is needed)
+        :return: latest revision of the paste, else None
+        """
+        return db.fetchone(
+            "SELECT * FROM `revisions` WHERE `pasteid` = %s ORDER BY `id` DESC LIMIT 1",
+            [paste["id"]],
+        )
+
+    @staticmethod
+    def get_content(paste: PasteInterface, commit: str = None) -> Optional[str]:
         """
         Get the content of a specific paste at a specific revision.
 
-        :param shorturl: URL of paste
-        :param commit: commit of revision
+        :param commit: commit of revision ("latest" will get the most recent commit)
         :param paste: paste row if already available
         :return: content for the given paste if it exists, else None
         """
-        if not paste:
-            from project.services.file import FileService
+        if commit == "latest":
+            # get latest revision
+            revision = PasteService.get_latest_revision(paste)
+        else:
+            revision = PasteService.get_revision(
+                RevisionInterface(pasteid=paste["id"], commit=commit)
+            )
 
-            file = FileService.get_by_url(shorturl)
-            if not file:
-                return None
-            paste = paste or PasteService.get_by_id(file["original"])
-            if not paste:
-                return None
-        revision = PasteService.get_revision(
-            RevisionInterface(pasteid=paste["id"], commit=commit)
-        )
         if revision:
             return revision["paste"]
         elif paste:

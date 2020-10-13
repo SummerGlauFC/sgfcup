@@ -100,6 +100,13 @@ class AccountService:
 
     @staticmethod
     def get_or_create_account(key, password) -> Tuple[AccountInterface, bool]:
+        """
+        Get the specified account if it exists, else create it.
+
+        :param key: account key
+        :param password: account password
+        :return: account matching the given credentials
+        """
         if not key:
             # if no key is provided, anonymous login
             return ANONYMOUS_ACCOUNT, True

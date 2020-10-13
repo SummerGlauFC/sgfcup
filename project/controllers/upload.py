@@ -64,7 +64,8 @@ def submit_paste(user_id, paste_data=None) -> PasteInterface:
 
     abort_if_paste_body_error(paste_data["content"])
 
-    paste = PasteService.upload(PasteInterface(userid=user_id, **paste_data))
+    paste_data["userid"] = user_id
+    paste = PasteService.upload(PasteInterface(**paste_data))
     return paste
 
 

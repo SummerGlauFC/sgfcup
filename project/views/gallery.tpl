@@ -119,7 +119,7 @@
                        title="{{ file.original }}"
                        href="/{{ file_url(file) }}">
                   {% elif file.type == file_type.PASTE %}
-                    <a title="{{ file.name }}" href="/paste/{{ file.url }}:latest"
+                    <a title="{{ file.name }}" href="/paste/{{ file.url }}"
                        class="file-thumbnail-link">
                     {% set split_paste = file.content.split("\n") %}
                     <pre class="file-thumbnail-paste">{{ "\n".join(split_paste[0:16]) }}{% if split_paste|length >= 16 -%}
@@ -133,7 +133,7 @@
                     {% set name = file.name if file.type == file_type.PASTE else file.original %}
                     {% set hl_name = hl(name|e) if not search["in"] else name|e %}
                     {% if file.type == file_type.PASTE %}
-                      Paste: <a title="{{ file.url }}" href="/paste/{{ file.url }}:latest">
+                      Paste: <a title="{{ file.url }}" href="/paste/{{ file.url }}">
                       {{ hl_name|safe }}
                     </a>
                     {% else %}

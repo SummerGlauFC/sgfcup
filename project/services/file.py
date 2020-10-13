@@ -109,7 +109,6 @@ class FileService:
         :param file: file to delete
         :return: Tuple of (size, output)
         """
-
         size = file["size"]
         shorturl = file["shorturl"]
         original = file["original"]
@@ -125,16 +124,12 @@ class FileService:
             output = f"Removed paste {shorturl}"
         else:
             try:
-                os.remove(
-                    os.path.join(
-                        get_setting("directories.files"), shorturl + file["ext"]
-                    )
-                )
+                os.remove(FileService.get_file_path(file))
                 output = f'Removed file "{original}" ({shorturl})'
             except OSError:
                 output = f"Could not delete {shorturl}"
             try:
-                thumb_dir, thumb_file = FileService._get_thumbnail_path(file)
+                thumb_dir, thumb_file = FileService.get_thumbnail_path(file)
                 os.remove(os.path.join(thumb_dir, thumb_file))
             except OSError:
                 # doesn't matter if we could not delete the thumbnail
@@ -211,13 +206,35 @@ class FileService:
         :return: response for the file
         """
         return static_file(
-            file["shorturl"] + file["ext"],
+            FileService.get_file_name(file),
             root=get_setting("directories.files"),
             filename=file["original"],
         )
 
     @staticmethod
-    def _get_thumbnail_path(file: FileInterface) -> Tuple[str, str]:
+    def get_file_name(file: FileInterface) -> str:
+        """
+        Get the stored file name for the given file.
+
+        :param file: file to get file name for
+        :return: file name for file
+        """
+        return file["shorturl"] + file["ext"]
+
+    @staticmethod
+    def get_file_path(file: FileInterface) -> str:
+        """
+        Get the full path for the given file.
+
+        :param file: file to get path for
+        :return: path of file
+        """
+        return os.path.join(
+            get_setting("directories.files"), FileService.get_file_name(file)
+        )
+
+    @staticmethod
+    def get_thumbnail_path(file: FileInterface) -> Tuple[str, str]:
         """
         Get the thumbnail path for the given file.
 
@@ -236,7 +253,7 @@ class FileService:
         :param file: file to get thumbnail for
         :return: thumbnail as a response, else None
         """
-        thumb_dir, thumb_file = FileService._get_thumbnail_path(file)
+        thumb_dir, thumb_file = FileService.get_thumbnail_path(file)
         if os.path.exists(os.path.join(thumb_dir, thumb_file)):
             return static_file(thumb_file, root=thumb_dir)
         return None
@@ -252,7 +269,7 @@ class FileService:
         :param size: tuple of (width, height) for the thumbnail
         :return: thumbnail as a response or None
         """
-        thumb_dir, thumb_file = FileService._get_thumbnail_path(file)
+        thumb_dir, thumb_file = FileService.get_thumbnail_path(file)
         base = Image.open(
             os.path.join(
                 get_setting("directories.files"), file["shorturl"] + file["ext"]
