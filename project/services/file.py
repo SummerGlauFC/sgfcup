@@ -260,6 +260,19 @@ class FileService:
         )
         if size < base.size:
             image_info = base.info
+
+            # rotate according to EXIF orientation
+            # strip all other exif except for the orientation details
+            # work around for https://github.com/python-pillow/Pillow/issues/4346
+            TAG_ORIENTATION = 0x112
+            exif = base.getexif()
+            if len(exif):
+                clean_exif = Image.Exif()
+                if TAG_ORIENTATION in exif:
+                    clean_exif[TAG_ORIENTATION] = exif[TAG_ORIENTATION]
+                base.info["exif"] = clean_exif.tobytes()
+
+            base = ImageOps.exif_transpose(base)
             base = ImageOps.fit(base, size, Image.ANTIALIAS)
             base = remove_transparency(base)
             base.save(os.path.join(thumb_dir, thumb_file), **image_info)
