@@ -7,7 +7,6 @@ ready(() => {
   }
   const msg = document.getElementById("message")
   const textarea = document.getElementById("paste_body")
-  const wrapper = document.getElementById("wrapper")
 
   form.addEventListener("submit", (e) => {
     e.preventDefault()
@@ -26,7 +25,6 @@ ready(() => {
       setTimeout(() => {
         fadeIn(msg, 250)
         fadeIn(reset, 500)
-        equalHeight(wrapper)
       }, 250)
     })
   })
@@ -36,7 +34,6 @@ ready(() => {
       fadeOut(msg, 250)
       fadeOut(reset, 250)
       setTimeout(() => fadeIn(textarea, 250), 250)
-      equalHeight(wrapper)
     })
   }
 })

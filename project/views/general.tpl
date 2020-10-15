@@ -5,5 +5,7 @@
   <p><a href="/">Return to homepage...</a></p>
 {% endblock %}
 {% block content %}
-  {{ content|safe }}
+  <div class="middle">
+    {{ content|safe }}
+  </div>
 {% endblock %}

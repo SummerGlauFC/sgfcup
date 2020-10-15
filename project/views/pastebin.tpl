@@ -13,7 +13,12 @@
       }
 
       #box-right {
-          height: 430px;
+          min-height: 430px;
+          margin: 1em;
+      }
+
+      #details {
+          margin: 2rem;
       }
 
       textarea {
@@ -28,7 +33,7 @@
   <form id="paste" action="/api/upload/paste" method="post">
 {% endblock %}
 {% block left %}
-  <h3>{{ self.title() }}</h3>
+  <h2>{{ self.title() }}</h2>
   <div id="details">
     <p>
       <label>Name:</label>
@@ -68,14 +73,19 @@
   </div>
   {{ login_form(key=key, password=password, show_clear=True) }}
   <br />
-  <input type="submit" name="submit" value="Paste" />
 {% endblock %}
-{% block extra %}{% endblock %}
+{% block extra %}
+  <p>
+    <input type="submit" name="submit" value="Paste" />
+  </p>
+{% endblock %}
 {% block content %}
-  <div id="message" style="display: none">Uploading...</div>
-  <textarea tabindex="20" name="paste_body" id="paste_body" class="pastebox"></textarea>
-  <div style="text-align:center; display: none" id="reset">
-    <button type="button">Go back</button>
+  <div class="middle">
+    <div id="message" style="display: none">Uploading...</div>
+    <textarea tabindex="20" name="paste_body" id="paste_body" class="pastebox"></textarea>
+    <div style="text-align:center; display: none" id="reset">
+      <button type="button">Go back</button>
+    </div>
   </div>
 {% endblock %}
 {% block end %}

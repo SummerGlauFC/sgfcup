@@ -67,14 +67,19 @@
   </template>
   <form class="dropzone" id="my-awesome-dropzone" action="/api/upload/file" method="post"
         enctype="multipart/form-data">
-    <div id="fields">
-      <div id="files">
-        Drop files <strong>here</strong>, or click to browse
+    <div class="middle mb-none">
+      <div id="fields">
+        <div id="files">
+          Drop files <strong>here</strong>, or click to browse
+        </div>
+        {{ login_form(key=key, password=password, show_clear=True) }}
       </div>
-      {{ login_form(key=key, password=password, show_clear=True) }}
     </div>
-    <br />
-    <input type="submit" name="submit" value="Upload" />
+    <div class="bottom">
+      <p>
+        <input type="submit" name="submit" value="Upload" />
+      </p>
+    </div>
   </form>
 {% endblock %}
 {% block script %}

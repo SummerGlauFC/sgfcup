@@ -6,6 +6,8 @@
     box-sizing: border-box;
     margin-top: 1rem;
     padding: 1rem;
+    flex-direction: column;
+    min-height: auto;
 }
 
 #identification {

@@ -11,6 +11,8 @@
   <p><a href="/">Return to the homepage...</a></p>
 {% endblock %}
 {% block content %}
-  <h2>{{ error }}</h2>
-  <p>Make sure all provided information is correct, and try again.</p>
+  <div class="middle">
+    <h2>{{ error }}</h2>
+    <p>Make sure all provided information is correct, and try again.</p>
+  </div>
 {% endblock %}

@@ -13,39 +13,29 @@
 </head>
 
 <body class="index">
-<table id="maintb" cellpadding="0" cellspacing="0">
-  <tr>
-    <td id="maintd">
-      {% block other %}{% endblock %}
-      <div id="wrapper" class='cf'>
-        {% block wrapper %}
-          <header id="box-left">
-            <a href="/"><h2>SGFC File Upload</h2></a>
-            <div class='cf'>
-              {% block left %}
-                <h3>{{ self.title() }}</h3>
-              {% endblock %}
-            </div>
-            <div class="bottom">
-              {% block extra %}{% endblock %}
-            </div>
-          </header>
-          <div id="box-right">
-            <table id="overlaytb">
-              <tr>
-                <td style='vertical-align:middle'>
-                  {% block content %}{% endblock %}
-                </td>
-              </tr>
-            </table>
+<div id="container">
+  <div id="content">
+    {% block other %}{% endblock %}
+    <div id="wrapper">
+      {% block wrapper %}
+        <header id="box-left">
+          <a href="/"><h2>SGFC File Upload</h2></a>
+          <div class="middle">
+            {% block left %}
+              <h2>{{ self.title() }}</h2>
+            {% endblock %}
           </div>
-          </div>
-          <div id="previews" class="dropzone-previews"></div>
-        {% endblock %}
-      {% block end %}{% endblock %}
-    </td>
-  </tr>
-</table>
+          <div class="bottom">{% block extra %}{% endblock %}</div>
+        </header>
+        <div id="box-right">
+          {% block content %}{% endblock %}
+        </div>
+      {% endblock %}
+    </div>
+    <div id="previews" class="dropzone-previews"></div>
+    {% block end %}{% endblock %}
+  </div>
+</div>
 <script src="/static/js/base.js"></script>
 {% block script %}{% endblock %}
 </body>

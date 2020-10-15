@@ -1,43 +1,54 @@
 #box-left {
     font-size: inherit;
     position: relative;
-    display: block;
-    float: left;
+    display: flex;
+    flex-direction: column;
     box-sizing: border-box;
-    width: 320px;
+    min-width: 320px;
     margin: 0;
     text-align: center;
     color: inherit;
     border-right: 1px solid #aaa;
 }
 
-@media only screen and (max-width: 750px) {
-    #box-left {
-        float: none !important;
-        clear: both;
-        width: 90% !important;
-        min-width: 90%;
-        max-width: 90%;
-        margin: 0 auto 10px;
-        padding: 0;
-        border-right: 0 !important;
-        border-bottom: 1px solid #aaa;
-    }
-}
-
 #box-right {
-    display: block;
-    float: right;
+    display: flex;
     overflow-y: auto;
-    width: 430px;
-    height: 340px;
+    flex-direction: column;
+    min-width: 430px;
     padding: 0;
     text-align: center;
 }
 
+@media only screen and (max-width: 750px) {
+    #wrapper {
+        flex-direction: column;
+    }
+
+    #content {
+        min-width: 90%;
+        max-width: 100%;
+        margin: 0 auto 10px;
+        padding: 0;
+    }
+
+    #box-left {
+        min-width: 90%;
+        max-width: 100%;
+        margin-bottom: 2em;
+        border-right: 0 !important;
+        border-bottom: 1px solid #aaa;
+    }
+
+    #box-right {
+        min-width: 90%;
+        max-width: 100%;
+    }
+}
+
 #identification {
     display: block;
-    margin-top: 3em;
+    /*margin-top: 3em;*/
     text-align: center;
 }
 
@@ -50,16 +61,19 @@
 
 #files {
     font-size: 1.5rem;
+    margin-bottom: 3rem;
     cursor: pointer;
 }
 
 .bottom {
     line-height: 1.6em;
-    position: absolute;
-    bottom: 0;
+    align-self: flex-end;
     box-sizing: content-box;
     width: 100%;
-    margin: 0 auto;
+}
+
+.bottom:not(:empty) {
+    margin: auto auto 0;
     padding: 1em 0;
 }
 

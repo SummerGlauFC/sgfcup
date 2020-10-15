@@ -70,19 +70,6 @@ function fadeToggle(el, s) {
   }
 }
 
-function equalHeight(el) {
-  if (el) {
-    let max = 0
-    Array.prototype.forEach.call(el.children, child => {
-      const height = child.clientHeight
-      max = height > max ? height : max
-    })
-    Array.prototype.forEach.call(el.children, child => {
-      child.style.height = `${max}px`
-    })
-  }
-}
-
 ready(() => {
   const key = document.getElementById("key")
   const password = document.getElementById("password")
@@ -93,7 +80,5 @@ ready(() => {
       password.value = ""
     })
   }
-  const wrapper = document.getElementById("wrapper")
-  equalHeight(wrapper)
 })
 

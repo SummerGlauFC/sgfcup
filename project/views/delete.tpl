@@ -11,9 +11,11 @@
   <a href="/">Return to the homepage...</a>
 {% endblock %}
 {% block content %}
-  <ul>
-    {% for message in messages %}
-      <li>{{ message }}</li>
-    {% endfor %}
-  </ul>
+  <div class="middle ml-none">
+    <ul>
+      {% for message in messages %}
+        <li>{{ message }}</li>
+      {% endfor %}
+    </ul>
+  </div>
 {% endblock %}

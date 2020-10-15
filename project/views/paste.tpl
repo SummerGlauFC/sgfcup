@@ -44,36 +44,38 @@
     {{ title }}
   </header>
   <div id="main" class="wrapper">
-    <div class="paste-info">
-      [
-      Characters: {{ paste.length }} |
-      Lines: {{ paste.lines }} |
-      Hits: {{ paste.hits }} |
-      Language: {{ paste.lang }}
-      ]
-      <br />
-      {{ render_revisions() }}
-    </div>
-    {% set paste_url = paste.url + (":" + revision.commit if revision.commit else "") %}
-    <div class="paste-info" style="float: right; text-align: right;">
-      [
-      <a href="/paste/{{ paste_url }}/raw">View raw paste</a> |
-      {% if flag != paste_actions.EDIT -%}
-        <a href="/paste/{{ paste_url }}/edit">{% if paste.own %}Edit{% else %}Fork{% endif %} paste</a>
-      {%- else -%}
-        <a href="/paste/{{ paste_url }}">View paste</a>
-      {%- endif %}
-      ]
-      {% if revision.commit -%}
+    <div class="paste-header">
+      <div class="paste-info">
+        [
+        Characters: {{ paste.length }} |
+        Lines: {{ paste.lines }} |
+        Hits: {{ paste.hits }} |
+        Language: {{ paste.lang }}
+        ]
         <br />
-        [ View:
-        {% if flag != paste_actions.DIFF -%}
-          <a href="/paste/{{ paste_url }}/diff">Diff</a> / Paste
+        {{ render_revisions() }}
+      </div>
+      {% set paste_url = paste.url + (":" + revision.commit if revision.commit else "") %}
+      <div class="paste-info" style="float: right; text-align: right;">
+        [
+        <a href="/paste/{{ paste_url }}/raw">View raw paste</a> |
+        {% if flag != paste_actions.EDIT -%}
+          <a href="/paste/{{ paste_url }}/edit">{% if paste.own %}Edit{% else %}Fork{% endif %} paste</a>
         {%- else -%}
-          Diff / <a href="/paste/{{ paste_url }}">Paste</a>
+          <a href="/paste/{{ paste_url }}">View paste</a>
         {%- endif %}
         ]
-      {% endif %}
+        {% if revision.commit -%}
+          <br />
+          [ View:
+          {% if flag != paste_actions.DIFF -%}
+            <a href="/paste/{{ paste_url }}/diff">Diff</a> / Paste
+          {%- else -%}
+            Diff / <a href="/paste/{{ paste_url }}">Paste</a>
+          {%- endif %}
+          ]
+        {% endif %}
+      </div>
     </div>
     {% if flag != paste_actions.EDIT -%}
       {% if revision.message -%}
