@@ -24,6 +24,7 @@ Dropzone.options.myAwesomeDropzone = {
   paramName: "files",
   clickable: "#files",
   addRemoveLinks: false,
+  timeout: 1000 * 60 * 60 * 24,
   previewTemplate: getPreviewTemplate(),
   init: function () {
     const dropzone = this
