@@ -18,7 +18,7 @@
     {% block other %}{% endblock %}
     <div id="wrapper">
       {% block wrapper %}
-        <header id="box-left">
+        <div id="box-left">
           <a href="/"><h2>SGFC File Upload</h2></a>
           <div class="middle">
             {% block left %}
@@ -26,7 +26,7 @@
             {% endblock %}
           </div>
           <div class="bottom">{% block extra %}{% endblock %}</div>
-        </header>
+        </div>
         <div id="box-right">
           {% block content %}{% endblock %}
         </div>

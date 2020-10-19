@@ -6,15 +6,18 @@
       #paste_body {
           height: 392px;
           width: 392px;
+          max-width: 95vw;
+          margin: 0 !important;
       }
 
       #reset {
-          margin: 1em;
+          margin: 1rem;
       }
 
       #box-right {
           min-height: 430px;
-          margin: 1em;
+          padding: 1rem;
+          box-sizing: border-box;
       }
 
       #details {

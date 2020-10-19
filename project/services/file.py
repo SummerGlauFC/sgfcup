@@ -7,6 +7,8 @@ from typing import Optional
 from typing import Tuple
 
 from project.functions import id_generator
+from project.functions import json_error
+from project.functions import sizeof_fmt
 
 if sys.version_info >= (3, 8):
     from typing import TypedDict  # pylint: disable=no-name-in-module
@@ -79,14 +81,32 @@ class FileService:
             ext = ""
 
         path = os.path.join(directory, shorturl + ext)
-        file.save(path)
+
+        # chunk save so we can abort if too large
+        data_blocks = []
+        byte_count = 0
+        max_size = get_setting("max_file_size")
+        buf = file.file.read(8192)
+        while buf:
+            byte_count += len(buf)
+            if byte_count > max_size:
+                raise json_error(
+                    f"File is too big. Max filesize: {sizeof_fmt(max_size)}.",
+                    status=413,
+                )
+            data_blocks.append(buf)
+            buf = file.file.read(8192)
+
+        with open(path, "wb") as f:
+            f.write(b"".join(data_blocks))
+
         return FileService.create(
             FileInterface(
                 userid=new_attrs["userid"],
                 shorturl=shorturl,
                 ext=ext,
                 original=filename,
-                size=os.path.getsize(path),
+                size=byte_count,
             )
         )
 

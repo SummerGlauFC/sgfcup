@@ -6,12 +6,12 @@
 {% block title %}Settings{% endblock %}
 {% block other %}
   <header>
-    Settings
+    <a href="/">Settings</a>
   </header>
 {% endblock %}
 {% block wrapper %}
   <form action="" method="post">
-    <p class="form-field">Enter your present details in order to make changes.</p>
+    <p>Enter your present details in order to make changes.</p>
     <p class="form-field">
       <label for="confirm_key">Key</label>
       <input type="text" class="right-col textbox" value="{{ key }}" name="confirm_key">

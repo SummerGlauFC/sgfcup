@@ -56,7 +56,7 @@
         {{ render_revisions() }}
       </div>
       {% set paste_url = paste.url + (":" + revision.commit if revision.commit else "") %}
-      <div class="paste-info" style="float: right; text-align: right;">
+      <div class="paste-info right">
         [
         <a href="/paste/{{ paste_url }}/raw">View raw paste</a> |
         {% if flag != paste_actions.EDIT -%}

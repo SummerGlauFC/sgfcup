@@ -1,5 +1,5 @@
 from db import DB
-from project.picklesettings import PickleSettings
+from project.usersettings import UserSettings
 
 base = "/path/to/base/folder"  # base folder
 
@@ -7,6 +7,7 @@ Settings = {
     "ssl": True,  # if to use https in urls or not
     # refer to the README on how to configure the following option
     "use_nginx_sendfile": False,  # use nginx xsendfile instead of static_file?
+    "max_file_size": 1024 * 1024 * 100,  # upload size limit in bytes, default = 100MB
     "directories": {
         "files": f"{base}/img/p/",  # private image location
         "thumbs": f"{base}/img/t/",  # thumbnail location
@@ -42,4 +43,4 @@ db = DB(
 
 # This json file contains the configuration for all user settings.
 # Default settings can be changed in this file.
-user_settings = PickleSettings("project/user_settings.json", db)
+user_settings = UserSettings("project/user_settings.json", db)

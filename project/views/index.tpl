@@ -5,13 +5,10 @@
   <link href='/static/css/dropzone.css' rel='stylesheet' type='text/css'>
 {% endblock %}
 {% block other %}
-  <div id="overlay">
-    <table id="overlaytb">
-      <tr>
-        <td style='vertical-align:middle'>
-          <div id='rules-hidden'>
-<pre>* filesize limit: 100MB
-* all file types are allowed, except for viruses and illegal shit
+  <div id="overlay" style="display:none;" data-saved-display="flex">
+    <div id='rules-hidden'>
+      <pre>* Filesize limit: 100MB
+* All file types are allowed. No viruses or illegal content.
 * Logging policy: No IPs are stored. Ever. As little user tracking as possible.
 * Upload logging:
     - Original filename is stored
@@ -19,13 +16,12 @@
 * View logging:
     - Serve and increment hits column by 1
     - No IP or user tracking
-* if you want a file removed for reasons (a valid reason please), shoot me an email at <a href='mailto:admin@sgfc.co'>admin@sgfc.co</a>, with the offending link and a reason why it should be gone.
-* if you feel like poking around the source, visit <a href="http://github.com/SummerGlauFC/sgfcup">http://github.com/SummerGlauFC/sgfcup</a></pre>
-            <button type='button' class="toggle-rules">Close Rules</button>
-          </div>
-        </td>
-      </tr>
-    </table>
+* If you want a file removed, shoot an email to <a href='mailto:admin@sgfc.co'>admin@sgfc.co</a>, with the offending link and a reason why it should be gone.
+
+Source code available at <a
+            href="https://github.com/SummerGlauFC/sgfcup">https://github.com/SummerGlauFC/sgfcup</a>.</pre>
+      <button type='button' class="toggle-rules">Close</button>
+    </div>
   </div>
 {% endblock %}
 {% block left %}
@@ -47,7 +43,7 @@
 {% endblock %}
 {% block extra %}
   <p>
-    <button type='button' class="toggle-rules">View Rules</button>
+    <button type='button' class="toggle-rules">View info and rules</button>
   </p>
 {% endblock %}
 {% block content %}
@@ -62,7 +58,7 @@
       <div class="dz-success-mark"><span>✔</span></div>
       <div class="dz-error-mark"><span>✘</span></div>
       <div class="dz-error-message"></div>
-      <button class="dz-remove" data-dz-remove>Remove file</button>
+      <button class="dz-remove" data-dz-remove>Remove</button>
     </div>
   </template>
   <form class="dropzone" id="my-awesome-dropzone" action="/api/upload/file" method="post"

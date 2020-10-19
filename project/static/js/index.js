@@ -39,7 +39,7 @@ Dropzone.options.myAwesomeDropzone = {
       // add remove all files button if it does not already exist
       if (!removeAllButton) {
         const btn = document.createElement("button")
-        btn.innerHTML = "Remove all files"
+        btn.innerHTML = "Remove all"
         btn.id = "remove-all-files"
         btn.addEventListener("click", () => dropzone.removeAllFiles())
         previews.insertBefore(btn, previews.firstChild)
@@ -63,10 +63,13 @@ Dropzone.options.myAwesomeDropzone = {
       dropzone.processQueue()
     })
     this.on("error", function (file, response) {
-      showUploadResult(file, response, `<span>${response.error}</span>`)
-      // dropzone.processQueue()
-      file.status = Dropzone.ADDED
-      dropzone.enqueueFile(file)
+      const isResp = response.hasOwnProperty("error")
+      showUploadResult(file, response, `<span>${isResp ? response.error : response}</span>`)
+      // only requeue if it's a server error and not a dropzone error
+      if (isResp) {
+        file.status = Dropzone.ADDED
+        dropzone.enqueueFile(file)
+      }
     })
   }
 }

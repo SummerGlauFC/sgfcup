@@ -60,7 +60,7 @@ def settings_process():
     # distinguish them.
     new_forms = functions.strs_to_ints(request.forms)
 
-    # Use the PickleSettings class in order to update/set settings
+    # Use the UserSettings class in order to update/set settings
     config.user_settings.set(SESSION["id"], new_forms)
 
     return template(
