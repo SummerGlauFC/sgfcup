@@ -1,6 +1,8 @@
 #container {
     justify-content: flex-start;
-    margin: 1rem auto;
+    padding: 1rem;
+    margin: 0 auto;
+    box-sizing: border-box;
 }
 
 #main {

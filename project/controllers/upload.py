@@ -1,14 +1,15 @@
 from typing import Optional
 from typing import Union
-from urllib.request import pathname2url
+from urllib.parse import quote
 
-from bottle import request
+from flask import request
+from flask import session
 
 from project import app
 from project import config
 from project import functions
+from project import user_settings
 from project.functions import get_host
-from project.functions import get_session
 from project.functions import get_setting
 from project.services.account import AccountService
 from project.services.file import FileInterface
@@ -21,31 +22,30 @@ id_generator = functions.id_generator
 
 
 def handle_auth_or_abort(key, password):
-    SESSION = get_session()
     user, is_authed = AccountService.get_or_create_account(key, password)
     user_id = user["id"]
     if not user_id == 0:
         # Store the users credentials in the session.
-        SESSION["key"] = key
-        SESSION["password"] = password
-        SESSION["id"] = user_id
+        session["key"] = key
+        session["password"] = password
+        session["id"] = user_id
     if not is_authed:
         raise functions.json_error("Incorrect Key or password", status=401)
     return user_id
 
 
 def submit_file(user_id) -> FileInterface:
-    files = request.files.files
-    if not files:
+    files = request.files.get("files")
+    if not files or files.filename == "":
         raise functions.json_error("No file provided")
 
     file = FileService.upload(files, FileInterface(userid=user_id))
     # escape extension and original filename for URLs
-    file["ext"] = pathname2url(file["ext"])
-    file["original"] = pathname2url(file["original"])
+    file["ext"] = quote(file["ext"])
+    file["original"] = quote(file["original"])
 
     # Use extensions if user has specified it in their settings.
-    use_extensions = config.user_settings.get(user_id, "ext")
+    use_extensions = user_settings.get(user_id, "ext")
     if use_extensions == 1:
         file["shorturl"] += file["ext"]
     elif use_extensions == 2:
@@ -57,9 +57,9 @@ def submit_file(user_id) -> FileInterface:
 def submit_paste(user_id, paste_data=None) -> PasteInterface:
     if paste_data is None:
         paste_data = {
-            "content": request.forms.get("paste_body", "").strip(),
-            "name": request.forms.get("paste_name"),
-            "lang": request.forms.get("lang", "text"),
+            "content": request.form.get("paste_body", "").strip(),
+            "name": request.form.get("paste_name"),
+            "lang": request.form.get("lang", "text"),
         }
 
     abort_if_paste_body_error(paste_data["content"])
@@ -80,16 +80,16 @@ def abort_if_paste_body_error(body):
 
 
 # File upload endpoint.
-@app.route("/api/upload", method="POST")
-@app.route("/api/upload/<upload_type>", method="POST")
+@app.route("/api/upload", methods=["POST"])
+@app.route("/api/upload/<upload_type>", methods=["POST"])
 def api_upload_file(upload_type="file"):
     if upload_type not in ["file", "paste"]:
         # The type the user provided doesn't exist.
         raise functions.json_error("This upload type does not exist")
 
     # Short references
-    key = request.forms.get("key", False)
-    password = request.forms.get("password", False)
+    key = request.form.get("key", False)
+    password = request.form.get("password", False)
     user_id = handle_auth_or_abort(key, password)
 
     # defaults for an impossible case
@@ -116,14 +116,14 @@ def api_upload_file(upload_type="file"):
     )
 
 
-@app.route("/api/edit/paste", method="POST")
+@app.route("/api/edit/paste", methods=["POST"])
 def api_edit_paste():
-    key = request.forms.get("key", False)
-    password = request.forms.get("password", False)
-    body = request.forms.get("paste_edit_body", "").strip()
-    editing_id = request.forms.get("id", None)
-    editing_commit = request.forms.get("commit", None)
-    msg = request.forms.get("commit_message", None)
+    key = request.form.get("key", False)
+    password = request.form.get("password", False)
+    body = request.form.get("paste_edit_body", "").strip()
+    editing_id = request.form.get("id", None)
+    editing_commit = request.form.get("commit", None)
+    msg = request.form.get("commit_message", None)
 
     abort_if_paste_body_error(body)
     if msg and len(msg) > 1024:

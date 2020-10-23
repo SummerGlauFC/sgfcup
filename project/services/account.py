@@ -1,20 +1,15 @@
 import hashlib
 import re
-import sys
 from functools import partial
 from typing import Optional
 from typing import Tuple
 
-if sys.version_info >= (3, 8):
-    from typing import TypedDict  # pylint: disable=no-name-in-module
-else:
-    from typing_extensions import TypedDict
+from flask import Response
+from flask import request
 
-from bottle import request
-from bottle import response
-
-from project.config import db
-from project.config import user_settings
+from project import db
+from project import user_settings
+from project.constants import TypedDict
 from project.functions import get_dict
 from project.functions import json_error
 
@@ -152,7 +147,7 @@ class AccountService:
         if get_user_setting("block.value") and get_user_setting(
             "gallery_password.value"
         ):
-            auth_cookie = request.get_cookie(f"auth+{user_id}")
+            auth_cookie = request.cookies.get(f"auth+{user_id}")
             hex_pass = hashlib.sha1(
                 get_user_setting("gallery_password.value").encode("utf-8")
             ).hexdigest()
@@ -161,11 +156,14 @@ class AccountService:
         return True
 
     @staticmethod
-    def set_auth_cookie(user_id: int, authcode: str, remember: bool = False):
+    def set_auth_cookie(
+        resp: Response, user_id: int, authcode: str, remember: bool = False
+    ):
         """
         Set a gallery auth cookie for the given user.
         TODO: move to gallery service
 
+        :param resp: response to set cookies for
         :param user_id: ID of the user
         :param authcode: code to save in cookie for verification
         :param remember: if the cookie should be remembered
@@ -173,6 +171,6 @@ class AccountService:
         name = f"auth+{user_id}"
         value = hashlib.sha1(authcode.encode("utf-8")).hexdigest()
         if remember:
-            response.set_cookie(name, value, max_age=3600 * 24 * 7 * 30 * 12, path="/")
+            resp.set_cookie(name, value, max_age=3600 * 24 * 7 * 30 * 12, path="/")
         else:
-            response.set_cookie(name, value, path="/")
+            resp.set_cookie(name, value, path="/")

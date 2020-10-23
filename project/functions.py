@@ -13,10 +13,12 @@ import magic
 import markupsafe
 import pygments
 from PIL import Image
-from bottle import HTTPResponse
-from bottle import request
-from bottle import response
-from bottle import static_file as bottle_static_file
+from flask import Response
+from flask import jsonify
+from flask import make_response
+from flask import request
+from flask import send_from_directory
+from flask import session
 from pygments.formatters import HtmlFormatter
 from pygments.lexers import PhpLexer
 from pygments.lexers import TextLexer
@@ -24,26 +26,22 @@ from pygments.lexers import get_all_lexers
 from pygments.lexers import get_lexer_by_name
 from pygments.lexers import guess_lexer
 from pygments.util import ClassNotFound
+from werkzeug.routing import BaseConverter
+from werkzeug.urls import url_quote
 
 from project import config
-from project.configdefines import gallery_params
+from project.constants import gallery_params
 
 
-def get_session():
-    return request.environ.get("beaker.session", {})
+class RegexConverter(BaseConverter):
+    def __init__(self, url_map, *items):
+        super(RegexConverter, self).__init__(url_map)
+        self.regex = items[0]
 
 
 def id_generator(size=6, chars=string.ascii_letters + string.digits):
     """ Generates a random string of given size """
     return "".join(random.SystemRandom().choice(chars) for _ in range(size))
-
-
-def strs_to_ints(dicts):
-    """ Converts all strings which are ints in a dict to actual ints
-        (for bottle GET/POST variables) """
-    return {
-        key: int(value) if value.isdigit() else value for key, value in dicts.items()
-    }
 
 
 def is_image(path):
@@ -180,10 +178,11 @@ def highlight_code_css(style="xcode", css_class=".syntax"):
 
 
 def json_response(success=True, error=False, status=200, **body):
-    return HTTPResponse(
-        body={"success": success, "error": error, "status_code": status, **body},
-        status=status,
+    resp: Response = jsonify(
+        {"success": success, "error": error, "status_code": status, **body}
     )
+    resp.status_code = status
+    return resp
 
 
 def json_error(error, status=400):
@@ -218,30 +217,34 @@ def remove_transparency(im, bg_colour=(255, 255, 255)):
 def get_host() -> str:
     """ Get the schema + host """
     return "{}://{}".format(
-        "https" if get_setting("ssl") else "http", request.environ.get("HTTP_HOST"),
+        "https" if get_setting("ssl") else "http",
+        request.environ.get("HTTP_HOST"),
     )
 
 
-def static_file(path: str, root: str, filename: Optional[str] = None) -> HTTPResponse:
+def static_file(path: str, root: str, filename: Optional[str] = None) -> Response:
     file_path = os.path.join(root, path)
     mime = magic.from_file(file_path, mime=True)
 
     def set_file_info(resp):
-        resp.set_header("Content-Type", mime)
+        resp.headers.set("Content-Type", mime)
         if filename:
-            resp.set_header("Content-Disposition", f'inline; filename="{filename}"')
+            resp.headers.set(
+                "Content-Disposition",
+                "inline",
+                **{"filename*": "UTF-8''%s" % url_quote(filename)},
+            )
         return resp
-
-    set_file_info(response)
 
     # Use the sendfile built into nginx if it's available
     if get_setting("use_nginx_sendfile"):
-        # TODO: use paths from settings
         folder = "t" if root is get_setting("directories.thumbs") else "p"
+        response = set_file_info(make_response())
         response.set_header("X-Accel-Redirect", f"/get_image/{folder}/{path}")
         return response
 
-    return set_file_info(bottle_static_file(path, root=root, mimetype=mime))
+    response = make_response(send_from_directory(root, path, mimetype=mime))
+    return set_file_info(response)
 
 
 def url_for_page(page):
@@ -252,17 +255,18 @@ def url_for_page(page):
     :return: URL for the given gallery page
     """
 
-    request.query["page"] = str(page)
+    args = request.args.copy()
+    args["page"] = str(page)
     query = {}
-    for key, value in request.query.items():
+    for key, value in args.items():
         if value != gallery_params.get(key):
             query[key] = value
 
     encoded = urlencode(query)
-    return request.urlparts.path + (encoded and "?" + urlencode(query))
+    return request.path + (encoded and "?" + urlencode(query))
 
 
-def key_password_return(session):
+def key_password_return():
     # Check if the user has got their key and password stored, else
     # generate a mostly secure key for them.
     if session.get("id"):

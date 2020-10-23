@@ -1,37 +1,93 @@
-import logging
+import sentry_sdk
+from flask import Flask
+from flask import g
+from flask import render_template
+from sentry_sdk.integrations.flask import FlaskIntegration
+from werkzeug.local import LocalProxy
 
-from bottle import Bottle
-from bottle import Jinja2Template
-from bottle import TEMPLATE_PATH
-from bottle import jinja2_template as template
-
+from db import DB
 from project import config
-from project.configdefines import FileType
-from project.configdefines import PasteAction
-from project.configdefines import search_modes
-from project.configdefines import sort_modes
+from project.constants import FileType
+from project.constants import PasteAction
+from project.constants import search_modes
+from project.constants import sort_modes
+from project.functions import RegexConverter
+from project.functions import get_setting
 from project.functions import url_for_page
+from project.usersettings import UserSettings
 
-logging.basicConfig(
-    level=logging.DEBUG if config.Settings["debug"]["enabled"] else logging.INFO
-)
+debug = bool(get_setting("debug.enabled"))
+sentry_enabled = bool(get_setting("debug.sentry.enabled"))
+
+# logging.basicConfig(level=logging.DEBUG if debug else logging.INFO)
 __version__ = "0.1"
-app = Bottle()
-TEMPLATE_PATH.append("./project/views/")
-TEMPLATE_PATH.remove("./views/")
+app = Flask(__name__, template_folder="views", static_folder="static")
 
-Jinja2Template.defaults = {
-    "sort_modes": sort_modes,
-    "search_modes": search_modes,
-    "file_type": FileType,
-    "paste_actions": PasteAction,
-    "url_for_page": url_for_page,
-}
-Jinja2Template.settings = {"autoescape": True}
+if sentry_enabled:
+    sentry_sdk.init(
+        dsn=get_setting("debug.sentry.url"), integrations=[FlaskIntegration()]
+    )
+
+# allow regex for URL matching
+app.url_map.converters["regex"] = RegexConverter
+
+# add config values that are used by flask
+app.config.update(
+    DEBUG=debug,
+    SECRET_KEY=get_setting("sessions.encrypt_key"),
+    PREFERRED_URL_SCHEME="https" if get_setting("ssl") else "http",
+    MAX_CONTENT_LENGTH=get_setting("max_file_size"),
+)
+
+
+@app.context_processor
+def inject_funcs():
+    return {
+        "sort_modes": sort_modes,
+        "search_modes": search_modes,
+        "file_type": FileType,
+        "paste_actions": PasteAction,
+        "url_for_page": url_for_page,
+    }
+
+
+def connect_db():
+    return DB(
+        user=get_setting("database.user"),
+        password=get_setting("database.password"),
+        database=get_setting("database.db"),
+        debug=get_setting("debug.enabled"),
+    )
+
+
+def get_db():
+    if not hasattr(g, "db"):
+        g.db = connect_db()
+    return g.db
+
+
+def get_user_settings():
+    if not hasattr(g, "user_settings"):
+        g.user_settings = UserSettings("project/user_settings.json", get_db())
+
+    return g.user_settings
+
+
+@app.teardown_appcontext
+def teardown_db(exception):
+    db = g.pop("db", None)
+    user_settings = g.pop("user_settings", None)
+
+    if db is not None:
+        db.close()
+
+
+db = LocalProxy(get_db)
+user_settings = LocalProxy(get_user_settings)
 
 from project.controllers import *  # noqa
 
 
-@app.error(404)
+@app.errorhandler(404)
 def error_not_found(err):
-    return template("error.tpl", in_title=True, error=err.body, status=err.status)
+    return render_template("error.tpl", in_title=True, error=err.name, status=err.code)

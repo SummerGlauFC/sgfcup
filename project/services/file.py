@@ -1,30 +1,23 @@
 import os
 import random
-import sys
 from datetime import datetime
 from typing import List
 from typing import Optional
 from typing import Tuple
-
-from project.functions import id_generator
-from project.functions import json_error
-from project.functions import sizeof_fmt
-
-if sys.version_info >= (3, 8):
-    from typing import TypedDict  # pylint: disable=no-name-in-module
-else:
-    from typing_extensions import TypedDict
-
 from typing import Union
 
 from PIL import Image
 from PIL import ImageOps
-from bottle import HTTPResponse
-from bottle import abort
+from flask import Response
+from flask import abort
+from werkzeug.utils import secure_filename
 
-from project.config import db
-from project.config import user_settings
+from project import db
+from project import user_settings
+from project.constants import FileType
+from project.constants import TypedDict
 from project.functions import get_setting
+from project.functions import id_generator
 from project.functions import remove_transparency
 from project.functions import static_file
 
@@ -38,6 +31,9 @@ class FileInterface(TypedDict, total=False):
     hits: int
     size: int
     date: datetime
+    type: Union[int, FileType]
+    width: Optional[int]
+    height: Optional[int]
 
 
 class FileService:
@@ -75,30 +71,13 @@ class FileService:
         shorturl = id_generator(random.SystemRandom().randint(4, 7))
 
         directory = get_setting("directories.files")
-        filename = file.filename
+        filename = secure_filename(file.filename)
         name, ext = os.path.splitext(filename)
         if not ext:
             ext = ""
 
         path = os.path.join(directory, shorturl + ext)
-
-        # chunk save so we can abort if too large
-        data_blocks = []
-        byte_count = 0
-        max_size = get_setting("max_file_size")
-        buf = file.file.read(8192)
-        while buf:
-            byte_count += len(buf)
-            if byte_count > max_size:
-                raise json_error(
-                    f"File is too big. Max filesize: {sizeof_fmt(max_size)}.",
-                    status=413,
-                )
-            data_blocks.append(buf)
-            buf = file.file.read(8192)
-
-        with open(path, "wb") as f:
-            f.write(b"".join(data_blocks))
+        file.save(path)
 
         return FileService.create(
             FileInterface(
@@ -106,7 +85,7 @@ class FileService:
                 shorturl=shorturl,
                 ext=ext,
                 original=filename,
-                size=byte_count,
+                size=os.path.getsize(path),
             )
         )
 
@@ -215,10 +194,10 @@ class FileService:
             if ext and f".{ext}" != file["ext"]:
                 should_abort = True
         if should_abort:
-            abort(404, "File not found.")
+            abort(404)
 
     @staticmethod
-    def serve_file(file: FileInterface) -> HTTPResponse:
+    def serve_file(file: FileInterface) -> Response:
         """
         Serve the given file.
 
@@ -266,7 +245,7 @@ class FileService:
         return thumb_dir, thumb_file
 
     @staticmethod
-    def get_thumbnail(file: FileInterface) -> Optional[HTTPResponse]:
+    def get_thumbnail(file: FileInterface) -> Optional[Response]:
         """
         Get the thumbnail for the given file.
 
@@ -279,9 +258,7 @@ class FileService:
         return None
 
     @staticmethod
-    def create_thumbnail(
-        file: FileInterface, size=(400, 400)
-    ) -> Optional[HTTPResponse]:
+    def create_thumbnail(file: FileInterface, size=(400, 400)) -> Optional[Response]:
         """
         Create thumbnail for the given file.
 
@@ -319,7 +296,7 @@ class FileService:
     @staticmethod
     def get_or_create_thumbnail(
         file: FileInterface, size=(400, 400)
-    ) -> Optional[HTTPResponse]:
+    ) -> Optional[Response]:
         """
         Get (and create) the thumbnail for the given file.
 

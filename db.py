@@ -1,9 +1,11 @@
 import logging
 from functools import wraps
 
-import cymysql
+import pymysql
+from flask.logging import default_handler
 
 logger = logging.getLogger(__name__)
+logger.addHandler(default_handler)
 
 
 def catch_error(f):
@@ -11,7 +13,7 @@ def catch_error(f):
     def wrapped(self, *args, **kwargs):
         try:
             return f(self, *args, **kwargs)
-        except (cymysql.err.Error, BrokenPipeError):
+        except (pymysql.err.Error, BrokenPipeError):
             logger.exception("Database connection died, trying to reinitialise...")
             self._init_connection()
             return f(self, *args, **kwargs)
@@ -48,14 +50,14 @@ class BaseDB(object):
 
         try:
             self._connect()
-        except (cymysql.err.Error, BrokenPipeError):
+        except (pymysql.err.Error, BrokenPipeError):
             logger.exception("Database connection died, trying to reinitialise...")
             self.retries -= 1
             self._init_connection()
 
     def _connect(self):
         """ connect to the database """
-        self.conn = cymysql.connect(
+        self.conn = pymysql.connect(
             host=self.host,
             user=self.user,
             passwd=self.password,
@@ -66,23 +68,28 @@ class BaseDB(object):
         )
         # autocommit just in case we're on InnoDB
         self.conn.autocommit(True)
-        self.cur = self.conn.cursor(cymysql.cursors.DictCursor)
 
-    @catch_error
+    # @catch_error
+    def close(self):
+        """ close the database connection """
+        self.conn.close()
+
+    # @catch_error
     def escape(self, obj):
         """ autodetect input and escape it for use in a SQL statement """
         if isinstance(obj, str):
             return self.conn.escape(obj)
         return obj
 
-    @catch_error
+    # @catch_error
     def execute(self, sql, args=None):
         """ execute the SQL statement and return the cursor """
-        logger.debug((sql, args))
+        logger.debug(f"'{sql}' {args}")
+        self.cur = self.conn.cursor(pymysql.cursors.DictCursor)
         self.cur.execute(sql, args) if args is not None else self.cur.execute(sql)
         return self.cur
 
-    @catch_error
+    # @catch_error
     def fetchone(self, sql, args=None):
         """ execute the SQL statement and return one row if there's a result, return None if there's no result """
         cur = self.execute(sql, args)
@@ -90,7 +97,7 @@ class BaseDB(object):
             return cur.fetchone()
         return None
 
-    @catch_error
+    # @catch_error
     def fetchall(self, sql, args=None):
         """ execute the SQL statement and return one row if there's a result, return None if there's no result """
         cur = self.execute(sql, args)
@@ -100,8 +107,8 @@ class BaseDB(object):
 
 
 class DB(BaseDB):
-    """ Wrapper around small DB abstraction to abstract further
-        this is art.
+    """Wrapper around small DB abstraction to abstract further
+    this is art.
     """
 
     def __init__(self, *args, **kwargs):
@@ -121,10 +128,10 @@ class DB(BaseDB):
         return self._pairs_generator(columns, joiner=", ")
 
     def select(self, table, what="*", where=None, singular=False):
-        """ build and execute a select operation, usage:
-                select('rooms', what='*', where={'name': '#main'})
-            resulting in the query:
-                'SELECT * FROM `rooms` WHERE `name` = %s', ['#main']
+        """build and execute a select operation, usage:
+            select('rooms', what='*', where={'name': '#main'})
+        resulting in the query:
+            'SELECT * FROM `rooms` WHERE `name` = %s', ['#main']
         """
         if not isinstance(what, (list, tuple)):
             what = [what]
@@ -154,10 +161,10 @@ class DB(BaseDB):
         return self.fetchall(query, list(where.values()))
 
     def update(self, table, set_pairs, where_pairs):
-        """ build and execute an update operation, usage:
-                update('table', {'hidden': True, 'other': 'test'}, {'name': '#main', 'me': 'test again'})
-            resulting in the query:
-                'UPDATE `rooms` SET `hidden` = %s, `other` = %s WHERE `me` = %s AND `name` = %s', [True, 'test', 'test again', '#main'])
+        """build and execute an update operation, usage:
+            update('table', {'hidden': True, 'other': 'test'}, {'name': '#main', 'me': 'test again'})
+        resulting in the query:
+            'UPDATE `rooms` SET `hidden` = %s, `other` = %s WHERE `me` = %s AND `name` = %s', [True, 'test', 'test again', '#main'])
         """
         sets = self._columns_generator(set_pairs)
         where = self._pairs_generator(where_pairs, brackets=True)
@@ -167,10 +174,10 @@ class DB(BaseDB):
         )
 
     def delete(self, table, pairs):
-        """ build and execute a delete operation, usage:
-                delete('table', {'c1': 'v1', 'c2': 'v2'})
-            resulting in the query:
-                'DELETE FROM `table` WHERE `c1` = %s AND `c2` = %s', ['v1', 'v2']
+        """build and execute a delete operation, usage:
+            delete('table', {'c1': 'v1', 'c2': 'v2'})
+        resulting in the query:
+            'DELETE FROM `table` WHERE `c1` = %s AND `c2` = %s', ['v1', 'v2']
         """
 
         where = self._pairs_generator(pairs, brackets=True)
@@ -178,21 +185,13 @@ class DB(BaseDB):
         return self.execute(query, list(pairs.values()))
 
     def insert(self, table, columns_pair):
-        """ build and execute an insert operation, as such:
-            insert('table_name', {'column1': 'value', 'column2': 'value2'}) """
+        """build and execute an insert operation, as such:
+        insert('table_name', {'column1': 'value', 'column2': 'value2'})"""
 
         columns = ",".join([f"`{col}`" for col in columns_pair])
         values = ",".join(["%s"] * len(columns_pair))
         query = f"INSERT INTO `{table}` ({columns}) VALUES ({values})"
         return self.execute(query, list(columns_pair.values()))
-
-    def fetchone(self, sql, args=None):
-        """ execute the SQL statement and return one row if there's a result, return None if there's no result """
-        return super().fetchone(sql, args)
-
-    def fetchall(self, sql, args=None):
-        """ execute the SQL statement and return one row if there's a result, return None if there's no result """
-        return super().fetchall(sql, args)
 
 
 class DBConnectionFailed(Exception):

@@ -1,39 +1,41 @@
-from bottle import jinja2_template as template
-from bottle import redirect
-from bottle import request
+from functools import wraps
+
+from flask import redirect
+from flask import render_template
+from flask import request
+from flask import session
 
 from project import app
-from project import config
+from project import db
 from project import functions
-from project.functions import get_session
 from project.functions import get_setting
 from project.services.account import AccountService
 from project.services.file import FileService
 
-db = config.db
 
-
-def auth_session(fn):
-    def check_session(**kwargs):
-        SESSION = get_session()
-        if SESSION.get("admin"):
-            return fn(**kwargs)
-        redirect("/admin/login")
+def login_required(f):
+    @wraps(f)
+    def check_session(*args, **kwargs):
+        if not session.get("admin"):
+            return redirect("/admin/login")
+        return f(*args, **kwargs)
 
     return check_session
 
 
-@app.get("/admin", apply=[auth_session])
+@app.route("/admin", methods=["GET"])
+@login_required
 def route():
-    return template("admin")  # User is authed, continue to admin page
+    return render_template("admin.tpl")  # User is authed, continue to admin page
 
 
-@app.post("/admin/deletehits", apply=[auth_session])
+@app.route("/admin/deletehits", methods=["POST"])
+@login_required
 def delete_hits():
     # Short references to commonly used data
-    key = request.forms.get("key", None)
-    hit_threshold = request.forms.get("hit_threshold", -1)
-    all_keys = request.forms.get("all_keys", None)
+    key = request.form.get("key", None)
+    hit_threshold = request.form.get("hit_threshold", -1)
+    all_keys = request.form.get("all_keys", None)
 
     delete_queue = ()
 
@@ -56,19 +58,18 @@ def delete_hits():
     return f"{count} items deleted. {functions.sizeof_fmt(size)} of disk space saved."
 
 
-@app.get("/admin/login")
+@app.route("/admin/login", methods=["GET"])
 def login():
     # Admin login template
-    return template("admin_login.tpl")
+    return render_template("admin_login.tpl")
 
 
-@app.post("/admin/login")
+@app.route("/admin/login", methods=["POST"])
 def do_login():
-    SESSION = get_session()
     admin = get_setting("admin").get(request.forms.get("key"), None)
     if admin and admin == request.forms.get("password"):
         # Allow for a persistent login
-        SESSION["admin"] = True
-        redirect("/admin")
+        session["admin"] = True
+        return redirect("/admin")
     # If user provided incorrect details, just redirect back to login page
-    redirect("/admin/login")
+    return redirect("/admin/login")

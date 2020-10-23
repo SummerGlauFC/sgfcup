@@ -1,8 +1,12 @@
+import sys
 from enum import Enum
 
-# /-----------------------------------------------------------------\
-# |  Please try not to adjust any of the below without good reason. |
-# \-----------------------------------------------------------------/
+if sys.version_info >= (3, 8):
+    # noinspection PyUnresolvedReferences
+    from typing import TypedDict  # pylint: disable=no-name-in-module
+else:
+    # noinspection PyUnresolvedReferences
+    from typing_extensions import TypedDict
 
 # Sort modes used by the gallery ('Name', 'database column', 'sort order')
 sort_modes = [

@@ -1,14 +1,15 @@
 import ghdiff
-from bottle import abort
-from bottle import jinja2_template as template
-from bottle import redirect
-from bottle import response
+from flask import Response
+from flask import abort
+from flask import make_response
+from flask import redirect
+from flask import render_template
+from flask import session
 
 from project import app
-from project import config
+from project import db
 from project import functions
-from project.configdefines import PasteAction
-from project.functions import get_session
+from project.constants import PasteAction
 from project.functions import key_password_return
 from project.services.file import FileService
 from project.services.paste import PasteService
@@ -17,33 +18,32 @@ from project.services.paste import RevisionInterface
 
 @app.route("/paste/<url>")
 @app.route("/paste/<url>/<flag>")
-@app.route("/paste/<url>\:<commit>")
-@app.route("/paste/<url>\:<commit>/<flag>")
+@app.route("/paste/<url>:<commit>")
+@app.route("/paste/<url>:<commit>/<flag>")
 def paste_view(url, commit=None, flag=None):
     # TODO: simplify paste view controller
-    SESSION = get_session()
 
     flag = PasteAction.get(flag)
     flag_path = "/" + flag.value if flag.value else ""
 
     # redirect to the base url if commit is "base"
     if commit == "base":
-        redirect(f"/paste/{url}{flag_path}")
+        return redirect(f"/paste/{url}{flag_path}")
 
     # Disable the ability to use diff on the base commit only
     if not commit and flag == PasteAction.DIFF:
-        redirect(f"/paste/{url}")
+        return redirect(f"/paste/{url}")
 
     # Select the paste from `files`
     file = FileService.get_by_url(url)
     if not file:
-        abort(404, "File not found.")
+        abort(404)
 
     paste = PasteService.get_by_id(file["original"])
     if not paste:
         # Paste exists in files table but not in pastes table... remove it.
-        config.db.delete("files", {"id": file["id"]})
-        abort(404, "File not found.")
+        db.delete("files", {"id": file["id"]})
+        abort(404)
 
     # redirect user to the latest revision if commit is "latest"
     if commit == "latest":
@@ -51,7 +51,7 @@ def paste_view(url, commit=None, flag=None):
         if revision:
             # add latest commit hash to the URL
             url = f"{url}:{revision['commit']}"
-        redirect(f"/paste/{url}{flag_path}")
+        return redirect(f"/paste/{url}{flag_path}")
 
     # Get revisions for specified paste
     revisions = PasteService.get_revisions(RevisionInterface(pasteid=paste["id"]))
@@ -63,7 +63,7 @@ def paste_view(url, commit=None, flag=None):
             # so redirect to the first commit for the paste.
             if first_revision["fork"]:
                 redirect_commit = first_revision["commit"]
-                redirect(f"/paste/{url}:{redirect_commit}{flag_path}")
+                return redirect(f"/paste/{url}:{redirect_commit}{flag_path}")
 
         is_fork = first_revision["fork"]
         # add the dummy base revision to the revision list
@@ -71,6 +71,8 @@ def paste_view(url, commit=None, flag=None):
             revisions = (RevisionInterface(commit="base"), *revisions)
         # list all available commits
         commits = [row["commit"] for row in revisions]
+    else:
+        revisions = []
 
     # commit provided but is not valid
     if commit and commit not in commits:
@@ -89,8 +91,9 @@ def paste_view(url, commit=None, flag=None):
 
     # If the user provided the raw flag, skip all HTML rendering
     if flag == PasteAction.RAW:
-        response.content_type = "text/plain; charset=utf-8"
-        return raw_paste
+        response: Response = make_response(raw_paste)
+        response.headers.set("Content-Type", "text/plain", charset="utf-8")
+        return response
 
     lang = paste["lang"]
     # show paste shorturl if no name
@@ -118,7 +121,7 @@ def paste_view(url, commit=None, flag=None):
         content = functions.highlight_code(paste["content"], lang)
 
     # Decide whether the viewer owns this file (for forking or editing)
-    is_owner = paste["userid"] == SESSION.get("id", 0)
+    is_owner = paste["userid"] == session.get("id", 0)
 
     # Get the styles for syntax highlighting
     css = functions.highlight_code_css()
@@ -129,8 +132,8 @@ def paste_view(url, commit=None, flag=None):
     )
 
     # Provide the template with a mass of variables
-    return template(
-        "paste",
+    return render_template(
+        "paste.tpl",
         paste=dict(
             id=paste["id"],
             raw=paste["content"],
@@ -148,7 +151,7 @@ def paste_view(url, commit=None, flag=None):
         pagination=pagination,
         flag=flag,
         # Generate a key and password for the edit form
-        **key_password_return(SESSION),
+        **key_password_return(),
     )
 
 

@@ -3,12 +3,12 @@ from typing import Dict
 from typing import List
 from typing import Literal
 from typing import Optional
-from typing import TypedDict
 from typing import Union
 
 from jsonmerge import merge
 
 import db
+from project.constants import TypedDict
 
 
 def dump_json(obj):
@@ -88,6 +88,15 @@ class UserSettings:
                 )
         else:
             self.db.insert("settings", {"userid": user_id, "json": dump_json(data)})
+
+    def get_setting_type(self, key):
+        """
+        Get the type for the given setting.
+
+        :param key: setting to get type for
+        :return: type of setting
+        """
+        return type(self.settings.get(key, {}).get("default", str))
 
     def _change_values(self, values: SettingChangeValue) -> SettingsValueJson:
         """

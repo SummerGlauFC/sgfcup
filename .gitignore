@@ -220,3 +220,5 @@ img
 project/config.py
 # session data
 data
+# sql backups
+*_backup.sql

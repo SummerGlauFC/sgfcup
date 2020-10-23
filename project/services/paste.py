@@ -1,17 +1,11 @@
 import hashlib
 import random
-import sys
 from typing import Optional
 from typing import Tuple
 
+from project import db
+from project.constants import TypedDict
 from project.functions import id_generator
-
-if sys.version_info >= (3, 8):
-    from typing import TypedDict  # pylint: disable=no-name-in-module
-else:
-    from typing_extensions import TypedDict
-
-from project.config import db
 
 
 class PasteInterface(TypedDict, total=False):
