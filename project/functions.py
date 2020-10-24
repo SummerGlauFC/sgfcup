@@ -29,6 +29,7 @@ from pygments.util import ClassNotFound
 from werkzeug.routing import BaseConverter
 from werkzeug.urls import url_quote
 
+from db import DB
 from project import config
 from project.constants import gallery_params
 
@@ -267,8 +268,26 @@ def url_for_page(page):
 
 
 def key_password_return():
-    # Check if the user has got their key and password stored, else
-    # generate a mostly secure key for them.
+    """
+    Check if the user has got their key and password stored, else
+    generate a mostly secure key for them.
+
+    :return: dict containing {key: ..., password: ...}
+    """
     if session.get("id"):
         return {"key": session.get("key"), "password": session.get("password")}
     return {"key": id_generator(15), "password": id_generator(15)}
+
+
+def connect_db():
+    """
+    Get a DB connection instance.
+
+    :return: DB connection instance
+    """
+    return DB(
+        user=get_setting("database.user"),
+        password=get_setting("database.password"),
+        database=get_setting("database.db"),
+        debug=get_setting("debug.enabled"),
+    )

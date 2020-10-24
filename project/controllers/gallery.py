@@ -6,12 +6,13 @@ from flask import render_template
 from flask import request
 from flask import session
 
-from project import FileType
 from project import app
-from project import constants
 from project import db
 from project import functions
+from project.constants import FileType
 from project.constants import gallery_params
+from project.constants import search_modes
+from project.constants import sort_modes
 from project.functions import get_dict
 from project.functions import key_password_return
 from project.services.account import ACCOUNT_KEY_REGEX
@@ -56,18 +57,18 @@ def gallery_view(user_key=None):
     query_in = functions.get_inrange(
         request.args.get("in"),
         int(gallery_params["in"]),
-        len(constants.search_modes),
+        len(search_modes),
     )
     query = request.args.get("query", "")
     active_sort = functions.get_inrange(
         request.args.get("sort"),
         int(gallery_params["sort"]),
-        len(constants.sort_modes),
+        len(sort_modes),
     )
 
     sql_search = ""
-    search_in = constants.search_modes[query_in][1]
-    sort_by = constants.sort_modes[active_sort]
+    search_in = search_modes[query_in][1]
+    sort_by = sort_modes[active_sort]
 
     # Ensure case-sensitive searching with a binary conversion
     collate = " COLLATE utf8_bin" if case else ""

@@ -4,6 +4,7 @@ from typing import Optional
 from typing import Tuple
 
 from project import db
+from project.constants import FileType
 from project.constants import TypedDict
 from project.functions import id_generator
 
@@ -116,6 +117,7 @@ class PasteService:
                 ext="paste",
                 original=paste_row,
                 size=len(new_attrs["content"]),
+                type=FileType.PASTE.value,
             )
         )
 

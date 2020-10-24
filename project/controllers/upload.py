@@ -6,7 +6,6 @@ from flask import request
 from flask import session
 
 from project import app
-from project import config
 from project import functions
 from project import user_settings
 from project.functions import get_host
@@ -92,9 +91,11 @@ def api_upload_file(upload_type="file"):
     password = request.form.get("password", False)
     user_id = handle_auth_or_abort(key, password)
 
+    is_file = upload_type == "file"
+
     # defaults for an impossible case
     file: Optional[Union[FileInterface, PasteInterface]] = None
-    if upload_type == "file":
+    if is_file:
         file = submit_file(user_id)
     elif upload_type == "paste":
         file = submit_paste(user_id)
@@ -103,10 +104,10 @@ def api_upload_file(upload_type="file"):
         return functions.json_error("Failed to upload file")
 
     shorturl = file["shorturl"]
-    ext = file["ext"] if upload_type == "file" else "paste"
+    ext = file["ext"] if is_file else "paste"
 
     host = get_host()
-    path = "/" + ("" if upload_type == "file" else upload_type + "/")
+    path = "/" + ("" if is_file else upload_type + "/")
     return functions.json_response(
         type=ext,
         key="anon" if not user_id else key,

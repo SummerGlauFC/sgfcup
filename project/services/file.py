@@ -18,6 +18,7 @@ from project.constants import FileType
 from project.constants import TypedDict
 from project.functions import get_setting
 from project.functions import id_generator
+from project.functions import is_image
 from project.functions import remove_transparency
 from project.functions import static_file
 
@@ -79,6 +80,14 @@ class FileService:
         path = os.path.join(directory, shorturl + ext)
         file.save(path)
 
+        data = {"type": FileType.FILE.value}
+        image = is_image(path)
+        if image:
+            data["type"] = FileType.IMAGE.value
+            width, height = image.size
+            data["width"] = width
+            data["height"] = height
+
         return FileService.create(
             FileInterface(
                 userid=new_attrs["userid"],
@@ -86,6 +95,7 @@ class FileService:
                 ext=ext,
                 original=filename,
                 size=os.path.getsize(path),
+                **data,
             )
         )
 

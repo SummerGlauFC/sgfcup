@@ -5,15 +5,10 @@ from flask import render_template
 from sentry_sdk.integrations.flask import FlaskIntegration
 from werkzeug.local import LocalProxy
 
-from db import DB
 from project import config
-from project.constants import FileType
-from project.constants import PasteAction
-from project.constants import search_modes
-from project.constants import sort_modes
 from project.functions import RegexConverter
+from project.functions import connect_db
 from project.functions import get_setting
-from project.functions import url_for_page
 from project.usersettings import UserSettings
 
 debug = bool(get_setting("debug.enabled"))
@@ -21,7 +16,7 @@ sentry_enabled = bool(get_setting("debug.sentry.enabled"))
 
 # logging.basicConfig(level=logging.DEBUG if debug else logging.INFO)
 __version__ = "0.1"
-app = Flask(__name__, template_folder="views", static_folder="static")
+app = Flask(__name__, template_folder="views")
 
 if sentry_enabled:
     sentry_sdk.init(
@@ -42,6 +37,12 @@ app.config.update(
 
 @app.context_processor
 def inject_funcs():
+    from project.constants import FileType
+    from project.constants import PasteAction
+    from project.constants import search_modes
+    from project.constants import sort_modes
+    from project.functions import url_for_page
+
     return {
         "sort_modes": sort_modes,
         "search_modes": search_modes,
@@ -49,15 +50,6 @@ def inject_funcs():
         "paste_actions": PasteAction,
         "url_for_page": url_for_page,
     }
-
-
-def connect_db():
-    return DB(
-        user=get_setting("database.user"),
-        password=get_setting("database.password"),
-        database=get_setting("database.db"),
-        debug=get_setting("debug.enabled"),
-    )
 
 
 def get_db():
@@ -69,13 +61,13 @@ def get_db():
 def get_user_settings():
     if not hasattr(g, "user_settings"):
         g.user_settings = UserSettings("project/user_settings.json", get_db())
-
     return g.user_settings
 
 
 @app.teardown_appcontext
 def teardown_db(exception):
     db = g.pop("db", None)
+    # noinspection PyUnusedLocal
     user_settings = g.pop("user_settings", None)
 
     if db is not None:
