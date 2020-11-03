@@ -1,8 +1,8 @@
 #container {
     justify-content: flex-start;
-    padding: 1rem;
-    margin: 0 auto;
     box-sizing: border-box;
+    margin: 0 auto;
+    padding: 1rem;
 }
 
 #main {
@@ -85,9 +85,9 @@ pre, textarea {
 
 .paste-header {
     display: flex;
+    flex-wrap: wrap;
     justify-content: space-between;
     margin-bottom: 0.75rem;
-    flex-wrap: wrap;
 }
 
 .paste-info {
@@ -105,12 +105,12 @@ a, a:link, a:visited {
 }
 
 textarea,
-#commit-message {
+#commit_message {
     box-sizing: border-box;
     width: 100%;
 }
 
-#commit-message {
+#commit_message {
     box-sizing: border-box;
     padding: 4px 3px;
 }

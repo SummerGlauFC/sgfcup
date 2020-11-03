@@ -1,14 +1,21 @@
 {% extends "base.tpl" %}
 {% block title %}super secret admin panel<br>do not leek{% endblock %}
+{% block extra %}
+  <form action="/admin/logout" method="post">
+    <p>
+      <input type='submit' value="Sign out" />
+    </p>
+  </form>
+{% endblock %}
 {% block content %}
   <form class="flex-full" method="post" action="/admin/deletehits">
+    {{ form.hidden_tag() }}
     <div class="middle mb-none">
-      Delete uploads for <input type="text" value="" placeholder="key" name="key" />
+      Delete uploads for {{ form.key(placeholder="key") }}
       <br />
-      where hits &lt;=:
-      <input type="text" name="hit_threshold" size="5" />
+      where hits &lt;= {{ form.hit_threshold(size=5) }}
       <br /><br />
-      <input type="checkbox" name="all_keys" /> Delete from all keys
+      {{ form.all_keys() }} {{ form.all_keys.label }}
     </div>
     <div class="bottom">
       <p><input type="submit" /></p>

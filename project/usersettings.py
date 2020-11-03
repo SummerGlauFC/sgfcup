@@ -153,12 +153,32 @@ class UserSettings:
         current_config = self._get_settings_row(user_id)
         self._update(user_id, self._change_values(items), current_config)
 
-    def get_all_values(self, user_id) -> SettingsJson:
-        """returns all values from a users config, including defaults.
-        Like a version of get for every key instead.
+    def get_all_values(self, user_id: int) -> SettingsJson:
+        """
+        Get all user settings, including defaults.
+
+        :param user_id: the ID of the user
+        :return: user settings
         """
         conf = self._get(user_id)
         for key in conf:
             if "value" not in conf[key] and "default" in conf[key]:
                 conf[key]["value"] = conf[key]["default"]
         return conf
+
+    @staticmethod
+    def get_only_values(settings: SettingsJson) -> SettingChangeValue:
+        """
+        Transform settings JSON to {setting: value}.
+
+        :param settings: the users settings
+        :return: dict of {setting: value}
+        """
+        out = {}
+        for key in settings:
+            if key != "groups":
+                if "value" not in settings[key] and "default" in settings[key]:
+                    out[key] = settings[key]["default"]
+                else:
+                    out[key] = settings[key]["value"]
+        return out

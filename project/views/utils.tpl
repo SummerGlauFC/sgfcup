@@ -1,4 +1,29 @@
-{% macro login_form(key="", password="", show_clear=False) %}
+{% macro errors(field, show_required=False) %}
+  {% if field.errors %}
+    <p class="{{ kwargs.pop("class", "m-none") }}">
+      {% for error in field.errors %}
+        <span style="color: red;">{{ error|e }}</span>
+      {% endfor %}
+    </p>
+  {% endif %}
+{% endmacro %}
+
+{% macro flashed_messages(break=False) %}
+  {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+      <ul class="messages" style="padding-inline-start:0;">
+        {% for category, message in messages %}
+          <li class="{{ category }}">{{ message }}</li>
+        {% endfor %}
+      </ul>
+      {% if break %}
+        <hr />
+      {% endif %}
+    {% endif %}
+  {% endwith %}
+{% endmacro %}
+
+{% macro login_form(form, show_clear=False) %}
   <div id="identification">
     {% if show_clear %}
       <p>
@@ -12,13 +37,15 @@
         <button type='button' id="clear-fields">Clear Fields</button>
       </p>
     {% endif %}
+    {{ errors(form.key) }}
     <p class="m-none">
-      <label for="key">User</label>
-      <input type="text" size="20" name="key" id="key" value="{{ key }}" />
+      {{ form.key.label }}
+      {{ form.key(size=20) }}
     </p>
+    {{ errors(form.password) }}
     <p class="m-none">
-      <label for="password">Password</label>
-      <input type="password" size="20" name="password" id="password" value="{{ password }}" />
+      {{ form.password.label }}
+      {{ form.password(size=20) }}
     </p>
   </div>
 {% endmacro %}

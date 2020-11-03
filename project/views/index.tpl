@@ -31,7 +31,7 @@ Source code available at <a
         </a>
     </span>
   <span class="button-icon">
-        <a href="/gallery/{{ key }}" data-icon="&#xf03e;">
+        <a id="button-gallery" href="/gallery/{{ key }}" data-icon="&#xf03e;">
             <strong class='locks' data-icon="&#xf023;"></strong>
             <span class='types'>gallery</span>
         </a>
@@ -68,7 +68,7 @@ Source code available at <a
         <div id="files">
           Drop files <strong>here</strong>, or click to browse
         </div>
-        {{ login_form(key=key, password=password, show_clear=True) }}
+        {{ login_form(form_login, show_clear=True) }}
       </div>
     </div>
     <div class="bottom">

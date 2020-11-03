@@ -60,6 +60,11 @@ Dropzone.options.myAwesomeDropzone = {
     this.on("success", function (file, response) {
       // hide the error mark when re-uploading errored files
       file.previewElement.removeChild(file.previewElement.getElementsByClassName("dz-error-mark")[0])
+
+      // update URL for gallery button upon upload
+      const gallery = document.getElementById("button-gallery")
+      if (gallery && response.key !== "anon") gallery.href = `/gallery/${response.key}`
+
       showUploadResult(file, response, `<a href="${response.full_url}">${response.full_url}</a>`)
       dropzone.processQueue()
     })

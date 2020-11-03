@@ -31,11 +31,12 @@
 <html>
 <head>
   <title>SGFC | {{ title }}</title>
-  <link rel="icon" type="image/ico" href="/static/misc/favicon.ico" />
-  <link href='/static/css/main.css' rel='stylesheet' type='text/css'>
-  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link href="/static/misc/favicon.ico" rel="icon" type="image/x-icon" />
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/normalize/8.0.1/normalize.min.css" rel="stylesheet">
+  <link href="/static/css/main.css" rel="stylesheet" type="text/css">
   <style type="text/css">{{ css }}</style>
-  <link href='/static/css/paste.css' rel='stylesheet' type='text/css'>
+  <link href="/static/css/paste.css" rel="stylesheet" type="text/css">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
 </head>
 
 <body class="paste">
@@ -103,16 +104,16 @@
       </div>
     {%- else -%}
       <form action="/api/edit/paste" method="POST" id="paste">
-        <input type="hidden" name="id" value="{{ paste.id }}" />
+        {{ form.csrf_token }}
+        {{ form.id() }}
         {% if revision.id -%}
-          <input type="hidden" name="commit" value="{{ revision.id }}" />
+          {{ form.commit() }}
         {%- endif %}
-        <textarea rows="2" id="commit-message" name="commit_message" placeholder="commit message"></textarea>
-        <textarea rows="22" name="paste_edit_body" id="paste_edit_body"
-                  class="pastebox">{{ paste.raw }}</textarea>
+        {{ form.commit_message(rows=2) }}
+        {{ form.body(rows=22) }}
         <div style="text-align:center; margin-top:15px">
           <div id="message" style="display: none">Uploading...</div>
-          {{ login_form(key=key, password=password, show_clear=True) }}
+          {{ login_form(form, show_clear=True) }}
           <br />
           <input type="submit" name="submit" value="{% if paste.own %}Edit{% else %}Fork{% endif %}" />
       </form>

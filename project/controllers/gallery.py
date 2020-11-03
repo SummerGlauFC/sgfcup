@@ -1,6 +1,7 @@
 import functools
 from typing import Tuple
 
+from flask import flash
 from flask import redirect
 from flask import render_template
 from flask import request
@@ -10,11 +11,14 @@ from project import app
 from project import db
 from project import functions
 from project.constants import FileType
-from project.constants import gallery_params
 from project.constants import search_modes
 from project.constants import sort_modes
+from project.forms import flatten_errors
+from project.forms.gallery import GalleryAdvancedDeleteForm
+from project.forms.gallery import GalleryAuthForm
+from project.forms.gallery import GalleryDeleteForm
+from project.forms.gallery import GallerySortForm
 from project.functions import get_dict
-from project.functions import key_password_return
 from project.services.account import ACCOUNT_KEY_REGEX
 from project.services.account import AccountService
 from project.services.file import FileInterface
@@ -47,24 +51,22 @@ def gallery_view(user_key=None):
     # gallery access restrictions
     settings = AccountService.get_settings(user["id"])
     if not AccountService.validate_auth_cookie(user["id"], settings=settings):
+        # if cookie , show password incorrect message
+        if AccountService.get_auth_cookie(user["id"]):
+            flash("Incorrect gallery password", "error")
         return redirect(f"/gallery/auth/{user_key}")
 
-    files = []
+    form_filter = GallerySortForm(request.args)
+    page = form_filter.page.data
+    case = form_filter.case.data
+    query = form_filter.query.data
 
-    # shorthand assignments for often used data
-    page = int(request.args.get("page", gallery_params["page"]))
-    case = int(request.args.get("case", gallery_params["case"]))
-    query_in = functions.get_inrange(
-        request.args.get("in"),
-        int(gallery_params["in"]),
-        len(search_modes),
-    )
-    query = request.args.get("query", "")
-    active_sort = functions.get_inrange(
-        request.args.get("sort"),
-        int(gallery_params["sort"]),
-        len(sort_modes),
-    )
+    if form_filter.validate():
+        query_in = form_filter.in_.data
+        active_sort = form_filter.sort.data
+    else:
+        query_in = form_filter.in_.default
+        active_sort = form_filter.sort.default
 
     sql_search = ""
     search_in = search_modes[query_in][1]
@@ -102,6 +104,7 @@ def gallery_view(user_key=None):
         else:
             return render_template("error.tpl", error="This page does not exist.")
 
+    files = []
     for row in results:
         file = {
             "url": row["shorturl"],
@@ -137,6 +140,8 @@ def gallery_view(user_key=None):
     if tally and tally["total"] is not None:
         usage = functions.sizeof_fmt(float(tally["total"]))
 
+    form_delete = GalleryDeleteForm()
+
     return render_template(
         "gallery.tpl",
         key=user_key,
@@ -151,95 +156,76 @@ def gallery_view(user_key=None):
         hl=functools.partial(
             functions.highlight_text, search=query, case_sensitive=case
         ),
+        form_delete=form_delete,
+        form_filter=form_filter,
     )
 
 
-@app.route(f"/gallery/auth/<regex('{ACCOUNT_KEY_REGEX}'):_>", methods=["GET"])
-def gallery_auth_view(_):
-    return render_template("gallery_auth.tpl")
-
-
-@app.route(f"/gallery/auth/<regex('{ACCOUNT_KEY_REGEX}'):user_key>", methods=["POST"])
-def gallery_auth_do(user_key):
+@app.route(
+    f"/gallery/auth/<regex('{ACCOUNT_KEY_REGEX}'):user_key>", methods=["GET", "POST"]
+)
+def gallery_auth(user_key):
     # Set a long cookie to grant a user access to a gallery
-    remember = request.form.get("remember")
-    authcode = request.form.get("authcode")
-    user = AccountService.get_by_key(user_key)
-    resp = redirect(f"/gallery/{user_key}")
-    AccountService.set_auth_cookie(resp, user["id"], authcode, remember)
-    return resp
-
-
-@app.route("/gallery/delete/advanced", methods=["GET"])
-def gallery_delete_advanced_view():
-    return render_template("delete_advanced.tpl", **key_password_return())
-
-
-@app.route("/gallery/delete/advanced", methods=["POST"])
-def gallery_delete_advanced():
-    # get relevant parameters for the query
-    mapping = {"lte": "<=", "gte": ">=", "e": "="}
-    operator = request.form.get("operator")
-    del_type = request.form.get("type")
-    key = request.form.get("key")
-    password = request.form.get("password")
-    threshold = request.form.get("threshold", None)
-    if not (
-        operator in mapping.keys()
-        and del_type in ["hits", "size"]
-        and key
-        and password
-        and threshold is not None
-    ):
-        return render_template(
-            "delete.tpl", messages=["Invalid request. Please try again."]
+    form = GalleryAuthForm()
+    if form.validate_on_submit():
+        user = AccountService.get_by_key(user_key)
+        resp = redirect(f"/gallery/{user_key}")
+        AccountService.set_auth_cookie(
+            resp, user["id"], form.authcode.data, form.remember.data
         )
+        return resp
+    form.flash_errors()
+    return render_template("gallery_auth.tpl", form=form)
 
-    user, is_authed = AccountService.authenticate(key, password)
-    if not user:
-        return render_template("delete.tpl", messages=["Key or password is incorrect."])
 
-    sql = f"SELECT * FROM `files` WHERE `userid` = %s AND `{del_type}` {mapping[operator]} %s"
-    files = db.fetchall(sql, [user["id"], threshold])
-    size, count, messages = FileService.delete_batch(files)
-    messages.append(f"{count} items deleted. {functions.sizeof_fmt(size)} freed.")
-    return render_template("delete.tpl", messages=messages, key=key)
+@app.route("/gallery/delete/advanced", methods=["GET", "POST"])
+def gallery_delete_advanced_view():
+    form = GalleryAdvancedDeleteForm()
+    if form.validate_on_submit():
+        mapping = {"lte": "<=", "gte": ">=", "e": "="}
+        user, is_authed = AccountService.authenticate(form.key.data, form.password.data)
+        if user and is_authed:
+            sql = f"SELECT * FROM `files` WHERE `userid` = %s AND `{form.type.data}` {mapping[form.operator.data]} %s"
+            files = db.fetchall(sql, [user["id"], form.threshold.data])
+            size, count, messages = FileService.delete_batch(files)
+            messages.append(
+                f"{count} items deleted. {functions.sizeof_fmt(size)} freed."
+            )
+            return render_template("delete.tpl", messages=messages, key=user["key"])
+        flash("Key or password is incorrect", "error")
+    form.flash()
+    return render_template("delete_advanced.tpl", form=form)
 
 
 @app.route("/gallery/delete", methods=["POST"])
 def gallery_delete():
-    files_to_delete = request.form.getlist("delete_this")
-    key = request.form.get("key")
-    password = request.form.get("password")
-    del_type = request.form.get("type")
-
+    form = GalleryDeleteForm()
     messages = []
 
-    # Only allow valid deletion types
-    if del_type not in ["Delete Selected", "Delete All"]:
-        return render_template("error.tpl", error="Invalid deletion type provided.")
+    if form.validate():
+        files_to_delete = request.form.getlist("delete_this")
 
-    # Check if user details are correct
-    user = AccountService.get_by_key(key)
-    if user["password"] != password:
-        return render_template("error.tpl", error="Password is incorrect.")
-    if del_type == "Delete Selected" and not files_to_delete:
-        return render_template("error.tpl", error="No files were provided.")
+        # Check if user details are correct
+        user = AccountService.get_by_key(form.key.data)
+        if user["password"] != form.password.data:
+            return render_template("error.tpl", error="Password is incorrect.")
+        if form.delete_selected.data and not files_to_delete:
+            return render_template("error.tpl", error="No files were provided.")
 
-    files = db.select("files", where={"userid": user["id"]})
-    source = (
-        filter(lambda row: row["shorturl"] in files_to_delete, files)
-        if del_type == "Delete Selected"
-        else files
+        files = db.select("files", where={"userid": user["id"]})
+        source = (
+            filter(lambda row: row["shorturl"] in files_to_delete, files)
+            if form.delete_selected.data
+            else files
+        )
+        size, count, messages = FileService.delete_batch(source)
+
+        messages.append(
+            f"{count} items deleted. {functions.sizeof_fmt(size)} of disk space saved."
+        )
+
+    return render_template(
+        "delete.tpl",
+        messages=messages or flatten_errors(form.errors),
+        key=form.key.data,
     )
-    size, count, messages = FileService.delete_batch(source, messages)
-
-    messages.append(
-        f"{count} items deleted. {functions.sizeof_fmt(size)} of disk space saved."
-    )
-
-    # Optimize the tables after delete operations
-    db.execute("OPTIMIZE TABLE `files`")
-    db.execute("OPTIMIZE TABLE `pastes`")
-
-    return render_template("delete.tpl", messages=messages, key=key)

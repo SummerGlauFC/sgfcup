@@ -5,27 +5,22 @@ from flask import send_from_directory
 from flask import session
 
 from project import app
-from project.functions import key_password_return
+from project.forms import LoginForm
+from project.forms.paste import PasteForm
 from project.functions import list_languages
-
-# File to serve (mostly) static files, like the upload pages, the
-# user info page, the favicon and all stylesheets
-# (provided their HTTP server doesn't serve the stylesheets/favicon)
 from project.services.account import AccountService
 
 
 @app.route("/")
 def index():
-    return render_template("index.tpl", **key_password_return())
+    form = LoginForm()
+    return render_template("index.tpl", form_login=form)
 
 
 @app.route("/paste")
 def paste_home():
-    return render_template(
-        "pastebin.tpl",
-        langs=list_languages(),
-        **key_password_return(),
-    )
+    form = PasteForm()
+    return render_template("pastebin.tpl", langs=list_languages(), form_paste=form)
 
 
 @app.route("/keys")
@@ -57,11 +52,3 @@ def favicon():
         "favicon.ico",
         mimetype="image/vnd.microsoft.icon",
     )
-
-
-# @app.route("/static/<filepath:path>")
-# def server_static(filepath):
-#     # Serve css and flush the cache when serving it with bottle.
-#     response = static_file(filepath, root="project/static")
-#     response.set_header("Cache-Control", "no-cache")
-#     return response

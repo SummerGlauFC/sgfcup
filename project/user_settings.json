@@ -23,7 +23,7 @@
     "name": "Viewing password",
     "type": "text",
     "default": "",
-    "notes": "This is only required if \"Require password to view your gallery\" is enabled.<br />This password is only for logging into the gallery, and does not change your key password."
+    "notes": "This is only required if \"Require password to view your gallery\" is enabled. This password is only for logging into the gallery, and does not change your key password."
   },
   "groups": {
     "Image link settings": [

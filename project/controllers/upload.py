@@ -8,6 +8,10 @@ from flask import session
 from project import app
 from project import functions
 from project import user_settings
+from project.forms import LoginForm
+from project.forms import flatten_errors
+from project.forms.paste import PasteEditForm
+from project.forms.paste import PasteForm
 from project.functions import get_host
 from project.functions import get_setting
 from project.services.account import AccountService
@@ -55,27 +59,23 @@ def submit_file(user_id) -> FileInterface:
 
 def submit_paste(user_id, paste_data=None) -> PasteInterface:
     if paste_data is None:
+        form = PasteForm()
+        if not form.validate():
+            raise functions.json_error(
+                "Error submitting paste.", errors=flatten_errors(form.errors)
+            )
+
         paste_data = {
-            "content": request.form.get("paste_body", "").strip(),
-            "name": request.form.get("paste_name"),
-            "lang": request.form.get("lang", "text"),
+            "content": form.body.data,
+            "name": form.name.data,
+            "lang": form.lang.data,
         }
 
-    abort_if_paste_body_error(paste_data["content"])
+    # abort_if_paste_body_error(paste_data["content"])
 
     paste_data["userid"] = user_id
     paste = PasteService.upload(PasteInterface(**paste_data))
     return paste
-
-
-def abort_if_paste_body_error(body):
-    if not body:
-        raise functions.json_error("No paste content provided")
-    # Reject pastes longer than 65000 characters
-    if len(body) > 65000:
-        raise functions.json_error(
-            "Your paste exceeds the maximum character length of 65000"
-        )
 
 
 # File upload endpoint.
@@ -86,9 +86,9 @@ def api_upload_file(upload_type="file"):
         # The type the user provided doesn't exist.
         raise functions.json_error("This upload type does not exist")
 
-    # Short references
-    key = request.form.get("key", False)
-    password = request.form.get("password", False)
+    form = LoginForm()
+    key = form.key.data
+    password = form.password.data
     user_id = handle_auth_or_abort(key, password)
 
     is_file = upload_type == "file"
@@ -101,7 +101,7 @@ def api_upload_file(upload_type="file"):
         file = submit_paste(user_id)
 
     if not file:
-        return functions.json_error("Failed to upload file")
+        raise functions.json_error("Failed to upload file")
 
     shorturl = file["shorturl"]
     ext = file["ext"] if is_file else "paste"
@@ -119,20 +119,19 @@ def api_upload_file(upload_type="file"):
 
 @app.route("/api/edit/paste", methods=["POST"])
 def api_edit_paste():
-    key = request.form.get("key", False)
-    password = request.form.get("password", False)
-    body = request.form.get("paste_edit_body", "").strip()
-    editing_id = request.form.get("id", None)
-    editing_commit = request.form.get("commit", None)
-    msg = request.form.get("commit_message", None)
-
-    abort_if_paste_body_error(body)
-    if msg and len(msg) > 1024:
+    form = PasteEditForm()
+    if not form.validate():
         raise functions.json_error(
-            "Your commit message exceeds the maximum character length of 1024"
+            "Error editing paste.", errors=flatten_errors(form.errors)
         )
 
-    user_id = handle_auth_or_abort(key, password)
+    key = form.key.data
+    body = form.body.data.strip()
+    editing_id = form.id.data
+    editing_commit = form.commit.data
+    msg = form.commit_message.data
+
+    user_id = handle_auth_or_abort(key, form.password.data)
 
     # Select the paste that is being edited
     base_paste = PasteService.get_by_id(editing_id)

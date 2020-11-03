@@ -84,7 +84,7 @@ class BaseDB(object):
     # @catch_error
     def execute(self, sql, args=None):
         """ execute the SQL statement and return the cursor """
-        logger.debug(f"'{sql}' {args}")
+        logger.debug(f'"{sql}" {args}')
         self.cur = self.conn.cursor(pymysql.cursors.DictCursor)
         self.cur.execute(sql, args) if args is not None else self.cur.execute(sql)
         return self.cur

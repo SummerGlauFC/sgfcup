@@ -7,8 +7,8 @@ from typing import Tuple
 from flask import Response
 from flask import request
 
-from project import db
 from project import user_settings
+from project import db
 from project.constants import TypedDict
 from project.functions import get_dict
 from project.functions import json_error
@@ -122,7 +122,7 @@ class AccountService:
         return user, is_authed
 
     @staticmethod
-    def get_settings(user_id: int) -> dict:
+    def get_settings(user_id: int):
         """
         Get settings for the specified user.
 
@@ -130,6 +130,16 @@ class AccountService:
         :return: settings for the given user
         """
         return user_settings.get_all_values(user_id)
+
+    @staticmethod
+    def get_auth_cookie(user_id: int) -> Optional[str]:
+        """
+        Get the gallery authentication cookie for the given user ID.
+
+        :param user_id: user ID to get cookie for
+        :return: hashed gallery password or None
+        """
+        return request.cookies.get(f"auth+{user_id}")
 
     @staticmethod
     def validate_auth_cookie(user_id: int, settings: Optional[dict] = None) -> bool:
@@ -147,7 +157,7 @@ class AccountService:
         if get_user_setting("block.value") and get_user_setting(
             "gallery_password.value"
         ):
-            auth_cookie = request.cookies.get(f"auth+{user_id}")
+            auth_cookie = AccountService.get_auth_cookie(user_id)
             hex_pass = hashlib.sha1(
                 get_user_setting("gallery_password.value").encode("utf-8")
             ).hexdigest()

@@ -20,6 +20,9 @@ Flask = "^1.1.2"
 sentry-sdk = {extras = ["flask"], version = "^0.19.1"}
 PyMySQL = "^0.10.1"
 python-dotenv = "^0.14.0"
+Flask-WTF = "^0.14.3"
+WTForms = "^2.3.3"
+wtforms = {git = "https://github.com/wtforms/wtforms.git", rev = "7c5c46fd16909648bdb810bd6968781d9ab1056a"}
 
 [tool.poetry.dev-dependencies]
 raven = "^6.10.0"

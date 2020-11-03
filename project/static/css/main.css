@@ -167,3 +167,20 @@ h2 {
 button#clear-fields {
     font-size: 11px;
 }
+
+ul.messages {
+    list-style-position: inside;
+    padding-inline-start: 0;
+}
+
+ul.messages {
+    padding-inline-start: 0;
+}
+
+ul.messages li {
+    color: green;
+}
+
+ul.messages li.error {
+    color: red;
+}

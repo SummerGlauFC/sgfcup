@@ -4,7 +4,8 @@
 {% block content %}
   <div class="middle">
     <form action="" method="post" enctype="multipart/form-data">
-      {{ login_form() }}
+      {{ form.hidden_tag() }}
+      {{ login_form(form) }}
       <br />
       <input type="submit" name="submit" value="Login" />
     </form>

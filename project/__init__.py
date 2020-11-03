@@ -5,7 +5,9 @@ from flask import render_template
 from sentry_sdk.integrations.flask import FlaskIntegration
 from werkzeug.local import LocalProxy
 
+from db import DB
 from project import config
+from project.functions import Error
 from project.functions import RegexConverter
 from project.functions import connect_db
 from project.functions import get_setting
@@ -59,6 +61,10 @@ def get_db():
 
 
 def get_user_settings():
+    # always reload the settings file when in debug
+    if app.debug:
+        return UserSettings("project/user_settings.json", get_db())
+
     if not hasattr(g, "user_settings"):
         g.user_settings = UserSettings("project/user_settings.json", get_db())
     return g.user_settings
@@ -74,8 +80,8 @@ def teardown_db(exception):
         db.close()
 
 
-db = LocalProxy(get_db)
-user_settings = LocalProxy(get_user_settings)
+db: DB = LocalProxy(get_db)  # noqa
+user_settings: UserSettings = LocalProxy(get_user_settings)  # noqa
 
 from project.controllers import *  # noqa
 
@@ -83,3 +89,14 @@ from project.controllers import *  # noqa
 @app.errorhandler(404)
 def error_not_found(err):
     return render_template("error.tpl", in_title=True, error=err.name, status=err.code)
+
+
+# handle request entity too large
+@app.errorhandler(413)
+def error_too_large(err):
+    return Error("File too large", status=err.code).response()
+
+
+@app.errorhandler(Error)
+def error_api(err: Error):
+    return err.response()

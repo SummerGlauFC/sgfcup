@@ -3,23 +3,17 @@
 {% block title %}Advanced Delete{% endblock %}
 {% block content %}
   <form class="flex-full" method="post" action="/gallery/delete/advanced">
+    {{ form.hidden_tag() }}
     <div class="middle mb-none">
-      {{ login_form(key=key) }}
-      <br />
-      Delete uploads where:
-      <br /><br />
-      <select name="type">
-        <option value="hits">Hit Count</option>
-        <option value="size">Size (bytes)</option>
-      </select>
-      is
-      <select name="operator">
-        <option value="gte">greater than or equal</option>
-        <option value="lte">less than or equal</option>
-        <option value="e">equal</option>
-      </select>
-      to
-      <input type="text" name="threshold" size="10" />
+      {{ login_form(form=form) }}
+      <p>
+        Delete uploads where:
+      </p>
+      {{ form.type() }}
+      &nbsp;is&nbsp;
+      {{ form.operator() }}
+      &nbsp;to&nbsp;
+      {{ form.threshold(size=10) }}
     </div>
     <div class="bottom">
       <p>

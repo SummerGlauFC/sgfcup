@@ -2,13 +2,12 @@
 {% block title %}Authenticate{% endblock %}
 {% block content %}
   <form class="flex-full" action="" method="post">
-    <div class="middle">
+    {{ form.hidden_tag() }}
+    <div class="middle mb-none">
       <p>You need to authenticate to view this gallery.</p>
-      <p><input type="password" name="authcode" placeholder="gallery password" /></p>
+      <p>{{ form.authcode() }}</p>
       <p>
-        <label>
-          <input type="checkbox" name="remember" value="1"> Remember this key
-        </label>
+        {{ form.remember() }} {{ form.remember.label }}
       </p>
     </div>
     <div class="bottom">

@@ -117,8 +117,8 @@ pre {
     font-size: 1rem;
     overflow-x: auto;
     box-sizing: border-box;
-    max-width: 600px;
     width: 100%;
+    max-width: 600px;
     margin: 0 auto;
     padding: 10px 20px;
     text-align: left;

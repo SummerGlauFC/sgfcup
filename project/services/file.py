@@ -148,7 +148,7 @@ class FileService:
 
     @staticmethod
     def delete_batch(
-        files: List[FileInterface], output: Optional[List[str]] = None
+        files: Optional[List[FileInterface]], output: Optional[List[str]] = None
     ) -> Tuple[int, int, List[str]]:
         """
         Delete files in batch.
@@ -163,11 +163,12 @@ class FileService:
         if output is None:
             output = []
 
-        for row in files:
-            file_size, file_output = FileService.delete(row)
-            count += 1
-            size += file_size
-            output.append(file_output)
+        if files:
+            for row in files:
+                file_size, file_output = FileService.delete(row)
+                count += 1
+                size += file_size
+                output.append(file_output)
 
         return size, count, output
 

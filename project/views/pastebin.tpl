@@ -3,7 +3,7 @@
 {% block title %}Pastebin{% endblock %}
 {% block head %}
   <style type="text/css">
-      #paste_body {
+      #body {
           height: 392px;
           width: 392px;
           max-width: 95vw;
@@ -34,13 +34,14 @@
 {% endblock %}
 {% block other %}
   <form id="paste" action="/api/upload/paste" method="post">
+  {{ form_paste.hidden_tag() }}
 {% endblock %}
 {% block left %}
   <h2>{{ self.title() }}</h2>
   <div id="details">
     <p>
-      <label>Name:</label>
-      <input type="text" name="paste_name" id="paste_name" placeholder="(optional)" />
+      {{ form_paste.name.label }}
+      {{ form_paste.name() }}
     </p>
     <p>
       <label for="lang">Language:</label>
@@ -67,14 +68,14 @@
           <option value="swift">Swift</option>
         </optgroup>
         <optgroup label="------ ALL LANGUAGES -------">
-          {% for lang in langs %}
-            <option value="{{ lang[1][0] }}">{{ lang[0] }}</option>
-          {%- endfor %}
+          {% for lang in form_paste.lang -%}
+            {{ lang() }}
+          {% endfor %}
         </optgroup>
       </select>
     </p>
   </div>
-  {{ login_form(key=key, password=password, show_clear=True) }}
+  {{ login_form(form_paste, show_clear=True) }}
   <br />
 {% endblock %}
 {% block extra %}
@@ -85,7 +86,7 @@
 {% block content %}
   <div class="middle">
     <div id="message" style="display: none">Uploading...</div>
-    <textarea tabindex="20" name="paste_body" id="paste_body" class="pastebox"></textarea>
+    {{ form_paste.body(class="pastebox") }}
     <div style="text-align:center; display: none" id="reset">
       <button type="button">Go back</button>
     </div>

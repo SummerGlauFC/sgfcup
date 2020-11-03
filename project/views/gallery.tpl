@@ -48,31 +48,16 @@
       <div class="row top">
         <form class="sort-form" action="" method="get">
           <div>
-            <select name="sort" id="sort">
-              {% for mode in sort_modes %}
-                <option value="{{ loop.index0 }}" {% if loop.index0 == active_sort %}selected{% endif %}>
-                  {{ mode[0] }}
-                </option>
-              {% endfor %}
-            </select>
-            <input type="submit" value="Sort" />
+            {{ form_filter.sort() }}
+            <input type="submit" value="Sort">
           </div>
           <div>
-            <select class="search-mode" name="in">
-              {% for mode in search_modes %}
-                <option value="{{ loop.index0 }}" {% if loop.index0 == search["in"] -%} selected {%- endif %}>
-                  {{ mode[0] }}
-                </option>
-              {% endfor %}
-            </select>
+            {{ form_filter.in_() }}
             <small>matches</small>
-            <input class="search-query" type="text" name="query" placeholder="search query" value="{{ search.query }}" />
-            <input type="submit" value="Search" />
+            {{ form_filter.query(class="search-query") }}
+            <input type="submit" value="Search">
             <div>
-              <label>
-                <input type="checkbox" name="case" value="1" {% if search.case %}checked{% endif %} />
-                <small>Case-sensitive search</small>
-              </label>
+              {{ form_filter.case(value="1") }} <small>{{ form_filter.case.label }}</small>
             </div>
           </div>
         </form>
@@ -165,13 +150,11 @@
           {% if not xhr %}
         </div>
         <div class="row delete-options">
-          <input type="hidden" name="key" value="{{ key }}" />
-          <label for="password">
-            <small>password:</small>
-            <input type="password" value="" name="password" placeholder="key password" />
-          </label>
-          <input type="submit" name="type" value="Delete Selected" />
-          <input type="submit" name="type" value="Delete All" />
+          {{ form_delete.csrf_token }}
+          {{ form_delete.key(value=key) }}
+          <small>{{ form_delete.password.label }}</small> {{ form_delete.password() }}
+          {{ form_delete.delete_selected() }}
+          {{ form_delete.delete_all() }}
         </div>
       </form>
       <div class="row padded">

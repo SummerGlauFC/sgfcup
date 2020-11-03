@@ -179,6 +179,15 @@ def highlight_code_css(style="xcode", css_class=".syntax"):
 
 
 def json_response(success=True, error=False, status=200, **body):
+    """
+    Return a JSON response.
+
+    :param success: if the request was successful
+    :param error: error if applicable else False
+    :param status: status code (default 200)
+    :param body: any extra parameters to expand into the response
+    :return: a JSON response
+    """
     resp: Response = jsonify(
         {"success": success, "error": error, "status_code": status, **body}
     )
@@ -186,8 +195,33 @@ def json_response(success=True, error=False, status=200, **body):
     return resp
 
 
-def json_error(error, status=400):
-    return json_response(success=False, error=error, status=status)
+class Error(Exception):
+    status_code = 400
+
+    def __init__(self, error, status=None, errors=None):
+        super().__init__(self)
+        if status is not None:
+            self.status_code = status
+        self.error = error
+        self.errors = errors
+
+    def response(self):
+        resp = dict(success=False, error=self.error, status=self.status_code)
+        if self.errors:
+            resp.update(errors=self.errors)
+        return json_response(**resp)
+
+
+def json_error(error, status=400, errors=None):
+    """
+    Return an Error exception.
+
+    :param error: main error string
+    :param status: status code (default 400)
+    :param errors: form errors if applicable
+    :return: Error exception
+    """
+    return Error(error, status, errors)
 
 
 # from https://stackoverflow.com/a/36131992

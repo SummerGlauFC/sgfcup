@@ -10,7 +10,7 @@ from project import app
 from project import db
 from project import functions
 from project.constants import PasteAction
-from project.functions import key_password_return
+from project.forms.paste import PasteEditForm
 from project.services.file import FileService
 from project.services.paste import PasteService
 from project.services.paste import RevisionInterface
@@ -131,6 +131,13 @@ def paste_view(url, commit=None, flag=None):
         commits.index(commit or "base") + 1, 1, len(commits), data=revisions
     )
 
+    form_edit = PasteEditForm()
+    # set edit data
+    form_edit.body.data = raw_paste
+    form_edit.id.data = paste["id"]
+    if revision:
+        form_edit.commit.data = revision["id"]
+
     # Provide the template with a mass of variables
     return render_template(
         "paste.tpl",
@@ -150,8 +157,7 @@ def paste_view(url, commit=None, flag=None):
         revision=revision,
         pagination=pagination,
         flag=flag,
-        # Generate a key and password for the edit form
-        **key_password_return(),
+        form=form_edit,
     )
 
 
