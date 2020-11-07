@@ -52,6 +52,10 @@
             <input type="submit" value="Sort">
           </div>
           <div>
+            {{ form_filter.filter() }}
+            <input type="submit" value="Filter">
+          </div>
+          <div>
             {{ form_filter.in_() }}
             <small>matches</small>
             {{ form_filter.query(class="search-query") }}

@@ -43,14 +43,12 @@ def inject_funcs():
     from project.constants import PasteAction
     from project.constants import search_modes
     from project.constants import sort_modes
-    from project.functions import url_for_page
 
     return {
         "sort_modes": sort_modes,
         "search_modes": search_modes,
         "file_type": FileType,
         "paste_actions": PasteAction,
-        "url_for_page": url_for_page,
     }
 
 

@@ -7,7 +7,6 @@ from builtins import range
 from functools import partial
 from math import ceil
 from typing import Optional
-from urllib.parse import urlencode
 
 import magic
 import markupsafe
@@ -31,7 +30,6 @@ from werkzeug.urls import url_quote
 
 from db import DB
 from project import config
-from project.constants import gallery_params
 
 
 class RegexConverter(BaseConverter):
@@ -280,25 +278,6 @@ def static_file(path: str, root: str, filename: Optional[str] = None) -> Respons
 
     response = make_response(send_from_directory(root, path, mimetype=mime))
     return set_file_info(response)
-
-
-def url_for_page(page):
-    """
-    Get the URL for a given gallery page.
-
-    :param page: page number to get URL for
-    :return: URL for the given gallery page
-    """
-
-    args = request.args.copy()
-    args["page"] = str(page)
-    query = {}
-    for key, value in args.items():
-        if value != gallery_params.get(key):
-            query[key] = value
-
-    encoded = urlencode(query)
-    return request.path + (encoded and "?" + urlencode(query))
 
 
 def key_password_return():

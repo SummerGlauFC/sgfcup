@@ -7,7 +7,9 @@ from wtforms import SelectField
 from wtforms import StringField
 from wtforms import SubmitField
 from wtforms.validators import InputRequired
+from wtforms.validators import NumberRange
 
+from project.constants import FileType
 from project.constants import search_modes
 from project.constants import sort_modes
 from project.forms import FlashErrorsForm
@@ -26,7 +28,7 @@ class GallerySortForm(FlaskForm):
     class Meta:
         csrf = False
 
-    page = IntegerField("Page", default=1)
+    page = IntegerField("Page", default=1, validators=[NumberRange(min=1)])
     case = BooleanField("Case-sensitive search", default=False)
     in_ = SelectField(
         "In",
@@ -41,6 +43,18 @@ class GallerySortForm(FlaskForm):
         choices=[(idx, name[0]) for idx, name in enumerate(sort_modes)],
         coerce=int,
         default=0,
+    )
+
+    filter = SelectField(
+        "Filter by type",
+        choices=[
+            (FileType.ALL.value, "All file types"),
+            (FileType.FILE.value, "Files only"),
+            (FileType.IMAGE.value, "Images only"),
+            (FileType.PASTE.value, "Pastes only"),
+        ],
+        default=FileType.ALL.value,
+        coerce=int,
     )
 
 

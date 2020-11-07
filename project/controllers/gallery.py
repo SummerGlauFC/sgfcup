@@ -1,11 +1,13 @@
 import functools
 from typing import Tuple
+from urllib.parse import urlencode
 
 from flask import flash
 from flask import redirect
 from flask import render_template
 from flask import request
 from flask import session
+from wtforms import Field
 
 from project import app
 from project import db
@@ -27,6 +29,25 @@ from project.services.paste import PasteInterface
 from project.services.paste import PasteService
 
 
+def url_for_page(page):
+    """
+    Get the URL for a given gallery page.
+
+    :param page: page number to get URL for
+    :return: URL for the given gallery page
+    """
+    form = GallerySortForm(request.args)
+    form.page.data = page
+    query = {}
+    for field in form:
+        field: Field
+        if field.data != field.default:
+            query[field.name] = field.data
+
+    encoded = urlencode(query)
+    return request.path + (encoded and "?" + urlencode(query))
+
+
 @app.route("/redirect/gallery/<user_key>")
 def gallery_redirect(user_key=None):
     if not user_key:
@@ -42,6 +63,21 @@ def gallery_view(user_key=None):
     if not user_key and key:
         return redirect(f"/gallery/{key}")
 
+    form_filter = GallerySortForm(request.args)
+    case = form_filter.case.data
+    query = form_filter.query.data
+
+    if form_filter.validate():
+        page = form_filter.page.data
+        query_in = form_filter.in_.data
+        active_sort = form_filter.sort.data
+        entry_filter = FileType(form_filter.filter.data)
+    else:
+        # return a generic error if validation failed
+        return render_template(
+            "error.tpl", error="There were no results for this search."
+        )
+
     user = AccountService.get_by_key(user_key)
     # anonymous account, hide gallery
     if not user or user["id"] == 0:
@@ -56,34 +92,31 @@ def gallery_view(user_key=None):
             flash("Incorrect gallery password", "error")
         return redirect(f"/gallery/auth/{user_key}")
 
-    form_filter = GallerySortForm(request.args)
-    page = form_filter.page.data
-    case = form_filter.case.data
-    query = form_filter.query.data
-
-    if form_filter.validate():
-        query_in = form_filter.in_.data
-        active_sort = form_filter.sort.data
-    else:
-        query_in = form_filter.in_.default
-        active_sort = form_filter.sort.default
-
-    sql_search = ""
     search_in = search_modes[query_in][1]
     sort_by = sort_modes[active_sort]
 
-    # Ensure case-sensitive searching with a binary conversion
-    collate = " COLLATE utf8_bin" if case else ""
-
-    if query:
-        sql_search = f"`{search_in}`{collate} LIKE %s AND"
-
-    def get_search_query(sub):
-        return f"SELECT {sub} FROM `files` WHERE {sql_search} `userid` = %s ORDER BY `{sort_by[1]}` {sort_by[2]}"
-
+    # where clauses
+    sql_search = []
+    # parameters for the where clauses
     params = []
+
     if query:
-        params = ["%" + query + "%"]
+        # Ensure case-sensitive searching with a binary conversion
+        collate = " COLLATE utf8_bin" if case else ""
+        sql_search.append(f"`{search_in}`{collate} LIKE %s")
+        params.append("%" + query + "%")
+
+    # filter results by file type
+    if entry_filter != FileType.ALL:
+        sql_search.append(f"`type` = %s")
+        params.append(entry_filter.value)
+
+    # function that creates a search query given a "what" clause.
+    # used to get the total file count, then later
+    # use the same query to get the files themselves
+    def get_search_query(sub):
+        return f"SELECT {sub} FROM `files` WHERE {' AND '.join(sql_search + [''])} `userid` = %s ORDER BY `{sort_by[1]}` {sort_by[2]}"
+
     params.append(user["id"])
 
     total_entries = db.fetchone(get_search_query("COUNT(`id`) AS `total`"), params)[
@@ -92,9 +125,6 @@ def gallery_view(user_key=None):
 
     # generate pages with a useful pagination class
     pagination = functions.Pagination(page, 30, total_entries)
-    results: Tuple[FileInterface, ...] = db.fetchall(
-        f"{get_search_query('*')} LIMIT {pagination.limit}", params
-    )
 
     if page > pagination.pages:
         if pagination.pages == 0:
@@ -103,6 +133,11 @@ def gallery_view(user_key=None):
             )
         else:
             return render_template("error.tpl", error="This page does not exist.")
+
+    # fetch the files given a pagination limit (only fetch files for given page)
+    results: Tuple[FileInterface, ...] = db.fetchall(
+        f"{get_search_query('*')} LIMIT {pagination.limit}", params
+    )
 
     files = []
     for row in results:
@@ -135,9 +170,9 @@ def gallery_view(user_key=None):
                 file["resolution"] = (row["width"], row["height"])
         files.append(file)
 
-    tally = db.fetchone(get_search_query("SUM(`size`) AS `total`"), params)
     usage = None
-    if tally and tally["total"] is not None:
+    tally = db.fetchone(get_search_query("SUM(`size`) AS `total`"), params)
+    if tally and tally.get("total"):
         usage = functions.sizeof_fmt(float(tally["total"]))
 
     form_delete = GalleryDeleteForm()
@@ -158,6 +193,7 @@ def gallery_view(user_key=None):
         ),
         form_delete=form_delete,
         form_filter=form_filter,
+        url_for_page=url_for_page,
     )
 
 
