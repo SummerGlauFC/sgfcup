@@ -273,7 +273,7 @@ def static_file(path: str, root: str, filename: Optional[str] = None) -> Respons
     if get_setting("use_nginx_sendfile"):
         folder = "t" if root is get_setting("directories.thumbs") else "p"
         response = set_file_info(make_response())
-        response.set_header("X-Accel-Redirect", f"/get_image/{folder}/{path}")
+        response.headers.set("X-Accel-Redirect", f"/get_image/{folder}/{path}")
         return response
 
     response = make_response(send_from_directory(root, path, mimetype=mime))
