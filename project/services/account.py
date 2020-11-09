@@ -3,6 +3,7 @@ from collections import UserDict
 from typing import Optional
 from typing import Tuple
 
+from flask_login import AnonymousUserMixin
 from flask_login import UserMixin
 
 from project import db
@@ -24,7 +25,18 @@ class Account(UserMixin, UserDict):
         return self.data["id"]
 
 
-ANONYMOUS_ACCOUNT = Account(id=0)
+class AnonymousAccount(AnonymousUserMixin, UserDict):
+    data: AccountInterface
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.update(id=0, key="anon")
+
+    def get_id(self):
+        return self.data["id"]
+
+
+ANONYMOUS_ACCOUNT = AnonymousAccount()
 ACCOUNT_KEY_REGEX = "[a-zA-Z0-9_-]+"
 
 

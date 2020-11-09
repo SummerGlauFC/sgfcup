@@ -23,25 +23,32 @@
   {% endwith %}
 {% endmacro %}
 
-{% macro login_form(form, show_clear=False, show_logged_in=True) %}
+{% macro login_status(show_button=False, next=request.path) %}
+  <div id="identification">
+    {% if current_user.is_authenticated %}
+      <p>Logged in as <a href="/gallery/{{ current_user.key }}">{{ current_user.key }}</a>.</p>
+      {% if show_button %}
+        <p><a class="button" href="{{ url_for("static.logout", next=next) }}">Sign out</a></p>
+      {% endif %}
+    {% else %}
+      {% if current_user.is_anonymous %}
+        <p>Logged in anonymously.</p>
+      {% else %}
+        <p>Not logged in.</p>
+      {% endif %}
+      {% if show_button %}
+        <p><a class="button" href="{{ url_for("static.login", next=next) }}">Sign in</a></p>
+      {% endif %}
+    {% endif %}
+  </div>
+{% endmacro %}
+
+{% macro login_form(form, show_logged_in=True) %}
   <div id="identification">
     {% if current_user.is_authenticated and show_logged_in %}
       <p>Logged in as <a href="/gallery/{{ current_user.key }}">{{ current_user.key }}</a>.</p>
-      <p><a id="logout" class="button" href="/logout">Sign out</a></p>
     {% else %}
-      {% if show_clear %}
-        <p>
-          <small>
-            You do not have to change these values.
-            <br />
-            Clear the fields to upload anonymously.
-          </small>
-          <br />
-          <br />
-          <button type='button' id="clear-fields">Clear Fields</button>
-        </p>
-      {% endif %}
-      {{ errors(form.key) }}
+      {{ errors(form.key, class="") }}
       <p class="m-none">
         {{ form.key.label }}
         {{ form.key(size=20, autocomplete="username") }}
@@ -51,16 +58,12 @@
         {{ form.password.label }}
         {{ form.password(size=20, autocomplete="current-password") }}
       </p>
-      <p>
-        <button type='button' id="login">Sign in</button>
-      </p>
     {% endif %}
   </div>
 {% endmacro %}
 
-{% macro window_csrf(show_clear=False) %}
+{% macro window_csrf() %}
   <script type="text/javascript">
     window.CSRF_TOKEN = "{{ csrf_token() }}"
-    window.SHOW_CLEAR = {{ "false" if not show_clear else "true" }}
   </script>
 {% endmacro %}

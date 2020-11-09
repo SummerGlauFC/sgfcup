@@ -1,3 +1,4 @@
+from flask_wtf import FlaskForm
 from wtforms import IntegerField
 from wtforms import SelectField
 from wtforms import StringField
@@ -7,11 +8,10 @@ from wtforms.validators import Length
 from wtforms.validators import Optional
 from wtforms.widgets import HiddenInput
 
-from project.forms import LoginForm
 from project.functions import list_languages
 
 
-class BasePasteForm(LoginForm):
+class BasePasteForm(FlaskForm):
     body = TextAreaField(
         validators=[InputRequired(), Length(max=65000)], render_kw={"class": "pastebox"}
     )

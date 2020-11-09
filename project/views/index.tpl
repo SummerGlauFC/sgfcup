@@ -1,5 +1,5 @@
 {% extends "base.tpl" %}
-{% from "utils.tpl" import login_form, window_csrf with context %}
+{% from "utils.tpl" import login_status, window_csrf with context %}
 {% block title %}Homepage{% endblock %}
 {% block head %}
   <link href='/static/css/dropzone.css' rel='stylesheet' type='text/css'>
@@ -26,20 +26,21 @@ Source code available at <a
 {% endblock %}
 {% block left %}
   <span class="button-icon">
-        <a href="/paste" data-icon="&#xf016;">
-            <span class='types'>pastebin</span>
-        </a>
-    </span>
+    <a href="/paste" data-icon="&#xf016;">
+      <span class='types'>pastebin</span>
+    </a>
+  </span>
+
   <span class="button-icon">
-        <a id="button-gallery" href="/gallery/{{ current_user.key or key }}" data-icon="&#xf03e;">
-            <strong class='locks' data-icon="&#xf023;"></strong>
-            <span class='types'>gallery</span>
-        </a>
-    </span>
+    <a id="button-gallery" href="/gallery/" data-icon="&#xf03e;">
+      <strong class='locks' data-icon="&#xf023;"></strong>
+      <span class='types'>gallery</span>
+    </a>
+  </span>
   <br />
   <span class="button-icon">
-        <a href="/settings" data-icon="&#xf013;"><span class='types'>settings</span></a>
-    </span>
+    <a href="/settings" data-icon="&#xf013;"><span class='types'>settings</span></a>
+  </span>
 {% endblock %}
 {% block extra %}
   <p>
@@ -68,7 +69,7 @@ Source code available at <a
         <div id="files">
           Drop files <strong>here</strong>, or click to browse
         </div>
-        {{ login_form(form_login, show_clear=True) }}
+        {{ login_status(show_button=True, next=url_for("static.index")) }}
       </div>
     </div>
     <div class="bottom">
@@ -79,7 +80,7 @@ Source code available at <a
   </form>
 {% endblock %}
 {% block script %}
-  {{ window_csrf(show_clear=True) }}
+  {{ window_csrf() }}
   <script type="text/javascript" src="//cdnjs.cloudflare.com/ajax/libs/dropzone/5.7.2/min/dropzone.min.js"></script>
   <script type="text/javascript" src="/static/js/index.js"></script>
 {% endblock %}

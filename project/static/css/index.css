@@ -49,7 +49,7 @@
 
 #identification {
     display: block;
-    /*margin-top: 3rem;*/
+    margin: 3rem auto 0;
     text-align: center;
 }
 
@@ -74,7 +74,7 @@
 }
 
 .bottom:not(:empty) {
-    margin: auto auto 0;
+    /* margin: auto auto 0; */
     padding: 1rem 0;
 }
 

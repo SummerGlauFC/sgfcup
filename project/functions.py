@@ -324,10 +324,18 @@ def create_pool():
 
 
 def safe_redirect(absolute_redirect_url):
-    """ Only redirect if the passed in absolute url matches the server host to protect against phising """
-
-    server_host = request.host
-    redirect_host = urlparse(absolute_redirect_url)
+    """ Only redirect if the passed in absolute url matches the server host to protect against phishing """
     if not absolute_redirect_url:
         return False
+    server_host = request.host
+    redirect_host = urlparse(absolute_redirect_url)
     return server_host == redirect_host.netloc if redirect_host.netloc else True
+
+
+def get_next_url():
+    """
+    Get the next parameter for page redirection.
+
+    :return: next URL
+    """
+    return request.args.get("next", request.form.get("next", session.get("next", None)))

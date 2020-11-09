@@ -8,6 +8,7 @@ from flask import redirect
 from flask import render_template
 from flask import request
 from flask_login import current_user
+from flask_login import login_required
 from wtforms import Field
 
 from project import db
@@ -53,21 +54,16 @@ def url_for_page(page):
     return request.path + (encoded and "?" + urlencode(query))
 
 
-@blueprint.route("/redirect/gallery/<user_key>")
-def gallery_redirect(user_key=None):
-    if not user_key:
-        return redirect("/")
-    return redirect(f"/gallery/{user_key}")
+@blueprint.route("/gallery")
+@blueprint.route("/gallery/")
+@login_required
+def gallery_redirect():
+    if current_user.is_authenticated:
+        return redirect(f"/gallery/{current_user['key']}")
 
 
-@blueprint.route("/gallery/", methods=["GET"])
 @blueprint.route("/gallery/<user_key>", methods=["GET"])
 def gallery_view(user_key=None):
-    if current_user.is_authenticated:
-        key = current_user["key"]
-        if not user_key and key:
-            return redirect(f"/gallery/{key}")
-
     form_filter = GallerySortForm(request.args)
     case = form_filter.case.data
     query = form_filter.query.data
@@ -85,15 +81,15 @@ def gallery_view(user_key=None):
 
     user = AccountService.get_by_key(user_key)
     # anonymous account, hide gallery
-    if not user or user["id"] == 0:
+    if not user or user.get_id() == 0:
         return render_template("error.tpl", error="Specified key does not exist.")
 
     # Check the users settings to see if they have specified
     # gallery access restrictions
-    settings = AccountService.get_settings(user["id"])
-    if not GalleryService.validate_auth_cookie(user["id"], settings=settings):
+    settings = AccountService.get_settings(user.get_id())
+    if not GalleryService.validate_auth_cookie(user.get_id(), settings=settings):
         # if cookie , show password incorrect message
-        if GalleryService.get_auth_cookie(user["id"]):
+        if GalleryService.get_auth_cookie(user.get_id()):
             flash("Incorrect gallery password", "error")
         return redirect(f"/gallery/auth/{user_key}")
 
@@ -122,7 +118,7 @@ def gallery_view(user_key=None):
     def get_search_query(sub):
         return f"SELECT {sub} FROM `files` WHERE {' AND '.join(sql_search + [''])} `userid` = %s ORDER BY `{sort_by[1]}` {sort_by[2]}"
 
-    params.append(user["id"])
+    params.append(user.get_id())
 
     total_entries = db.fetchone(get_search_query("COUNT(`id`) AS `total`"), params)[
         "total"
@@ -212,7 +208,7 @@ def gallery_auth(user_key):
         user = AccountService.get_by_key(user_key)
         resp = redirect(f"/gallery/{user_key}")
         GalleryService.set_auth_cookie(
-            resp, user["id"], form.authcode.data, form.remember.data
+            resp, user.get_id(), form.authcode.data, form.remember.data
         )
         return resp
     form.flash_errors()
@@ -220,6 +216,7 @@ def gallery_auth(user_key):
 
 
 @blueprint.route("/gallery/delete/advanced", methods=["GET", "POST"])
+@login_required
 def gallery_delete_advanced_view():
     form = GalleryAdvancedDeleteForm()
     if form.validate_on_submit():
@@ -234,12 +231,13 @@ def gallery_delete_advanced_view():
             return render_template(
                 "delete.tpl", messages=messages, key=current_user["key"]
             )
-        flash("Key or password is incorrect", "error")
+        flash("Not authenticated", "error")
     form.flash_errors()
     return render_template("delete_advanced.tpl", form=form)
 
 
 @blueprint.route("/gallery/delete", methods=["POST"])
+@login_required
 def gallery_delete():
     form = GalleryDeleteForm()
     messages = []
@@ -247,14 +245,10 @@ def gallery_delete():
     if form.validate():
         files_to_delete = request.form.getlist("delete_this")
 
-        # Check if user details are correct
-        user = AccountService.get_by_key(form.key.data)
-        if user["password"] != form.password.data:
-            return render_template("error.tpl", error="Password is incorrect.")
         if form.delete_selected.data and not files_to_delete:
             return render_template("error.tpl", error="No files were provided.")
 
-        files = db.select("files", where={"userid": user["id"]})
+        files = db.select("files", where={"userid": current_user.get_id()})
         source = (
             filter(lambda row: row["shorturl"] in files_to_delete, files)
             if form.delete_selected.data

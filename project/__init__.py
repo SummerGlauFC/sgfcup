@@ -56,6 +56,7 @@ def configure_app(app: Flask):
         MAX_CONTENT_LENGTH=get_setting("max_file_size"),
         POOL=create_pool(),
         PERMANENT_SESSION_LIFETIME=timedelta(days=365),
+        USE_SESSION_FOR_NEXT=False,
     )
 
 
@@ -63,12 +64,18 @@ def configure_extensions(app: Flask):
     """ Configure flask app extensions. """
     from project.extensions import login_manager
     from project.extensions import csrf
-    from project.services.account import AccountService, ANONYMOUS_ACCOUNT
+    from project.services.account import (
+        AccountService,
+        AnonymousAccount,
+        ANONYMOUS_ACCOUNT,
+    )
 
     login_manager.init_app(app)
     csrf.init_app(app)
 
     login_manager.user_loader(AccountService.get_by_id)
+    login_manager.anonymous_user = AnonymousAccount
+    login_manager.login_view = "static.login"
 
     # remove db and user_settings when needed
     @app.teardown_appcontext

@@ -59,12 +59,6 @@ class GallerySortForm(FlaskForm):
 
 
 class GalleryDeleteForm(FlaskForm):
-    key = HiddenField()
-    password = PasswordField(
-        "password:",
-        validators=[InputRequired()],
-        render_kw={"placeholder": "key password"},
-    )
     delete_selected = SubmitField("Delete Selected")
     delete_all = SubmitField("Delete All")
 

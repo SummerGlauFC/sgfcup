@@ -5,41 +5,21 @@ from urllib.parse import quote
 from flask import Blueprint
 from flask import request
 from flask_login import current_user
-from flask_login import login_user
 
 from project import functions
 from project.extensions import user_settings
-from project.forms import LoginForm
 from project.forms import flatten_errors
 from project.forms.paste import PasteEditForm
 from project.forms.paste import PasteForm
 from project.functions import get_host
 from project.functions import get_setting
-from project.services.account import AccountService
 from project.services.file import FileInterface
 from project.services.file import FileService
 from project.services.paste import PasteInterface
 from project.services.paste import PasteService
 from project.services.paste import RevisionInterface
 
-id_generator = functions.id_generator
-
 blueprint = Blueprint("upload", __name__)
-
-
-def handle_auth_or_abort(key, password):
-    user, is_authed = AccountService.get_or_create_account(key, password)
-    user_id = user["id"]
-    if not user_id == 0:
-        # Store the users credentials in the session.
-        # session.permanent = True
-        # session["key"] = key
-        # session["password"] = password
-        # session["id"] = user_id
-        login_user(user, remember=True)
-    if not is_authed:
-        raise functions.json_error("Incorrect Key or password", status=401)
-    return user_id
 
 
 def submit_file(user_id) -> FileInterface:
@@ -89,18 +69,9 @@ def api_upload_file(upload_type="file"):
         # The type the user provided doesn't exist.
         raise functions.json_error("This upload type does not exist")
 
-    if not current_user.is_authenticated:
-        form = LoginForm()
-        key = form.key.data
-        password = form.password.data
-        user_id = handle_auth_or_abort(key, password)
-    else:
-        key = current_user["key"]
-        user_id = current_user.get_id()
+    user_id = current_user.get_id()
 
     is_file = upload_type == "file"
-
-    # defaults for an impossible case
     file: Optional[Union[FileInterface, PasteInterface]] = None
     if is_file:
         file = submit_file(user_id)
@@ -117,7 +88,7 @@ def api_upload_file(upload_type="file"):
     path = "/" + ("" if is_file else upload_type + "/")
     return functions.json_response(
         type=ext,
-        key="anon" if not user_id else key,
+        key="anon" if not user_id else current_user["key"],
         base=host,
         url=path + shorturl,
         full_url=host + path + shorturl,
@@ -126,21 +97,13 @@ def api_upload_file(upload_type="file"):
 
 @blueprint.route("/api/edit/paste", methods=["POST"])
 def api_edit_paste():
+    user_id = current_user.get_id()
+
     form = PasteEditForm()
     if not form.validate():
         raise functions.json_error(
             "Error editing paste.", errors=flatten_errors(form.errors)
         )
-
-    form = PasteEditForm()
-
-    if not current_user.is_authenticated:
-        key = form.key.data
-        password = form.password.data
-        user_id = handle_auth_or_abort(key, password)
-    else:
-        key = current_user["key"]
-        user_id = current_user.get_id()
 
     body = form.body.data.strip()
     editing_id = form.id.data
@@ -169,7 +132,8 @@ def api_edit_paste():
         parent_revision = base_revision["id"]
 
     # Check whether to fork or just edit the paste
-    is_fork = user_id != base_paste["userid"]
+    # always consider a fork if anon edit
+    is_fork = user_id != base_paste["userid"] or user_id == 0
     if is_fork:
         paste = submit_paste(user_id, base_paste)
         shorturl = paste["shorturl"]
@@ -200,7 +164,7 @@ def api_edit_paste():
     url = "/paste/{}".format(shorturl + ":" + commit)
     return functions.json_response(
         url=url,
-        key="anon" if not user_id else key,
+        key="anon" if not user_id else current_user["key"],
         base=get_setting("directories.url"),
         full_url=host + url,
     )

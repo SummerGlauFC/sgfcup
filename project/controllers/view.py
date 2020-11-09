@@ -123,7 +123,8 @@ def paste_view(url, commit=None, flag=None):
         content = functions.highlight_code(paste["content"], lang)
 
     # Decide whether the viewer owns this file (for forking or editing)
-    is_owner = paste["userid"] == current_user.get_id()
+    # anon is always a fork
+    is_owner = paste["userid"] != 0 and paste["userid"] == current_user.get_id()
 
     # Get the styles for syntax highlighting
     css = functions.highlight_code_css()
@@ -152,7 +153,8 @@ def paste_view(url, commit=None, flag=None):
             lines=len(raw_paste.split("\n")),
             own=is_owner,
             url=url,
-            hits=file["hits"],
+            # add 1 hit as incrementing does not update the local value
+            hits=file["hits"] + 1,
         ),
         title=title,
         css=css,

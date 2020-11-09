@@ -1,5 +1,5 @@
 {% extends "base.tpl" %}
-{% from "utils.tpl" import login_form, window_csrf with context %}
+{% from "utils.tpl" import login_status, window_csrf with context %}
 {% block title %}Pastebin{% endblock %}
 {% block head %}
   <style type="text/css">
@@ -75,8 +75,7 @@
       </select>
     </p>
   </div>
-  {{ login_form(form_paste, show_clear=True) }}
-  <br />
+  {{ login_status(show_button=True, next=url_for(request.endpoint)) }}
 {% endblock %}
 {% block extra %}
   <p>
@@ -96,7 +95,7 @@
   </form>
 {% endblock %}
 {% block script %}
-  {{ window_csrf(show_clear=True) }}
+  {{ window_csrf() }}
   <script src="/static/js/base.js" type="text/javascript"></script>
   <script src="/static/js/pastebin.js" type="text/javascript"></script>
 {% endblock %}

@@ -54,7 +54,7 @@ def delete_hits():
             if user:
                 delete_queue = db.fetchall(
                     "SELECT * FROM `files` WHERE `userid` = %s AND `hits` <= %s",
-                    [user["id"], hit_threshold],
+                    [user.get_id(), hit_threshold],
                 )
 
         size, count, _ = FileService.delete_batch(delete_queue)

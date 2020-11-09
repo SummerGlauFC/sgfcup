@@ -5,14 +5,15 @@ from flask import Blueprint
 from flask import flash
 from flask import render_template
 from flask_login import current_user
-from flask_login import login_user
+from flask_login import login_required
+from flask_wtf import FlaskForm
 from wtforms import PasswordField
 from wtforms import RadioField
 from wtforms import StringField
+from wtforms.validators import EqualTo
 from wtforms.validators import Optional
 
 from project.extensions import user_settings
-from project.forms import LoginForm
 from project.services.account import AccountInterface
 from project.services.account import AccountService
 from project.usersettings import SettingsJson
@@ -21,8 +22,17 @@ blueprint = Blueprint("settings", __name__)
 
 
 def make_settings_form(settings: SettingsJson, **kwargs):
-    class SettingsForm(LoginForm):
-        new_password = PasswordField("New password", validators=[Optional()])
+    class SettingsForm(FlaskForm):
+        new_password = PasswordField(
+            "New password",
+            validators=[
+                Optional(),
+                EqualTo("confirm_new_password", message="Passwords must match"),
+            ],
+        )
+        confirm_new_password = PasswordField(
+            "Confirm password", validators=[Optional(), EqualTo("new_password")]
+        )
 
     # flatten the settings groups to just a list of the fields
     # because we dont care about the groups for form generation
@@ -50,6 +60,7 @@ def flash_update_error(field=None, err=None):
 
 
 @blueprint.route("/settings", methods=["GET", "POST"])
+@login_required
 def settings_view():
     settings = AccountService.get_settings(current_user.get_id())
     form = make_settings_form(settings)
@@ -62,33 +73,16 @@ def settings_view():
             flash_update_error()
             return render_form()
 
-        key = form.key.data
-        password = form.password.data
-        user, is_authed = AccountService.authenticate(key, password)
-        if not user or not is_authed:
-            flash_update_error(form.key, "Key or password is incorrect")
-            return render_form()
-
-        key_id = user["id"]
-        key_password = user["password"]
-
-        # session.permanent = True
-        # session["id"] = key_id
-        # session["key"] = key
-        # session["password"] = key_password
-        login_user(user)
-
         new_password = form.new_password.data
         if new_password:
-            if key_password == new_password:
+            if current_user["password"] == new_password:
                 flash_update_error(form.new_password, "Same as current password")
                 return render_form()
-            AccountService.update(key_id, AccountInterface(password=new_password))
-            # session["password"] = new_password
+            AccountService.update(
+                current_user.get_id(), AccountInterface(password=new_password)
+            )
 
         # Use the UserSettings class in order to update/set settings
         user_settings.set(current_user.get_id(), form.data)
-
         flash("Success! Your settings have been saved.")
-
     return render_form()

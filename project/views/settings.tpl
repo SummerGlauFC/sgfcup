@@ -1,5 +1,5 @@
 {% extends "base.tpl" %}
-{% from "utils.tpl" import flashed_messages, errors %}
+{% from "utils.tpl" import flashed_messages, errors, login_status with context %}
 {% block head %}
   <link href='/static/css/settings.css' rel='stylesheet' type='text/css'>
 {% endblock %}
@@ -19,13 +19,7 @@
     <div class="form-field">
       {{ flashed_messages(break=True) }}
     </div>
-    {% if current_user.is_authenticated %}
-      <form action="/logout" method="post">
-        <input type="hidden" name="next" value="{{ url_for("settings.settings_view") }}" />
-        <p>Logged in as <a href="/gallery/{{ current_user.key }}">{{ current_user.key }}</a>.</p>
-        <p><input type="submit" value="Sign out" /></p>
-      </form>
-    {% endif %}
+    {{ login_status(show_button=True) }}
     <form action="" method="post">
       {{ form.hidden_tag() }}
       {% if not current_user.is_authenticated %}
@@ -45,6 +39,10 @@
       <p class="form-field">
         {{ form.new_password.label }}
         {{ form.new_password(class="right-col textbox", autocomplete="new-password") }}
+      </p>
+      <p class="form-field">
+        {{ form.confirm_new_password.label }}
+        {{ form.confirm_new_password(class="right-col textbox", autocomplete="new-password") }}
       </p>
       {% for key, val in settings.groups.items() %}
         <h2>{{ key }}</h2>
