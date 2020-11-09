@@ -156,7 +156,7 @@
         <div class="row delete-options">
           {{ form_delete.csrf_token }}
           {{ form_delete.key(value=key) }}
-          <small>{{ form_delete.password.label }}</small> {{ form_delete.password() }}
+          <small>{{ form_delete.password.label }}</small> {{ form_delete.password(autocomplete="current-password") }}
           {{ form_delete.delete_selected() }}
           {{ form_delete.delete_all() }}
         </div>

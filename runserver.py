@@ -1,8 +1,10 @@
 #!/usr/bin/env python
 import sys
 
-from project import app
+from project import create_app
 from project.functions import get_setting
+
+app = create_app()
 
 debug_enabled = bool(get_setting("debug.enabled"))
 sentry_enabled = bool(get_setting("debug.sentry.enabled"))
@@ -16,7 +18,6 @@ if sentry_enabled:
 
 if __name__ == "__main__":
     try:
-        # TODO: flask production
         print("Running in this fashion is deprecated, use flask run instead.")
         port = int(sys.argv[1])
         app.run(host="localhost", port=port, debug=debug_enabled)

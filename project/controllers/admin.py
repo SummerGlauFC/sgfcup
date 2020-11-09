@@ -1,18 +1,20 @@
 from functools import wraps
 
+from flask import Blueprint
 from flask import flash
 from flask import redirect
 from flask import render_template
 from flask import session
 
-from project import app
 from project import db
 from project import functions
-from project.forms.admin import AdminDeleteForm
 from project.forms import LoginForm
+from project.forms.admin import AdminDeleteForm
 from project.functions import get_setting
 from project.services.account import AccountService
 from project.services.file import FileService
+
+blueprint = Blueprint("admin", __name__)
 
 
 def login_required(f):
@@ -25,14 +27,14 @@ def login_required(f):
     return check_session
 
 
-@app.route("/admin", methods=["GET"])
+@blueprint.route("/admin", methods=["GET"])
 @login_required
 def route():
     form = AdminDeleteForm()
     return render_template("admin.tpl", form=form)
 
 
-@app.route("/admin/deletehits", methods=["POST"])
+@blueprint.route("/admin/deletehits", methods=["POST"])
 @login_required
 def delete_hits():
     form = AdminDeleteForm()
@@ -66,7 +68,7 @@ def delete_hits():
     return redirect("/admin")
 
 
-@app.route("/admin/login", methods=["GET", "POST"])
+@blueprint.route("/admin/login", methods=["GET", "POST"])
 def login():
     if session.get("admin") is True:
         # already authenticated
@@ -77,13 +79,14 @@ def login():
         admin = get_setting("admin").get(form.key.data, None)
         if admin and admin == form.password.data:
             # Allow for a persistent login
+            session.permanent = True
             session["admin"] = True
             return redirect("/admin")
         flash("There was a problem authenticating you.", "error")
     return render_template("admin_login.tpl", form=form)
 
 
-@app.route("/admin/logout", methods=["GET", "POST"])
+@blueprint.route("/admin/logout", methods=["GET", "POST"])
 def logout():
     session.pop("admin", None)
     flash("Successfully logged you out.")

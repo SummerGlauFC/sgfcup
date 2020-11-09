@@ -71,13 +71,9 @@ h2, .row {
 }
 
 .row.m-b {
-    border-top: none;
     margin-bottom: 1rem;
     padding: 0.5rem;
-}
-
-.row.padded {
-    padding: 1rem;
+    border-top: none;
 }
 
 .row.delete-options input {

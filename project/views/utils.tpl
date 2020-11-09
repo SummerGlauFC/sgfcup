@@ -23,29 +23,44 @@
   {% endwith %}
 {% endmacro %}
 
-{% macro login_form(form, show_clear=False) %}
+{% macro login_form(form, show_clear=False, show_logged_in=True) %}
   <div id="identification">
-    {% if show_clear %}
-      <p>
-        <small>
-          You do not have to change these values.
+    {% if current_user.is_authenticated and show_logged_in %}
+      <p>Logged in as <a href="/gallery/{{ current_user.key }}">{{ current_user.key }}</a>.</p>
+      <p><a id="logout" class="button" href="/logout">Sign out</a></p>
+    {% else %}
+      {% if show_clear %}
+        <p>
+          <small>
+            You do not have to change these values.
+            <br />
+            Clear the fields to upload anonymously.
+          </small>
           <br />
-          Clear the fields to upload anonymously.
-        </small>
-        <br />
-        <br />
-        <button type='button' id="clear-fields">Clear Fields</button>
+          <br />
+          <button type='button' id="clear-fields">Clear Fields</button>
+        </p>
+      {% endif %}
+      {{ errors(form.key) }}
+      <p class="m-none">
+        {{ form.key.label }}
+        {{ form.key(size=20, autocomplete="username") }}
+      </p>
+      {{ errors(form.password) }}
+      <p class="m-none">
+        {{ form.password.label }}
+        {{ form.password(size=20, autocomplete="current-password") }}
+      </p>
+      <p>
+        <button type='button' id="login">Sign in</button>
       </p>
     {% endif %}
-    {{ errors(form.key) }}
-    <p class="m-none">
-      {{ form.key.label }}
-      {{ form.key(size=20) }}
-    </p>
-    {{ errors(form.password) }}
-    <p class="m-none">
-      {{ form.password.label }}
-      {{ form.password(size=20) }}
-    </p>
   </div>
+{% endmacro %}
+
+{% macro window_csrf(show_clear=False) %}
+  <script type="text/javascript">
+    window.CSRF_TOKEN = "{{ csrf_token() }}"
+    window.SHOW_CLEAR = {{ "false" if not show_clear else "true" }}
+  </script>
 {% endmacro %}

@@ -2,14 +2,14 @@ import functools
 from typing import Tuple
 from urllib.parse import urlencode
 
+from flask import Blueprint
 from flask import flash
 from flask import redirect
 from flask import render_template
 from flask import request
-from flask import session
+from flask_login import current_user
 from wtforms import Field
 
-from project import app
 from project import db
 from project import functions
 from project.constants import FileType
@@ -25,8 +25,11 @@ from project.services.account import ACCOUNT_KEY_REGEX
 from project.services.account import AccountService
 from project.services.file import FileInterface
 from project.services.file import FileService
+from project.services.gallery import GalleryService
 from project.services.paste import PasteInterface
 from project.services.paste import PasteService
+
+blueprint = Blueprint("gallery", __name__)
 
 
 def url_for_page(page):
@@ -38,8 +41,10 @@ def url_for_page(page):
     """
     form = GallerySortForm(request.args)
     form.page.data = page
+
     query = {}
-    for field in form:
+    # call iter explicitly to stop typing complaints
+    for field in form.__iter__():
         field: Field
         if field.data != field.default:
             query[field.name] = field.data
@@ -48,20 +53,20 @@ def url_for_page(page):
     return request.path + (encoded and "?" + urlencode(query))
 
 
-@app.route("/redirect/gallery/<user_key>")
+@blueprint.route("/redirect/gallery/<user_key>")
 def gallery_redirect(user_key=None):
     if not user_key:
         return redirect("/")
     return redirect(f"/gallery/{user_key}")
 
 
-@app.route("/gallery/", methods=["GET"])
-@app.route("/gallery/<user_key>", methods=["GET"])
+@blueprint.route("/gallery/", methods=["GET"])
+@blueprint.route("/gallery/<user_key>", methods=["GET"])
 def gallery_view(user_key=None):
-    key = session.get("key", None)
-    # If a user does not provide a gallery to view, redirect to their own
-    if not user_key and key:
-        return redirect(f"/gallery/{key}")
+    if current_user.is_authenticated:
+        key = current_user["key"]
+        if not user_key and key:
+            return redirect(f"/gallery/{key}")
 
     form_filter = GallerySortForm(request.args)
     case = form_filter.case.data
@@ -86,9 +91,9 @@ def gallery_view(user_key=None):
     # Check the users settings to see if they have specified
     # gallery access restrictions
     settings = AccountService.get_settings(user["id"])
-    if not AccountService.validate_auth_cookie(user["id"], settings=settings):
+    if not GalleryService.validate_auth_cookie(user["id"], settings=settings):
         # if cookie , show password incorrect message
-        if AccountService.get_auth_cookie(user["id"]):
+        if GalleryService.get_auth_cookie(user["id"]):
             flash("Incorrect gallery password", "error")
         return redirect(f"/gallery/auth/{user_key}")
 
@@ -197,7 +202,7 @@ def gallery_view(user_key=None):
     )
 
 
-@app.route(
+@blueprint.route(
     f"/gallery/auth/<regex('{ACCOUNT_KEY_REGEX}'):user_key>", methods=["GET", "POST"]
 )
 def gallery_auth(user_key):
@@ -206,7 +211,7 @@ def gallery_auth(user_key):
     if form.validate_on_submit():
         user = AccountService.get_by_key(user_key)
         resp = redirect(f"/gallery/{user_key}")
-        AccountService.set_auth_cookie(
+        GalleryService.set_auth_cookie(
             resp, user["id"], form.authcode.data, form.remember.data
         )
         return resp
@@ -214,26 +219,27 @@ def gallery_auth(user_key):
     return render_template("gallery_auth.tpl", form=form)
 
 
-@app.route("/gallery/delete/advanced", methods=["GET", "POST"])
+@blueprint.route("/gallery/delete/advanced", methods=["GET", "POST"])
 def gallery_delete_advanced_view():
     form = GalleryAdvancedDeleteForm()
     if form.validate_on_submit():
         mapping = {"lte": "<=", "gte": ">=", "e": "="}
-        user, is_authed = AccountService.authenticate(form.key.data, form.password.data)
-        if user and is_authed:
+        if current_user.is_authenticated:
             sql = f"SELECT * FROM `files` WHERE `userid` = %s AND `{form.type.data}` {mapping[form.operator.data]} %s"
-            files = db.fetchall(sql, [user["id"], form.threshold.data])
+            files = db.fetchall(sql, [current_user.get_id(), form.threshold.data])
             size, count, messages = FileService.delete_batch(files)
             messages.append(
                 f"{count} items deleted. {functions.sizeof_fmt(size)} freed."
             )
-            return render_template("delete.tpl", messages=messages, key=user["key"])
+            return render_template(
+                "delete.tpl", messages=messages, key=current_user["key"]
+            )
         flash("Key or password is incorrect", "error")
-    form.flash()
+    form.flash_errors()
     return render_template("delete_advanced.tpl", form=form)
 
 
-@app.route("/gallery/delete", methods=["POST"])
+@blueprint.route("/gallery/delete", methods=["POST"])
 def gallery_delete():
     form = GalleryDeleteForm()
     messages = []

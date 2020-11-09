@@ -2,12 +2,13 @@ from typing import Optional
 from typing import Union
 from urllib.parse import quote
 
+from flask import Blueprint
 from flask import request
-from flask import session
+from flask_login import current_user
+from flask_login import login_user
 
-from project import app
 from project import functions
-from project import user_settings
+from project.extensions import user_settings
 from project.forms import LoginForm
 from project.forms import flatten_errors
 from project.forms.paste import PasteEditForm
@@ -23,15 +24,19 @@ from project.services.paste import RevisionInterface
 
 id_generator = functions.id_generator
 
+blueprint = Blueprint("upload", __name__)
+
 
 def handle_auth_or_abort(key, password):
     user, is_authed = AccountService.get_or_create_account(key, password)
     user_id = user["id"]
     if not user_id == 0:
         # Store the users credentials in the session.
-        session["key"] = key
-        session["password"] = password
-        session["id"] = user_id
+        # session.permanent = True
+        # session["key"] = key
+        # session["password"] = password
+        # session["id"] = user_id
+        login_user(user, remember=True)
     if not is_authed:
         raise functions.json_error("Incorrect Key or password", status=401)
     return user_id
@@ -71,25 +76,27 @@ def submit_paste(user_id, paste_data=None) -> PasteInterface:
             "lang": form.lang.data,
         }
 
-    # abort_if_paste_body_error(paste_data["content"])
-
     paste_data["userid"] = user_id
     paste = PasteService.upload(PasteInterface(**paste_data))
     return paste
 
 
 # File upload endpoint.
-@app.route("/api/upload", methods=["POST"])
-@app.route("/api/upload/<upload_type>", methods=["POST"])
+@blueprint.route("/api/upload", methods=["POST"])
+@blueprint.route("/api/upload/<upload_type>", methods=["POST"])
 def api_upload_file(upload_type="file"):
     if upload_type not in ["file", "paste"]:
         # The type the user provided doesn't exist.
         raise functions.json_error("This upload type does not exist")
 
-    form = LoginForm()
-    key = form.key.data
-    password = form.password.data
-    user_id = handle_auth_or_abort(key, password)
+    if not current_user.is_authenticated:
+        form = LoginForm()
+        key = form.key.data
+        password = form.password.data
+        user_id = handle_auth_or_abort(key, password)
+    else:
+        key = current_user["key"]
+        user_id = current_user.get_id()
 
     is_file = upload_type == "file"
 
@@ -117,7 +124,7 @@ def api_upload_file(upload_type="file"):
     )
 
 
-@app.route("/api/edit/paste", methods=["POST"])
+@blueprint.route("/api/edit/paste", methods=["POST"])
 def api_edit_paste():
     form = PasteEditForm()
     if not form.validate():
@@ -125,13 +132,20 @@ def api_edit_paste():
             "Error editing paste.", errors=flatten_errors(form.errors)
         )
 
-    key = form.key.data
+    form = PasteEditForm()
+
+    if not current_user.is_authenticated:
+        key = form.key.data
+        password = form.password.data
+        user_id = handle_auth_or_abort(key, password)
+    else:
+        key = current_user["key"]
+        user_id = current_user.get_id()
+
     body = form.body.data.strip()
     editing_id = form.id.data
     editing_commit = form.commit.data
     msg = form.commit_message.data
-
-    user_id = handle_auth_or_abort(key, form.password.data)
 
     # Select the paste that is being edited
     base_paste = PasteService.get_by_id(editing_id)

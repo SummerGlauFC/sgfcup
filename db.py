@@ -21,11 +21,15 @@ def catch_error(f):
     return wrapped
 
 
+class DBConnectionFailed(Exception):
+    """ happens when a database operation continually fails """
+
+
 class BaseDB(object):
-    """ a small database abstraction to eliminate lost connections """
+    """ a database abstraction to eliminate lost connections """
 
     # the connection instance
-    conn = None
+    _conn = None
 
     # the cursor instance
     cur = None
@@ -40,8 +44,6 @@ class BaseDB(object):
         self.password = password
         self.database = database
 
-        self._init_connection()
-
     def _init_connection(self):
         """ initializes the connection """
         if self.retries < 1:
@@ -49,15 +51,15 @@ class BaseDB(object):
             raise DBConnectionFailed()
 
         try:
-            self._connect()
+            return self._connect()
         except (pymysql.err.Error, BrokenPipeError):
             logger.exception("Database connection died, trying to reinitialise...")
             self.retries -= 1
-            self._init_connection()
+            return self._init_connection()
 
     def _connect(self):
         """ connect to the database """
-        self.conn = pymysql.connect(
+        conn = pymysql.connect(
             host=self.host,
             user=self.user,
             passwd=self.password,
@@ -67,29 +69,34 @@ class BaseDB(object):
             use_unicode=True,
         )
         # autocommit just in case we're on InnoDB
-        self.conn.autocommit(True)
+        conn.autocommit(True)
+        return conn
 
-    # @catch_error
+    @property
+    def conn(self):
+        if self._conn is None:
+            self._conn = self._init_connection()
+        return self._conn
+
     def close(self):
         """ close the database connection """
         self.conn.close()
+        self._conn = None
 
-    # @catch_error
     def escape(self, obj):
         """ autodetect input and escape it for use in a SQL statement """
         if isinstance(obj, str):
             return self.conn.escape(obj)
         return obj
 
-    # @catch_error
     def execute(self, sql, args=None):
         """ execute the SQL statement and return the cursor """
         logger.debug(f'"{sql}" {args}')
-        self.cur = self.conn.cursor(pymysql.cursors.DictCursor)
+        conn = self.conn
+        self.cur = conn.cursor(pymysql.cursors.DictCursor)
         self.cur.execute(sql, args) if args is not None else self.cur.execute(sql)
         return self.cur
 
-    # @catch_error
     def fetchone(self, sql, args=None):
         """ execute the SQL statement and return one row if there's a result, return None if there's no result """
         cur = self.execute(sql, args)
@@ -97,7 +104,6 @@ class BaseDB(object):
             return cur.fetchone()
         return None
 
-    # @catch_error
     def fetchall(self, sql, args=None):
         """ execute the SQL statement and return one row if there's a result, return None if there's no result """
         cur = self.execute(sql, args)
@@ -107,15 +113,24 @@ class BaseDB(object):
 
 
 class DB(BaseDB):
-    """Wrapper around small DB abstraction to abstract further
+    """
+    Wrapper around small DB abstraction to abstract further.
+
     this is art.
     """
 
-    def __init__(self, *args, **kwargs):
+    def __init__(self, pool=None, *args, **kwargs):
         self.debug = kwargs.pop("debug", False)
         if self.debug:
             logger.setLevel(logging.DEBUG)
+        self.pool = pool
         super(DB, self).__init__(*args, **kwargs)
+
+    @property
+    def conn(self):
+        if self._conn is None:
+            self._conn = self.pool.dedicated_connection()
+        return self._conn
 
     def _pairs_generator(self, pairs, joiner=" AND ", brackets=False):
         """ builds a where template """
@@ -192,7 +207,3 @@ class DB(BaseDB):
         values = ",".join(["%s"] * len(columns_pair))
         query = f"INSERT INTO `{table}` ({columns}) VALUES ({values})"
         return self.execute(query, list(columns_pair.values()))
-
-
-class DBConnectionFailed(Exception):
-    """ happens when a database operation continually fails """

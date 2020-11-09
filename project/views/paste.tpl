@@ -1,4 +1,4 @@
-{% from "utils.tpl" import login_form %}
+{% from "utils.tpl" import login_form, window_csrf with context %}
 {% macro render_revisions() %}
   {% if pagination.pages > 1 %}
     [ Revisions:
@@ -116,7 +116,9 @@
           {{ login_form(form, show_clear=True) }}
           <br />
           <input type="submit" name="submit" value="{% if paste.own %}Edit{% else %}Fork{% endif %}" />
+        </div>
       </form>
+      {{ window_csrf(show_clear=True) }}
       <script src="/static/js/base.js" type="text/javascript"></script>
       <script src="/static/js/pastebin.js" type="text/javascript"></script>
     {%- endif %}

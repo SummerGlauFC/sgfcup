@@ -3,7 +3,7 @@ from typing import List
 from flask import flash
 from flask_wtf import FlaskForm
 from wtforms import StringField
-from wtforms.validators import InputRequired
+from wtforms.validators import Optional
 from wtforms.widgets import PasswordInput
 
 from project.functions import key_password_return
@@ -36,9 +36,9 @@ class LoginForm(FlashErrorsForm):
 
         super().__init__(**kwargs)
 
-    key = StringField("User", validators=[InputRequired()])
+    key = StringField("User", validators=[Optional()])
     # allow password to be set/retrieved
     # TODO: remove once proper login implemented
     password = StringField(
-        "Password", widget=PasswordInput(hide_value=False), validators=[InputRequired()]
+        "Password", widget=PasswordInput(hide_value=False), validators=[Optional()]
     )

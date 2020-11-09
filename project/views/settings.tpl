@@ -15,55 +15,66 @@
   </div>
 {% endmacro %}
 {% block wrapper %}
-  <form action="" method="post">
-    {{ form.hidden_tag() }}
+  <div>
     <div class="form-field">
       {{ flashed_messages(break=True) }}
     </div>
-    <p>Enter your present details in order to make changes.</p>
-    {{ settings_error(form.key) }}
-    <p class="form-field">
-      {{ form.key.label }}
-      {{ form.key(class="right-col textbox") }}
-    </p>
-    <p class="form-field">
-      {{ form.password.label }}
-      {{ form.password(class="right-col textbox") }}
-    </p>
-    <h2>Change key details</h2>
-    {{ settings_error(form.new_password) }}
-    <p class="form-field">
-      {{ form.new_password.label }}
-      {{ form.new_password(class="right-col textbox") }}
-    </p>
-    {% for key, val in settings.groups.items() %}
-      <h2>{{ key }}</h2>
-      {% for item in val %}
-        {% set setting = form[item] %}
-        {% set value = settings[item] %}
-        {{ settings_error(setting) }}
-        <div class="form-field">
-          <label for="{{ setting.label.field_id }}">{{ setting.label.text|safe }}</label>
-          {% if value.type == "radio" %}
-            <ul class="right-col">
-              {% for option in setting %}
-                <li>
-                  {{ option }}
-                  <label for="{{ option.label.field_id }}">{{ option.label.text|safe }}</label>
-                </li>
-              {% endfor %}
-            </ul>
-          {% else %}
-            {{ setting(class="right-col textbox") }}
-          {% endif %}
-          {% if value.notes %}
-            <p class="right-col notes">{{ value.notes|safe }}</p>
-          {% endif %}
-        </div>
+    {% if current_user.is_authenticated %}
+      <form action="/logout" method="post">
+        <input type="hidden" name="next" value="{{ url_for("settings.settings_view") }}" />
+        <p>Logged in as <a href="/gallery/{{ current_user.key }}">{{ current_user.key }}</a>.</p>
+        <p><input type="submit" value="Sign out" /></p>
+      </form>
+    {% endif %}
+    <form action="" method="post">
+      {{ form.hidden_tag() }}
+      {% if not current_user.is_authenticated %}
+        <p>Enter your present details in order to make changes.</p>
+        {{ settings_error(form.key) }}
+        <p class="form-field">
+          {{ form.key.label }}
+          {{ form.key(class="right-col textbox") }}
+        </p>
+        <p class="form-field">
+          {{ form.password.label }}
+          {{ form.password(class="right-col textbox", autocomplete="current-password") }}
+        </p>
+      {% endif %}
+      <h2>Change key details</h2>
+      {{ settings_error(form.new_password) }}
+      <p class="form-field">
+        {{ form.new_password.label }}
+        {{ form.new_password(class="right-col textbox", autocomplete="new-password") }}
+      </p>
+      {% for key, val in settings.groups.items() %}
+        <h2>{{ key }}</h2>
+        {% for item in val %}
+          {% set setting = form[item] %}
+          {% set value = settings[item] %}
+          {{ settings_error(setting) }}
+          <div class="form-field">
+            <label for="{{ setting.label.field_id }}">{{ setting.label.text|safe }}</label>
+            {% if value.type == "radio" %}
+              <ul class="right-col">
+                {% for option in setting %}
+                  <li>
+                    {{ option }}
+                    <label for="{{ option.label.field_id }}">{{ option.label.text|safe }}</label>
+                  </li>
+                {% endfor %}
+              </ul>
+            {% else %}
+              {{ setting(class="right-col textbox") }}
+            {% endif %}
+            {% if value.notes %}
+              <p class="right-col notes">{{ value.notes|safe }}</p>
+            {% endif %}
+          </div>
+        {% endfor %}
       {% endfor %}
-    {% endfor %}
-    <div class="cf save-button-container">
-      <input type="submit" class="button" value="Save Changes">
-    </div>
-  </form>
+      <div class="cf save-button-container">
+        <input type="submit" class="button" value="Save Changes">
+      </div>
+    </form>
+  </div>
 {% endblock %}

@@ -1,6 +1,3 @@
-from db import DB
-from project.usersettings import UserSettings
-
 base = "/path/to/base/folder"  # base folder
 
 Settings = {
@@ -15,6 +12,7 @@ Settings = {
         "template_base": base,
     },
     "database": {
+        "host": "127.0.0.1",  # database host
         "user": "username",  # database user
         "password": "password",  # db user password
         "db": "database_name",  # database name
@@ -32,15 +30,3 @@ Settings = {
         },
     },
 }
-
-# Initialize database connection
-db = DB(
-    user=Settings["database"]["user"],
-    password=Settings["database"]["password"],
-    database=Settings["database"]["db"],
-    debug=Settings["debug"]["enabled"],
-)
-
-# This json file contains the configuration for all user settings.
-# Default settings can be changed in this file.
-user_settings = UserSettings("project/user_settings.json", db)

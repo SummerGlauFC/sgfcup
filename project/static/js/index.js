@@ -28,6 +28,9 @@ Dropzone.options.myAwesomeDropzone = {
   previewTemplate: getPreviewTemplate(),
   init: function () {
     const dropzone = this
+
+    dropzone.updated_login_form = false
+
     this.element
       .querySelector(`input[name="submit"]`)
       .addEventListener("click", function (e) {
@@ -64,6 +67,22 @@ Dropzone.options.myAwesomeDropzone = {
       // update URL for gallery button upon upload
       const gallery = document.getElementById("button-gallery")
       if (gallery && response.key !== "anon") gallery.href = `/gallery/${response.key}`
+
+      const key = document.getElementById("key")
+      // disable updating the login form if already logged in
+      if (document.getElementById("logout")) {
+        dropzone.updated_login_form = true
+      }
+      // or if anonymous upload
+      if (key) {
+        dropzone.updated_login_form = key.value === ""
+      }
+
+      // update the login form only on first upload
+      if (!dropzone.updated_login_form) {
+        updateLoginForm()
+        dropzone.updated_login_form = true
+      }
 
       showUploadResult(file, response, `<a href="${response.full_url}">${response.full_url}</a>`)
       dropzone.processQueue()

@@ -1,20 +1,23 @@
 import functools
 import operator
 
+from flask import Blueprint
 from flask import flash
 from flask import render_template
-from flask import session
+from flask_login import current_user
+from flask_login import login_user
 from wtforms import PasswordField
 from wtforms import RadioField
 from wtforms import StringField
 from wtforms.validators import Optional
 
-from project import app
-from project import user_settings
+from project.extensions import user_settings
 from project.forms import LoginForm
 from project.services.account import AccountInterface
 from project.services.account import AccountService
 from project.usersettings import SettingsJson
+
+blueprint = Blueprint("settings", __name__)
 
 
 def make_settings_form(settings: SettingsJson, **kwargs):
@@ -46,9 +49,9 @@ def flash_update_error(field=None, err=None):
         field.errors.append(err)
 
 
-@app.route("/settings", methods=["GET", "POST"])
-def settings_get():
-    settings = AccountService.get_settings(session.get("id", 0))
+@blueprint.route("/settings", methods=["GET", "POST"])
+def settings_view():
+    settings = AccountService.get_settings(current_user.get_id())
     form = make_settings_form(settings)
 
     def render_form():
@@ -69,9 +72,11 @@ def settings_get():
         key_id = user["id"]
         key_password = user["password"]
 
-        session["id"] = key_id
-        session["key"] = key
-        session["password"] = key_password
+        # session.permanent = True
+        # session["id"] = key_id
+        # session["key"] = key
+        # session["password"] = key_password
+        login_user(user)
 
         new_password = form.new_password.data
         if new_password:
@@ -79,10 +84,10 @@ def settings_get():
                 flash_update_error(form.new_password, "Same as current password")
                 return render_form()
             AccountService.update(key_id, AccountInterface(password=new_password))
-            session["password"] = new_password
+            # session["password"] = new_password
 
         # Use the UserSettings class in order to update/set settings
-        user_settings.set(session["id"], form.data)
+        user_settings.set(current_user.get_id(), form.data)
 
         flash("Success! Your settings have been saved.")
 

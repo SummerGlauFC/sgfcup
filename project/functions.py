@@ -7,17 +7,21 @@ from builtins import range
 from functools import partial
 from math import ceil
 from typing import Optional
+from urllib.parse import urlparse
 
 import magic
 import markupsafe
 import pygments
+import pymysql
 from PIL import Image
+from dbutils.pooled_db import PooledDB
 from flask import Response
 from flask import jsonify
 from flask import make_response
 from flask import request
 from flask import send_from_directory
 from flask import session
+from flask_login import current_user
 from pygments.formatters import HtmlFormatter
 from pygments.lexers import PhpLexer
 from pygments.lexers import TextLexer
@@ -28,7 +32,6 @@ from pygments.util import ClassNotFound
 from werkzeug.routing import BaseConverter
 from werkzeug.urls import url_quote
 
-from db import DB
 from project import config
 
 
@@ -223,9 +226,11 @@ def json_error(error, status=400, errors=None):
 
 
 # from https://stackoverflow.com/a/36131992
-def get_dict(dictionary, dotted_key):
+def get_dict(dictionary, dotted_key, default=None):
     keys = dotted_key.split(".")
-    return functools.reduce(lambda d, key: d.get(key) if d else None, keys, dictionary)
+    return functools.reduce(
+        lambda d, key: d.get(key) if d else default, keys, dictionary
+    )
 
 
 get_setting = partial(get_dict, config.Settings)
@@ -287,20 +292,42 @@ def key_password_return():
 
     :return: dict containing {key: ..., password: ...}
     """
-    if session.get("id"):
-        return {"key": session.get("key"), "password": session.get("password")}
+    if current_user.is_authenticated and current_user.get_id():
+        return {"key": current_user["key"], "password": ""}
     return {"key": id_generator(15), "password": id_generator(15)}
 
 
-def connect_db():
+def create_pool():
     """
-    Get a DB connection instance.
+    Create a PooledDB instance.
 
-    :return: DB connection instance
+    :return: PooledDB instance
     """
-    return DB(
+    return PooledDB(
+        creator=pymysql,  # module using linked database
+        maxconnections=0,
+        mincached=2,
+        maxcached=5,
+        maxshared=None,
+        blocking=True,
+        maxusage=None,
+        ping=1,
+        port=3306,
+        host=get_setting("database.host", "localhost"),
         user=get_setting("database.user"),
         password=get_setting("database.password"),
         database=get_setting("database.db"),
-        debug=get_setting("debug.enabled"),
+        charset="utf8",
+        failures=(BrokenPipeError, AttributeError, pymysql.err.Error),
+        autocommit=True,
     )
+
+
+def safe_redirect(absolute_redirect_url):
+    """ Only redirect if the passed in absolute url matches the server host to protect against phising """
+
+    server_host = request.host
+    redirect_host = urlparse(absolute_redirect_url)
+    if not absolute_redirect_url:
+        return False
+    return server_host == redirect_host.netloc if redirect_host.netloc else True

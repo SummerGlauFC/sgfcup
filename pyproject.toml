@@ -23,6 +23,8 @@ python-dotenv = "^0.14.0"
 Flask-WTF = "^0.14.3"
 WTForms = "^2.3.3"
 wtforms = {git = "https://github.com/wtforms/wtforms.git", rev = "7c5c46fd16909648bdb810bd6968781d9ab1056a"}
+Flask-Login = "^0.5.0"
+DBUtils = "^2.0"
 
 [tool.poetry.dev-dependencies]
 raven = "^6.10.0"

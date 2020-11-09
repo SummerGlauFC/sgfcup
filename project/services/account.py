@@ -1,16 +1,13 @@
-import hashlib
 import re
-from functools import partial
+from collections import UserDict
 from typing import Optional
 from typing import Tuple
 
-from flask import Response
-from flask import request
+from flask_login import UserMixin
 
-from project import user_settings
 from project import db
 from project.constants import TypedDict
-from project.functions import get_dict
+from project.extensions import user_settings
 from project.functions import json_error
 
 
@@ -20,33 +17,46 @@ class AccountInterface(TypedDict, total=False):
     password: str
 
 
-ANONYMOUS_ACCOUNT = AccountInterface(id=0)
+class Account(UserMixin, UserDict):
+    data: AccountInterface
+
+    def get_id(self):
+        return self.data["id"]
+
+
+ANONYMOUS_ACCOUNT = Account(id=0)
 ACCOUNT_KEY_REGEX = "[a-zA-Z0-9_-]+"
 
 
 class AccountService:
     @staticmethod
-    def get_by_id(user_id: int) -> Optional[AccountInterface]:
+    def get_by_id(user_id: int) -> Optional[Account]:
         """
         Get a user by their ID.
 
         :param user_id: the ID of the user
         :return: row of the User if they exist
         """
-        return db.select("accounts", where={"id": user_id}, singular=True)
+        acc = db.select("accounts", where={"id": user_id}, singular=True)
+        if acc:
+            return Account(**acc)
+        return None
 
     @staticmethod
-    def get_by_key(key: str) -> Optional[AccountInterface]:
+    def get_by_key(key: str) -> Optional[Account]:
         """
         Get a user by their key.
 
         :param key: the key of the user
         :return: row of the User if they exist
         """
-        return db.select("accounts", where={"key": key}, singular=True)
+        acc = db.select("accounts", where={"key": key}, singular=True)
+        if acc:
+            return Account(**acc)
+        return None
 
     @staticmethod
-    def create(new_attrs: AccountInterface) -> AccountInterface:
+    def create(new_attrs: AccountInterface) -> Account:
         """
         Create an account with the given values.
 
@@ -67,9 +77,7 @@ class AccountService:
         db.update("accounts", new_attrs, {"id": user_id})
 
     @staticmethod
-    def authenticate(
-        key: str, password: str
-    ) -> Tuple[Optional[AccountInterface], bool]:
+    def authenticate(key: str, password: str) -> Tuple[Optional[Account], bool]:
         """
         Check if the given key/password authenticates an account.
 
@@ -94,7 +102,7 @@ class AccountService:
         return bool(re.match(f"^{ACCOUNT_KEY_REGEX}$", key))
 
     @staticmethod
-    def get_or_create_account(key, password) -> Tuple[AccountInterface, bool]:
+    def get_or_create_account(key, password) -> Tuple[Account, bool]:
         """
         Get the specified account if it exists, else create it.
 
@@ -130,57 +138,3 @@ class AccountService:
         :return: settings for the given user
         """
         return user_settings.get_all_values(user_id)
-
-    @staticmethod
-    def get_auth_cookie(user_id: int) -> Optional[str]:
-        """
-        Get the gallery authentication cookie for the given user ID.
-
-        :param user_id: user ID to get cookie for
-        :return: hashed gallery password or None
-        """
-        return request.cookies.get(f"auth+{user_id}")
-
-    @staticmethod
-    def validate_auth_cookie(user_id: int, settings: Optional[dict] = None) -> bool:
-        """
-        Validate a gallery auth cookie for the given user.
-        TODO: move to gallery service
-
-        :param user_id: ID of the user
-        :param settings: user settings dict (pass in if already grabbed)
-        :return: True if the auth cookie is valid or not needed, else False
-        """
-        if not settings:
-            settings = AccountService.get_settings(user_id)
-        get_user_setting = partial(get_dict, settings)
-        if get_user_setting("block.value") and get_user_setting(
-            "gallery_password.value"
-        ):
-            auth_cookie = AccountService.get_auth_cookie(user_id)
-            hex_pass = hashlib.sha1(
-                get_user_setting("gallery_password.value").encode("utf-8")
-            ).hexdigest()
-            if not auth_cookie or not hex_pass == auth_cookie:
-                return False
-        return True
-
-    @staticmethod
-    def set_auth_cookie(
-        resp: Response, user_id: int, authcode: str, remember: bool = False
-    ):
-        """
-        Set a gallery auth cookie for the given user.
-        TODO: move to gallery service
-
-        :param resp: response to set cookies for
-        :param user_id: ID of the user
-        :param authcode: code to save in cookie for verification
-        :param remember: if the cookie should be remembered
-        """
-        name = f"auth+{user_id}"
-        value = hashlib.sha1(authcode.encode("utf-8")).hexdigest()
-        if remember:
-            resp.set_cookie(name, value, max_age=3600 * 24 * 7 * 30 * 12, path="/")
-        else:
-            resp.set_cookie(name, value, path="/")

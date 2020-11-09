@@ -1,12 +1,12 @@
 import ghdiff
+from flask import Blueprint
 from flask import Response
 from flask import abort
 from flask import make_response
 from flask import redirect
 from flask import render_template
-from flask import session
+from flask_login import current_user
 
-from project import app
 from project import db
 from project import functions
 from project.constants import PasteAction
@@ -15,11 +15,13 @@ from project.services.file import FileService
 from project.services.paste import PasteService
 from project.services.paste import RevisionInterface
 
+blueprint = Blueprint("view", __name__)
 
-@app.route("/paste/<url>")
-@app.route("/paste/<url>/<flag>")
-@app.route("/paste/<url>:<commit>")
-@app.route("/paste/<url>:<commit>/<flag>")
+
+@blueprint.route("/paste/<url>")
+@blueprint.route("/paste/<url>/<flag>")
+@blueprint.route("/paste/<url>:<commit>")
+@blueprint.route("/paste/<url>:<commit>/<flag>")
 def paste_view(url, commit=None, flag=None):
     # TODO: simplify paste view controller
 
@@ -121,7 +123,7 @@ def paste_view(url, commit=None, flag=None):
         content = functions.highlight_code(paste["content"], lang)
 
     # Decide whether the viewer owns this file (for forking or editing)
-    is_owner = paste["userid"] == session.get("id", 0)
+    is_owner = paste["userid"] == current_user.get_id()
 
     # Get the styles for syntax highlighting
     css = functions.highlight_code_css()
@@ -161,10 +163,10 @@ def paste_view(url, commit=None, flag=None):
     )
 
 
-@app.route("/<url>")
-@app.route("/<url>.<ext>")
-@app.route("/<url>/<filename>")
-@app.route("/<url>/<filename>.<ext>")
+@blueprint.route("/<url>")
+@blueprint.route("/<url>.<ext>")
+@blueprint.route("/<url>/<filename>")
+@blueprint.route("/<url>/<filename>.<ext>")
 def image_view(url, filename=None, ext=None, file=None, update_hits=True):
     # Use passed results if provided (e.g. by thumbnailer)
     if not file:
@@ -186,10 +188,10 @@ def image_view(url, filename=None, ext=None, file=None, update_hits=True):
     return FileService.serve_file(file)
 
 
-@app.route("/api/thumb/<url>")
-@app.route("/api/thumb/<url>.<ext>")
-@app.route("/api/thumb/<url>/<filename>")
-@app.route("/api/thumb/<url>/<filename>.<ext>")
+@blueprint.route("/api/thumb/<url>")
+@blueprint.route("/api/thumb/<url>.<ext>")
+@blueprint.route("/api/thumb/<url>/<filename>")
+@blueprint.route("/api/thumb/<url>/<filename>.<ext>")
 def thumbnail(url, filename=None, ext=None):
     # Select the full file from the database
     file = FileService.get_by_url(url)

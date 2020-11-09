@@ -3,9 +3,11 @@ import os
 import subprocess
 from datetime import datetime
 
-from project import connect_db
+from db import DB
+from project.functions import create_pool
 
-db = connect_db()
+pool = create_pool()
+db = DB(pool=pool, debug=True)
 
 logging.basicConfig(
     level=logging.INFO, format="%(asctime)s %(name)-10s %(levelname)-8s %(message)s"

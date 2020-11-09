@@ -104,6 +104,10 @@ a, a:link, a:visited {
     text-decoration: underline;
 }
 
+#identification a {
+    text-decoration: none !important;
+}
+
 textarea,
 #commit_message {
     box-sizing: border-box;

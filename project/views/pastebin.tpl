@@ -1,5 +1,5 @@
 {% extends "base.tpl" %}
-{% from "utils.tpl" import login_form %}
+{% from "utils.tpl" import login_form, window_csrf with context %}
 {% block title %}Pastebin{% endblock %}
 {% block head %}
   <style type="text/css">
@@ -96,6 +96,7 @@
   </form>
 {% endblock %}
 {% block script %}
+  {{ window_csrf(show_clear=True) }}
   <script src="/static/js/base.js" type="text/javascript"></script>
   <script src="/static/js/pastebin.js" type="text/javascript"></script>
 {% endblock %}

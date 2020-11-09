@@ -1,5 +1,5 @@
 {% extends "base.tpl" %}
-{% from "utils.tpl" import login_form %}
+{% from "utils.tpl" import login_form, window_csrf with context %}
 {% block title %}Homepage{% endblock %}
 {% block head %}
   <link href='/static/css/dropzone.css' rel='stylesheet' type='text/css'>
@@ -31,7 +31,7 @@ Source code available at <a
         </a>
     </span>
   <span class="button-icon">
-        <a id="button-gallery" href="/gallery/{{ key }}" data-icon="&#xf03e;">
+        <a id="button-gallery" href="/gallery/{{ current_user.key or key }}" data-icon="&#xf03e;">
             <strong class='locks' data-icon="&#xf023;"></strong>
             <span class='types'>gallery</span>
         </a>
@@ -79,6 +79,7 @@ Source code available at <a
   </form>
 {% endblock %}
 {% block script %}
+  {{ window_csrf(show_clear=True) }}
   <script type="text/javascript" src="//cdnjs.cloudflare.com/ajax/libs/dropzone/5.7.2/min/dropzone.min.js"></script>
   <script type="text/javascript" src="/static/js/index.js"></script>
 {% endblock %}

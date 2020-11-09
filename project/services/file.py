@@ -13,7 +13,7 @@ from flask import abort
 from werkzeug.utils import secure_filename
 
 from project import db
-from project import user_settings
+from project.extensions import user_settings
 from project.constants import FileType
 from project.constants import TypedDict
 from project.functions import get_setting
