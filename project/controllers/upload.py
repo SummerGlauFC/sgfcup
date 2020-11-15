@@ -5,6 +5,7 @@ from urllib.parse import quote
 from flask import Blueprint
 from flask import request
 from flask_login import current_user
+from flask_login import login_user
 
 from project import functions
 from project.extensions import csrf
@@ -14,6 +15,9 @@ from project.forms.paste import PasteEditForm
 from project.forms.paste import PasteForm
 from project.functions import get_host
 from project.functions import get_setting
+from project.functions import json_error
+from project.functions import json_response
+from project.services.account import AccountService
 from project.services.file import FileInterface
 from project.services.file import FileService
 from project.services.paste import PasteInterface
@@ -26,7 +30,7 @@ blueprint = Blueprint("upload", __name__)
 def submit_file(user_id) -> FileInterface:
     files = request.files.get("files")
     if not files or files.filename == "":
-        raise functions.json_error("No file provided")
+        raise json_error("No file provided")
 
     file = FileService.upload(files, FileInterface(userid=user_id))
     # escape extension and original filename for URLs
@@ -47,7 +51,7 @@ def submit_paste(user_id, paste_data=None) -> PasteInterface:
     if paste_data is None:
         form = PasteForm()
         if not form.validate():
-            raise functions.json_error(
+            raise json_error(
                 "Error submitting paste.", errors=flatten_errors(form.errors)
             )
 
@@ -69,7 +73,17 @@ def submit_paste(user_id, paste_data=None) -> PasteInterface:
 def api_upload_file(upload_type="file"):
     if upload_type not in ["file", "paste"]:
         # The type the user provided doesn't exist.
-        raise functions.json_error("This upload type does not exist")
+        raise json_error("This upload type does not exist")
+
+    # support login thru the API
+    key = request.form.get("key")
+    password = request.form.get("password")
+    if key and password and not current_user.is_authenticated:
+        user, is_authed = AccountService.get_or_create_account(key, password)
+        if user and is_authed:
+            login_user(user)
+        else:
+            raise json_error("Incorrect key or password")
 
     user_id = current_user.get_id()
 
@@ -81,14 +95,14 @@ def api_upload_file(upload_type="file"):
         file = submit_paste(user_id)
 
     if not file:
-        raise functions.json_error("Failed to upload file")
+        raise json_error("Failed to upload file")
 
     shorturl = file["shorturl"]
     ext = file["ext"] if is_file else "paste"
 
     host = get_host()
     path = "/" + ("" if is_file else upload_type + "/")
-    return functions.json_response(
+    return json_response(
         type=ext,
         key="anon" if not user_id else current_user["key"],
         base=host,
@@ -104,9 +118,7 @@ def api_edit_paste():
 
     form = PasteEditForm()
     if not form.validate():
-        raise functions.json_error(
-            "Error editing paste.", errors=flatten_errors(form.errors)
-        )
+        raise json_error("Error editing paste.", errors=flatten_errors(form.errors))
 
     body = form.body.data.strip()
     editing_id = form.id.data
@@ -116,7 +128,7 @@ def api_edit_paste():
     # Select the paste that is being edited
     base_paste = PasteService.get_by_id(editing_id)
     if not base_paste:
-        raise functions.json_error("Paste does not exist")
+        raise json_error("Paste does not exist")
 
     shorturl = base_paste["shorturl"]
     paste_id = base_paste["id"]
@@ -131,7 +143,7 @@ def api_edit_paste():
             RevisionInterface(pasteid=paste_id, id=editing_commit)
         )
         if not base_revision:
-            raise functions.json_error("Commit does not exist")
+            raise json_error("Commit does not exist")
         parent_revision = base_revision["id"]
 
     # Check whether to fork or just edit the paste
@@ -147,7 +159,7 @@ def api_edit_paste():
             RevisionInterface(pasteid=paste_id, commit=commit)
         )
         if commit_exists:
-            raise functions.json_error("Commit already exists")
+            raise json_error("Commit already exists")
 
     # Insert as a revision regardless of being a fork or edit
     PasteService.create_revision(
@@ -165,7 +177,7 @@ def api_edit_paste():
 
     host = get_host()
     url = "/paste/{}".format(shorturl + ":" + commit)
-    return functions.json_response(
+    return json_response(
         url=url,
         key="anon" if not user_id else current_user["key"],
         base=get_setting("directories.url"),
