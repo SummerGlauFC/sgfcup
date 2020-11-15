@@ -1,3 +1,4 @@
+from authlib.integrations.flask_client import OAuth
 from flask import current_app
 from flask import g
 from flask_login import LoginManager
@@ -9,6 +10,8 @@ from project.usersettings import UserSettings
 
 login_manager = LoginManager()
 csrf = CSRFProtect()
+
+oauth = OAuth()
 
 
 def get_db():

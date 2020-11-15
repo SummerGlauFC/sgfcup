@@ -75,7 +75,7 @@
       </select>
     </p>
   </div>
-  {{ login_status(show_button=True, next=url_for(request.endpoint)) }}
+  {{ login_status(show_button=True, next=request.path) }}
 {% endblock %}
 {% block extra %}
   <p>

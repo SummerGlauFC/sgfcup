@@ -88,6 +88,10 @@ a:visited {
     padding: 1rem;
 }
 
+.text-center {
+    text-align: center;
+}
+
 #main {
     width: 95%;
     margin: 0 auto 3rem;

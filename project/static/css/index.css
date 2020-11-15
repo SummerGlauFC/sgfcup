@@ -74,7 +74,7 @@
 }
 
 .bottom:not(:empty) {
-    /* margin: auto auto 0; */
+    margin: auto auto 0;
     padding: 1rem 0;
 }
 

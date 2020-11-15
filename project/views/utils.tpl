@@ -8,7 +8,7 @@
   {% endif %}
 {% endmacro %}
 
-{% macro flashed_messages(break=False) %}
+{% macro flashed_messages(break=False, wrap=False) %}
   {% with messages = get_flashed_messages(with_categories=true) %}
     {% if messages %}
       <ul class="messages" style="padding-inline-start:0;">
@@ -24,7 +24,7 @@
 {% endmacro %}
 
 {% macro login_status(show_button=False, next=request.path) %}
-  <div id="identification">
+  <div id="identification" class="m-none">
     {% if current_user.is_authenticated %}
       <p>Logged in as <a href="/gallery/{{ current_user.key }}">{{ current_user.key }}</a>.</p>
       {% if show_button %}
@@ -48,16 +48,21 @@
     {% if current_user.is_authenticated and show_logged_in %}
       <p>Logged in as <a href="/gallery/{{ current_user.key }}">{{ current_user.key }}</a>.</p>
     {% else %}
-      {{ errors(form.key, class="") }}
+      {{ errors(form.key, class="padded") }}
       <p class="m-none">
         {{ form.key.label }}
         {{ form.key(size=20, autocomplete="username") }}
       </p>
-      {{ errors(form.password) }}
+      {{ errors(form.password, class="") }}
       <p class="m-none">
         {{ form.password.label }}
         {{ form.password(size=20, autocomplete="current-password") }}
       </p>
+      {% if not session.oauth and config.AUTH_OPENID_ENABLED %}
+        <p class="padded">
+          <a class="button" href="{{ url_for("oauth.login") }}">Sign in with {{ config.AUTH_NAME }}</a>
+        </p>
+      {% endif %}
     {% endif %}
   </div>
 {% endmacro %}

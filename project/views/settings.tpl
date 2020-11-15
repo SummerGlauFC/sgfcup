@@ -16,10 +16,12 @@
 {% endmacro %}
 {% block wrapper %}
   <div>
-    <div class="form-field">
-      {{ flashed_messages(break=True) }}
-    </div>
-    {{ login_status(show_button=True) }}
+    {% if get_flashed_messages() %}
+      <div class="form-field">
+        {{ flashed_messages(break=True) }}
+      </div>
+    {% endif %}
+    {{ login_status(show_button=True, next="/") }}
     <form action="" method="post">
       {{ form.hidden_tag() }}
       {% if not current_user.is_authenticated %}
@@ -33,6 +35,24 @@
           {{ form.password.label }}
           {{ form.password(class="right-col textbox", autocomplete="current-password") }}
         </p>
+      {% endif %}
+      {% if config.AUTH_OPENID_ENABLED %}
+        <h2>OpenID Linking</h2>
+        <div class="text-center">
+          {% if current_user.hash %}
+            <p class="form-field">
+              Account is currently linked to an OpenID.
+            </p>
+            <p class="form-field">
+              <a class="button" href="{{ url_for("oauth.unlink", next=request.path) }}">Unlink account</a>
+            </p>
+          {% else %}
+            <p class="form-field">
+              <a class="button" href="{{ url_for("oauth.login", next=request.path) }}">Sign in
+                with {{ config.AUTH_NAME }}</a>
+            </p>
+          {% endif %}
+        </div>
       {% endif %}
       <h2>Change key details</h2>
       {{ settings_error(form.new_password) }}

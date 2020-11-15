@@ -18,9 +18,11 @@ from dbutils.pooled_db import PooledDB
 from flask import Response
 from flask import jsonify
 from flask import make_response
+from flask import redirect
 from flask import request
 from flask import send_from_directory
 from flask import session
+from flask import url_for
 from flask_login import current_user
 from pygments.formatters import HtmlFormatter
 from pygments.lexers import PhpLexer
@@ -29,7 +31,9 @@ from pygments.lexers import get_all_lexers
 from pygments.lexers import get_lexer_by_name
 from pygments.lexers import guess_lexer
 from pygments.util import ClassNotFound
+from werkzeug.exceptions import HTTPException
 from werkzeug.routing import BaseConverter
+from werkzeug.routing import RoutingException
 from werkzeug.urls import url_quote
 
 from project import config
@@ -206,7 +210,7 @@ class Error(Exception):
         self.error = error
         self.errors = errors
 
-    def response(self):
+    def get_response(self):
         resp = dict(success=False, error=self.error, status=self.status_code)
         if self.errors:
             resp.update(errors=self.errors)
@@ -324,7 +328,7 @@ def create_pool():
 
 
 def safe_redirect(absolute_redirect_url):
-    """ Only redirect if the passed in absolute url matches the server host to protect against phishing """
+    """ Only redirect if the given URL matches the server host to protect against phishing. """
     if not absolute_redirect_url:
         return False
     server_host = request.host
@@ -332,10 +336,51 @@ def safe_redirect(absolute_redirect_url):
     return server_host == redirect_host.netloc if redirect_host.netloc else True
 
 
-def get_next_url():
+class RequestRedirect(HTTPException, RoutingException):
+    """Raise if the map requests a redirect. This is for example the case if
+    `strict_slashes` are activated and an url that requires a trailing slash.
+    The attribute `new_url` contains the absolute destination url.
+    The attribute `code` is returned status code.
+    """
+
+    def __init__(self, new_url, code=301):
+        RoutingException.__init__(self, new_url)
+        self.new_url = new_url
+        self.code = code
+
+    def get_response(self, environ=None):
+        return redirect(self.new_url, self.code)
+
+
+def get_next_url(default=None):
     """
     Get the next parameter for page redirection.
 
-    :return: next URL
+    :param default: URL to redirect to when next is not set
+    :return:
     """
-    return request.args.get("next", request.form.get("next", session.get("next", None)))
+    if default is None:
+        default = url_for("static.index")
+    url = session.pop("next", request.form.get("next", request.args.get("next", None)))
+    if safe_redirect(url):
+        return url or default
+    return None
+
+
+def redirect_next(default=None):
+    """ Redirect to the next page. """
+    url = get_next_url(default=default)
+    if url:
+        raise RequestRedirect(url, code=302)
+    if default:
+        raise RequestRedirect(default, code=302)
+
+
+def guest_required(func):
+    @functools.wraps(func)
+    def decorated_view(*args, **kwargs):
+        if current_user.is_authenticated:
+            return redirect(url_for("static.index"))
+        return func(*args, **kwargs)
+
+    return decorated_view

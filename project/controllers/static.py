@@ -2,19 +2,17 @@ import os
 
 from flask import Blueprint
 from flask import current_app
-from flask import redirect
 from flask import render_template
 from flask import send_from_directory
+from flask import session
 from flask import url_for
-from flask_login import login_user
 from flask_login import logout_user
 
 from project.forms import LoginForm
 from project.forms.paste import PasteForm
 from project.functions import get_next_url
 from project.functions import list_languages
-from project.functions import safe_redirect
-from project.services.account import AccountService
+from project.functions import redirect_next
 
 blueprint = Blueprint("static", __name__)
 
@@ -32,30 +30,20 @@ def paste_home():
 
 @blueprint.route("/login", methods=["GET", "POST"])
 def login():
+    # save the next parameter in the session
+    session["next"] = get_next_url()
     form = LoginForm()
     if form.validate_on_submit():
-        key = form.key.data
-        password = form.password.data
-        user, is_authed = AccountService.get_or_create_account(key, password)
-        if not user or not is_authed:
-            form.key.errors.append("Key or password is incorrect")
-        else:
-            login_user(user)
-            next_url = get_next_url()
-            if safe_redirect(next_url):
-                return redirect(next_url or url_for("static.index"))
+        user, is_authed = form.get_or_create_account()
+        if user and is_authed:
+            form.login(user)
     return render_template("login.tpl", form=form)
 
 
 @blueprint.route("/logout", methods=["GET", "POST"])
 def logout():
     logout_user()
-    # get next param from args, then form, then session.
-    # TODO: set next in session.
-    next_url = get_next_url()
-    if safe_redirect(next_url):
-        return redirect(next_url or url_for("static.index"))
-    return redirect(url_for("static.login"))
+    redirect_next(default=url_for("static.login"))
 
 
 @blueprint.route("/favicon.ico")

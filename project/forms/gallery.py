@@ -1,6 +1,5 @@
 from flask_wtf import FlaskForm
 from wtforms import BooleanField
-from wtforms import HiddenField
 from wtforms import IntegerField
 from wtforms import PasswordField
 from wtforms import SelectField
@@ -13,7 +12,6 @@ from project.constants import FileType
 from project.constants import search_modes
 from project.constants import sort_modes
 from project.forms import FlashErrorsForm
-from project.forms import LoginForm
 
 
 class GalleryAuthForm(FlashErrorsForm):
@@ -63,7 +61,7 @@ class GalleryDeleteForm(FlaskForm):
     delete_all = SubmitField("Delete All")
 
 
-class GalleryAdvancedDeleteForm(LoginForm):
+class GalleryAdvancedDeleteForm(FlashErrorsForm):
     type = SelectField(
         "Type",
         choices=[("hits", "Hit Count"), ("size", "Size (bytes)")],

@@ -261,7 +261,5 @@ def gallery_delete():
         )
 
     return render_template(
-        "delete.tpl",
-        messages=messages or flatten_errors(form.errors),
-        key=form.key.data,
+        "delete.tpl", messages=messages or flatten_errors(form.errors)
     )

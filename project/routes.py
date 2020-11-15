@@ -15,3 +15,9 @@ def register_routes(app: Flask):
     app.register_blueprint(static_blueprint)
     app.register_blueprint(upload_blueprint)
     app.register_blueprint(view_blueprint)
+
+    # only register the oauth routes if enabled
+    if app.config["AUTH_OPENID_ENABLED"]:
+        from project.controllers.oauth import blueprint as oauth_blueprint
+
+        app.register_blueprint(oauth_blueprint)

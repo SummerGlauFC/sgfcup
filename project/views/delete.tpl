@@ -4,9 +4,7 @@
   ul { text-align: left; }
 {% endblock %}
 {% block extra %}
-  {% if key %}
-    <a href="/gallery/{{ key }}">Return to your gallery...</a>
-  {% endif %}
+  <a href="/gallery/{{ current_user.key }}">Return to your gallery...</a>
   <br />
   <a href="/">Return to the homepage...</a>
 {% endblock %}

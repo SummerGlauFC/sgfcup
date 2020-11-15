@@ -22,6 +22,13 @@ Settings = {
         "validate_key": "validation-key-goes-here",
         "encrypt_key": "encryption-key-goes-here",
     },
+    "openid": {
+        "enabled": False,  # if openid auth should be available
+        "client_id": "client-id-goes-here",  # oauth client id
+        "client_secret": "client-secret-goes-here",  # oauth client secret
+        "metadata_url": "https://auth.example.com/.well-known/openid-configuration",  # openid configuration url
+        "name": "Auth",  # provider name to show on login page
+    },
     "debug": {  # safe to ignore, only for development
         "enabled": False,  # enable debug mode
         "sentry": {  # enable sentry bug tracking

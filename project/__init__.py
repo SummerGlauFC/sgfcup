@@ -4,14 +4,17 @@ import sentry_sdk
 from flask import Flask
 from flask import g
 from flask import render_template
+from flask import session
 from sentry_sdk.integrations.flask import FlaskIntegration
 from werkzeug.exceptions import HTTPException
 from werkzeug.exceptions import RequestEntityTooLarge
+from werkzeug.middleware.proxy_fix import ProxyFix
 
 from project import config
 from project.extensions import db
 from project.functions import Error
 from project.functions import RegexConverter
+from project.functions import RequestRedirect
 from project.functions import create_pool
 from project.functions import get_setting
 from project.routes import register_routes
@@ -56,14 +59,23 @@ def configure_app(app: Flask):
         MAX_CONTENT_LENGTH=get_setting("max_file_size"),
         POOL=create_pool(),
         PERMANENT_SESSION_LIFETIME=timedelta(days=365),
-        USE_SESSION_FOR_NEXT=False,
+        USE_SESSION_FOR_NEXT=True,
+        AUTH_OPENID_ENABLED=get_setting("openid.enabled", False),
+        AUTH_CLIENT_ID=get_setting("openid.client_id"),
+        AUTH_CLIENT_SECRET=get_setting("openid.client_secret"),
+        AUTH_SERVER_METADATA_URL=get_setting("openid.metadata_url"),
+        AUTH_NAME=get_setting("openid.name"),
     )
+
+    # fix urls behind proxy
+    app.wsgi_app = ProxyFix(app.wsgi_app, x_proto=1, x_for=1)
 
 
 def configure_extensions(app: Flask):
     """ Configure flask app extensions. """
     from project.extensions import login_manager
     from project.extensions import csrf
+    from project.extensions import oauth
     from project.services.account import (
         AccountService,
         AnonymousAccount,
@@ -84,6 +96,18 @@ def configure_extensions(app: Flask):
         g_db = g.pop("db", None)
         if g_db is not None:
             g_db.close()
+
+    oauth.init_app(app)
+
+    if app.config["AUTH_OPENID_ENABLED"]:
+        # register the oauth client
+        oauth.register(
+            name="auth",
+            client_id=app.config["AUTH_CLIENT_ID"],
+            client_secret=app.config["AUTH_CLIENT_SECRET"],
+            server_metadata_url=app.config["AUTH_SERVER_METADATA_URL"],
+            client_kwargs={"scope": "openid profile"},
+        )
 
 
 def configure_jinja(app: Flask):
@@ -110,7 +134,16 @@ def configure_error_handlers(app: Flask):
     # handle API-bound errors
     @app.errorhandler(Error)
     def error_api(err: Error):
-        return err.response()
+        return err.get_response()
+
+    # handle redirect errors
+    @app.errorhandler(RequestRedirect)
+    def error_api(err: RequestRedirect):
+        resp = err.get_response()
+        # remove the next parameter since this exception
+        # is only raised when using next for redirection
+        session.pop("next", None)
+        return resp
 
     # handle request entity too large
     @app.errorhandler(RequestEntityTooLarge)

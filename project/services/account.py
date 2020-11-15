@@ -16,6 +16,7 @@ class AccountInterface(TypedDict, total=False):
     id: int
     key: str
     password: str
+    hash: Optional[str]
 
 
 class Account(UserMixin, UserDict):
@@ -68,6 +69,19 @@ class AccountService:
         return None
 
     @staticmethod
+    def get_by_subject(openid_subject: str) -> Optional[Account]:
+        """
+        Get a user by their openid subject.
+
+        :param openid_subject: the subject of the user
+        :return: row of the User if they exist
+        """
+        acc = db.select("accounts", where={"hash": openid_subject}, singular=True)
+        if acc:
+            return Account(**acc)
+        return None
+
+    @staticmethod
     def create(new_attrs: AccountInterface) -> Account:
         """
         Create an account with the given values.
@@ -100,6 +114,9 @@ class AccountService:
         authenticated = False
         user = AccountService.get_by_key(key)
         if user:
+            # do not authenticate the anon user
+            if user["id"] == 0:
+                return user, False
             authenticated = user["password"] == password
         return user, authenticated
 
@@ -111,7 +128,7 @@ class AccountService:
         :param key: key to validate
         :return: True if valid key, else False
         """
-        return bool(re.match(f"^{ACCOUNT_KEY_REGEX}$", key))
+        return key != "anon" and bool(re.match(f"^{ACCOUNT_KEY_REGEX}$", key))
 
     @staticmethod
     def get_or_create_account(key, password) -> Tuple[Account, bool]:
