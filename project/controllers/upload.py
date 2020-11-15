@@ -7,6 +7,7 @@ from flask import request
 from flask_login import current_user
 
 from project import functions
+from project.extensions import csrf
 from project.extensions import user_settings
 from project.forms import flatten_errors
 from project.forms.paste import PasteEditForm
@@ -64,6 +65,7 @@ def submit_paste(user_id, paste_data=None) -> PasteInterface:
 # File upload endpoint.
 @blueprint.route("/api/upload", methods=["POST"])
 @blueprint.route("/api/upload/<upload_type>", methods=["POST"])
+@csrf.exempt
 def api_upload_file(upload_type="file"):
     if upload_type not in ["file", "paste"]:
         # The type the user provided doesn't exist.
@@ -96,6 +98,7 @@ def api_upload_file(upload_type="file"):
 
 
 @blueprint.route("/api/edit/paste", methods=["POST"])
+@csrf.exempt
 def api_edit_paste():
     user_id = current_user.get_id()
 
