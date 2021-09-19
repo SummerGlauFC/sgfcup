@@ -26,6 +26,7 @@ wtforms = {git = "https://github.com/wtforms/wtforms.git", rev = "7c5c46fd169096
 Flask-Login = "^0.5.0"
 DBUtils = "^2.0"
 Authlib = "^0.15.2"
+requests = "^2.25.0"
 
 [tool.poetry.dev-dependencies]
 raven = "^6.10.0"

@@ -1,5 +1,4 @@
 FLASK_APP = project:create_app()
-FLASK_ENV = development
-FLASK_RUN_HOST = sgfc.test
+FLASK_ENV = production
+FLASK_RUN_HOST = localhost
 FLASK_RUN_PORT = 8000
-FLASK_USE_RELOADER = true

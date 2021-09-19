@@ -180,7 +180,7 @@ def image_view(url, filename=None, ext=None, file=None, update_hits=True):
 
     # If the file is a paste, redirect to the pastebin
     if file["ext"] == "paste" or file["type"] == FileType.PASTE:
-        redirect(f"/paste/{url}")
+        return redirect(f"/paste/{url}")
 
     FileService.abort_if_invalid_url(file, filename, ext)
 
