@@ -9,6 +9,7 @@ from flask_login import current_user
 
 from project import db
 from project import functions
+from project.constants import FileType
 from project.constants import PasteAction
 from project.forms.paste import PasteEditForm
 from project.services.file import FileService
@@ -178,7 +179,7 @@ def image_view(url, filename=None, ext=None, file=None, update_hits=True):
             abort(404, "File not found.")
 
     # If the file is a paste, redirect to the pastebin
-    if file["ext"] == "paste":
+    if file["ext"] == "paste" or file["type"] == FileType.PASTE:
         redirect(f"/paste/{url}")
 
     FileService.abort_if_invalid_url(file, filename, ext)
