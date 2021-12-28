@@ -24,8 +24,9 @@ class PasteForm(BasePasteForm):
     lang = SelectField(
         "Language:",
         validators=[InputRequired()],
+        # ('Zig', ('zig',), ('*.zig',), ('text/zig',))
         # (lang_code, label) e.g. ("csharp", "C#")
-        choices=[(lang[1][0], lang[0]) for lang in list_languages()],
+        choices=[(lang[1], lang[0]) for lang in list_languages()],
     )
 
 

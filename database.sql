@@ -40,6 +40,9 @@ CREATE TABLE `files` (
   `hits` int(11) NOT NULL DEFAULT '0',
   `size` int(11) NOT NULL DEFAULT '0',
   `date` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `type` int(10) unsigned NOT NULL DEFAULT 1,
+  `width` mediumint(8) unsigned DEFAULT NULL,
+  `height` mediumint(8) unsigned DEFAULT NULL,
   PRIMARY KEY (`id`)
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8;
 
@@ -72,6 +75,7 @@ CREATE TABLE `revisions` (
   `paste` longtext NOT NULL,
   `fork` tinyint(1) NOT NULL DEFAULT '0',
   `parent` int(11) NOT NULL,
+  `parent_revision` int(11) DEFAULT NULL,
   PRIMARY KEY (`id`)
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8 ROW_FORMAT=DYNAMIC;
 
